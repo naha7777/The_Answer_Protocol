@@ -37,5 +37,6 @@ section explaining how to test the multiplayer functionality, combat system, and
 
 ### Documentation
 - [Cours: Apprendre GoLang](https://devopssec.fr/category/apprendre-golang)
+- [Qu’est-ce que le protocole TCP/IP de contrôle de la transmission ?](https://www.fortinet.com/fr/resources/cyberglossary/tcp-ip)
 
 ### AI Usage
