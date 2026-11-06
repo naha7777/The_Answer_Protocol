@@ -36,7 +36,12 @@ section explaining how to test the multiplayer functionality, combat system, and
 ## Resources
 
 ### Documentation
+#### GoLang
 - [Cours: Apprendre GoLang](https://devopssec.fr/category/apprendre-golang)
+- [Go by Example](https://gobyexample.com/)
+- [A Tour of Go](https://fr-go-dev.shuijingwanwq.com/tour/flowcontrol/8)
+- [Les fondamentaux de Go - Organisation d'un projet](https://go-start.vercel.app/fr/chapter-1-introduction/1-4-project-layout/)
+- [Les fondamentaux de Go - Commandes essentielles](https://go-start.vercel.app/fr/chapter-1-introduction/1-5-essential-commands/)
 
 #### Server
 - [Qu’est-ce que le protocole TCP/IP de contrôle de la transmission ?](https://www.fortinet.com/fr/resources/cyberglossary/tcp-ip)
