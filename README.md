@@ -33,7 +33,7 @@ section with detailed instructions for your chosen building tool and how to run 
 ## Testing
 section explaining how to test the multiplayer functionality, combat system, and quest mechanics.
 
-## Resources 
+## Resources
 
 ### Documentation
 - [Cours: Apprendre GoLang](https://devopssec.fr/category/apprendre-golang)
@@ -41,5 +41,6 @@ section explaining how to test the multiplayer functionality, combat system, and
 - [Build a Blazing-Fast TCP Server in Go: A Practical Guide](https://dev.to/jones_charles_ad50858dbc0/build-a-blazing-fast-tcp-server-in-go-a-practical-guide-29d)
 - [Go by Example: TCP Server](https://gobyexample.com/tcp-server)
 - [Les fondamentaux de Go - Serveur TCP](https://go-start.vercel.app/fr/chapter-10-cli-mastery-build-a-publishable-task-manager/10-17-tcp-server/)
+- [Package net](https://pkg.go.dev/net)
 
 ### AI Usage
