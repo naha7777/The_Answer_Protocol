@@ -51,7 +51,7 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 		return
 	}
 	if !l_group.invited[client.name] {
-		client.Send("ERR 110 REQUIRE_INVITATION")
+		client.Send("ERR 109 REQUIRE_INVITATION")
 		return
 	}
 	for _, c := range l_group.members {
