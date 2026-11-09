@@ -4,28 +4,34 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"strings"
 )
 
 type Client struct {
-	conn net.Conn
-	name string
-	// room
-	// quest
-	// health ...
+	conn	net.Conn
+	name	string
+	group	*Group
 }
 
 
 func handleClient(connection net.Conn, dispatcher *Dispatcher) {
 
 	defer connection.Close()
-	client := &Client{conn: connection, name: ""}
+	client := &Client{conn: connection, name: "", group: nil}
 
 	defer dispatcher.removeClient(client)
 
 	client.Send("OK hello proto=1")
 	scanner := bufio.NewScanner(connection)
 	for scanner.Scan() {
-		dispatcher.Dispatch(client, scanner.Text())
+		line := strings.ToUpper(scanner.Text())
+		if client.name == "" && strings.HasPrefix(line, "CONNECT") {
+			dispatcher.Dispatch(client, scanner.Text())
+		} else if client.name != "" {
+			dispatcher.Dispatch(client, scanner.Text())
+		} else {
+			client.Send("ERR 100 YOU_MUST_BE_CONNECTED")
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Print(scanner.Err())

@@ -33,6 +33,19 @@ section with detailed instructions for your chosen building tool and how to run 
 ## Testing
 section explaining how to test the multiplayer functionality, combat system, and quest mechanics.
 
+## Add Error Codes
+
+During developpement, we needed to add more error codes :
+
+| Code | Message | Description |
+| ---- | ------- | ----------- |
+| 100 | YOU_MUST_BE_CONNECTED | Request a connection |
+| 107 | CANT_FIND_USER | Invalid username for a command argument |
+| 108 | THIS_USER_IS_NOT_A_LEADER | Invalid leader for group join command |
+| 104 | MISSING_ARGUMENT=LEADER_NAME | Missing argument for group join command |
+| 102 | THIS_IS_NOT_A_NAME | Invalid username during connect command |
+| 101 | YOU_HAVE_A_NAME | Try to connect twice without deconnection |
+
 ## Resources
 
 ### Documentation

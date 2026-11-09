@@ -10,13 +10,15 @@ type CommandFunc func(client *Client, args []string)
 type Dispatcher struct {
 	mu			sync.Mutex
 	commands	map[string]CommandFunc
-	names		map[string]bool
+	clients		map[string]*Client
+	groups		map[string]*Group
 }
 
 func NewDispatcher() *Dispatcher {
 	d := &Dispatcher{
-		commands: make(map[string]CommandFunc),
-		names:    make(map[string]bool),
+		commands:	make(map[string]CommandFunc),
+		clients:		make(map[string]*Client),
+		groups:		make(map[string]*Group),
 	}
 	d.registerCommands()
 	return d
@@ -54,9 +56,16 @@ func (d* Dispatcher) Dispatch(client *Client, line string) {
 		return
 	}
 	parts := strings.Fields(line)
-	cmd := strings.ToUpper(parts[0])
-	args := parts[1:]
-
+	var cmd string
+	var args []string
+	first := strings.ToUpper(parts[0])
+	if first == "GROUP" {
+		cmd = strings.ToUpper(parts[0]+" "+parts[1])
+		args = parts[2:]
+	} else {
+		cmd = strings.ToUpper(parts[0])
+		args = parts[1:]
+	}
 	if function, exists := d.commands[cmd]; exists {
 		function(client, args)
 	} else {
