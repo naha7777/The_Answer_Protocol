@@ -12,12 +12,13 @@ type Dispatcher struct {
 	commands	map[string]CommandFunc
 	clients		map[string]*Client
 	groups		map[string]*Group
+	// rooms		map[string]*Room
 }
 
 func NewDispatcher() *Dispatcher {
 	d := &Dispatcher{
 		commands:	make(map[string]CommandFunc),
-		clients:		make(map[string]*Client),
+		clients:	make(map[string]*Client),
 		groups:		make(map[string]*Group),
 	}
 	d.registerCommands()

@@ -46,6 +46,7 @@ During developpement, we needed to add more error codes :
 | 102 | THIS_IS_NOT_A_NAME | Invalid username during connect command |
 | 101 | YOU_HAVE_A_NAME | Try to connect twice without deconnection |
 | 109 | REQUIRE_INVITATION | If a client try to join a group without invitation |
+| 110 | NO_CHAT_SPECIFIED | If a client don't choose a specific chat |
 
 ## Resources
 

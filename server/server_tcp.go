@@ -7,12 +7,21 @@ import (
 	"strings"
 )
 
+type Item struct {
+	name	string
+}
+
+type Room struct {
+	visitors	map[string]*Client
+	items		map[string]*Item
+}
+
 type Client struct {
 	conn	net.Conn
 	name	string
 	group	*Group
+	room	*Room
 }
-
 
 func handleClient(connection net.Conn, dispatcher *Dispatcher) {
 
