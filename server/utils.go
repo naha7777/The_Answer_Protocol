@@ -21,4 +21,8 @@ func (d *Dispatcher) removeClient(client *Client) {
 		}
 	}
 	client.name = ""
+	if client.group != nil {
+		delete(client.group.members, client.name)
+	}
+	client.group = nil
 }
