@@ -37,20 +37,25 @@ func main() {
 			a.Quit()
 		}
 	})
+	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
+	background := canvas.NewImageFromFile("VillageMap.png")
+	background.FillMode = canvas.ImageFillStretch
+
+	btnExit := widget.NewButton("EXIT", func() { a.Quit() })
+	btnExit.Importance = widget.HighImportance
 
 	txt1 := widget.NewLabel("topl")
 	chat := NewChat(w)
 
-	img := canvas.NewImageFromFile("tavern.png")
-	img.Resize(fyne.Size{Width: 200, Height: 200})
-	img.FillMode = canvas.ImageFillOriginal
+	btnContainer := newButtonContainer(a)
+	hudContent := container.New(&Hud{}, btnExit, txt1, btnContainer, chat.Content()) 
+	FullContent := container.NewStack(
+		background,
+		overlay,
+		hudContent,
+	)
 
-	but1 := widget.NewButton("ATTACK", func() {fmt.Println("boom")})
-	but2 := widget.NewButton("GROUP", func() {chat.inGroup = true})
-	buttonsContainer := container.NewHBox(but1, but2)
-
-
-	w.SetContent(container.New(&Hud{}, txt1, img, buttonsContainer, chat.Content()))
+	w.SetContent(FullContent)
 	w.ShowAndRun()
 	fmt.Println("Exited, end of TAP")
 }
