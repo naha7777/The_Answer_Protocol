@@ -10,8 +10,8 @@ type Client struct {
 	conn		net.Conn
 	name		string
 	group		*Group
-	room		*game.RoomData
-	inventory	map[string]*game.ItemData
+	room		*game.Room
+	inventory	map[string]*game.Item
 }
 
 var _ game.Recipient = (*Client)(nil)
@@ -20,4 +20,6 @@ func (c *Client) Send(format string, a ...any) {
 	fmt.Fprintf(c.conn, format+"\n", a...)
 }
 
-func (c *Client) Name() string { return c.name }
+func (c *Client) Name() string {
+	return c.name
+}

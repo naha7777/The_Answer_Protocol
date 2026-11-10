@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"encoding/json"
 	"os"
 )
 
@@ -12,69 +11,54 @@ type Recipient interface {
 }
 
 type World struct {
-    Start string               `json:"start"`
-    Rooms map[string]RoomData  `json:"rooms"`
-    Items map[string]ItemData  `json:"items"`
-    NPCs  map[string]NPCData   `json:"npcs"`
+	Start	string
+	Rooms	map[string]*Room
 }
 
-type RoomData struct {
-    Name        string            `json:"name"`
-    Description string            `json:"description"`
-    Exits       map[string]string `json:"exits"`
-    Items       []string          `json:"items"`
-    NPCs        []string          `json:"npcs"`
+type Room struct {
+	Name		string
+	Exits		map[string]string
+	Items		[]string
+	NPCs		[]string
+	Visitors	map[string]Recipient
 }
 
-type ItemData struct {
-    Name        string `json:"name"`
-    Description string `json:"description"`
-    Obtainable  bool   `json:"obtainable"`
+type Item struct {
+	name		string
+	description	string
+	obtainable	bool
 }
 
-type NPCData struct {
-    Name     string   `json:"name"`
-    HP       int      `json:"hp"`
-    Hostile  bool     `json:"hostile"`
-    Dialogue []string `json:"dialogue"`
+type NPC struct {
+	name		string
+	hp			int
+	hostile		bool
+	dialogue	string
 }
 
 func LoadWorld(path string) (*World, error) {
-	f, err := os.Open(path)
+
+	w, err := extractor(path)
 	if err != nil {
-		return nil, fmt.Errorf("opening world file: %w", err)
+		fmt.Fprintln(os.Stderr, err)
+		return nil, nil
 	}
-	defer f.Close()
 
-	dec := json.NewDecoder(f)
-	dec.DisallowUnknownFields()
-
-	var w World
-	if err := dec.Decode(&w); err != nil {
-		return nil, fmt.Errorf("decoding world %s: %w", path, err)
+	for id, room := range w.Rooms {
+		for dir, target := range room.Exits {
+			if _, ok := w.Rooms[target]; !ok {
+				return nil, fmt.Errorf("room %s: exit %s leads to unknown room %q", id, dir, target)
+			}
+		}
 	}
-	return &w, nil
+	room_lst := make(map[string]*Room, len(w.Rooms))
+	for str, room := range(w.Rooms) {
+		r := &Room{Name: room.Name, Exits: room.Exits, Items: room.Items,
+				   NPCs: room.NPCs, Visitors: make(map[string]Recipient),}
+		room_lst[str] = r
+	}
+
+	real_w := World{Start: w.Start, Rooms: room_lst}
+	return &real_w, nil
 }
-
-// type Item struct {
-// 	name		string
-// 	description	string
-// 	obtainable	bool
-// }
-
-// type NPC struct {
-// 	name		string
-// 	hp			int
-// 	hostile		bool
-// 	dialogue	string
-// }
-
-// type Room struct {
-// 	name		string
-// 	description	string
-// 	visitors	map[string]Recipient
-// 	items		map[string]*Item
-// 	exits		map[string]string
-// 	npc			map[string]*NPC
-// }
 

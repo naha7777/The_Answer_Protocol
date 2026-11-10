@@ -9,10 +9,16 @@ import (
 	"os"
 )
 
-func handleClient(connection net.Conn, dispatcher *Dispatcher) {
+func handleClient(connection net.Conn, dispatcher *Dispatcher,
+				  world *game.World) {
 
 	defer connection.Close()
-	client := &Client{conn: connection, name: "", group: nil}
+	var client *Client
+	for _, room := range(world.Rooms) {
+		if room.Name == world.Start {
+			client = &Client{conn: connection, name: "", group: nil, room: room}
+		}
+	}
 
 	defer dispatcher.removeClient(client)
 
@@ -41,11 +47,12 @@ func Server() {
 	}
 	defer listener.Close()
 
-	w, err := game.LoadWorld("data/world.json")
+	world, err := game.LoadWorld("data/world.json")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "fatal:", err)
 		os.Exit(1)
 	}
+
 	dispatcher := NewDispatcher()
 
 	for {
@@ -54,6 +61,6 @@ func Server() {
 			fmt.Fprintln(os.Stderr, "Error accepting:", err)
 			continue
 		}
-		go handleClient(connection, dispatcher)
+		go handleClient(connection, dispatcher, world)
 	}
 }

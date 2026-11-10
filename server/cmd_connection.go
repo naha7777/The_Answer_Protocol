@@ -26,6 +26,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 	client.name = username
 	d.clients[client.name] = client
 	client.Send("OK connected")
+	client.room.Visitors[client.name] = client
 }
 
 func (d *Dispatcher) handleQuit(client *Client, args []string) {

@@ -1,5 +1,6 @@
 {
   "start": "loc.square",
+  "respawn": "loc.square",
   "rooms": {
     "loc.square": {
       "name": "Village Square",

@@ -12,7 +12,6 @@ type Dispatcher struct {
 	commands	map[string]CommandFunc
 	clients		map[string]*Client
 	groups		map[string]*Group
-	// rooms		map[string]*Room
 }
 
 func NewDispatcher() *Dispatcher {
