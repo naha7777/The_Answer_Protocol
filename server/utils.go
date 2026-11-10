@@ -1,13 +1,5 @@
 package server
 
-import (
-	"fmt"
-)
-
-func (c *Client) Send(format string, a ...any) {
-	fmt.Fprintf(c.conn, format+"\n", a...)
-}
-
 func (d *Dispatcher) removeClient(client *Client) {
 	if client.name == "" {
 		return

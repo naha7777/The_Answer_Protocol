@@ -5,23 +5,9 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"the_answer_protocol/game"
+	"os"
 )
-
-type Item struct {
-	name	string
-}
-
-type Room struct {
-	visitors	map[string]*Client
-	items		map[string]*Item
-}
-
-type Client struct {
-	conn	net.Conn
-	name	string
-	group	*Group
-	room	*Room
-}
 
 func handleClient(connection net.Conn, dispatcher *Dispatcher) {
 
@@ -43,24 +29,29 @@ func handleClient(connection net.Conn, dispatcher *Dispatcher) {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Print(scanner.Err())
+		fmt.Fprintln(os.Stderr, scanner.Err())
 	}
 }
 
 func Server() {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		fmt.Println("Error listening:", err)
+		fmt.Fprintln(os.Stderr, "Error listening:", err)
 		return
 	}
 	defer listener.Close()
 
+	w, err := game.LoadWorld("data/world.json")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "fatal:", err)
+		os.Exit(1)
+	}
 	dispatcher := NewDispatcher()
 
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Error accepting:", err)
+			fmt.Fprintln(os.Stderr, "Error accepting:", err)
 			continue
 		}
 		go handleClient(connection, dispatcher)

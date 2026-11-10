@@ -64,6 +64,7 @@ During developpement, we needed to add more error codes :
 - [Go by Example: TCP Server](https://gobyexample.com/tcp-server)
 - [Les fondamentaux de Go - Serveur TCP](https://go-start.vercel.app/fr/chapter-10-cli-mastery-build-a-publishable-task-manager/10-17-tcp-server/)
 - [Package net](https://pkg.go.dev/net)
+- [JSON and Go](https://go.dev/blog/json)
 
 #### GUI
 - [Package Fyne](https://docs.fyne.io/)
