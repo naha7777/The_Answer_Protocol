@@ -15,6 +15,7 @@ type WorldData struct {
 }
 
 type RoomData struct {
+	Id			string				`json:"id"`
 	Name		string				`json:"name"`
 	Description	string				`json:"description"`
 	Exits		map[string]string	`json:"exits"`

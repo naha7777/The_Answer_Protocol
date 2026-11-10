@@ -7,16 +7,25 @@ func (d *Dispatcher) removeClient(client *Client) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	client.Send("OK bye")
-	for _, c := range(d.clients) {
-		if c.name == client.name {
-			delete(d.clients, c.name)
-		}
-	}
+	delete(d.clients, client.name)
 	client.name = ""
 	if client.group != nil {
 		delete(client.group.members, client.name)
+		client.group = nil
 	}
-	client.group = nil
-	delete(client.room.Visitors, client.name)
-	client.room = nil
+	if client.room != nil {
+		remove(client.name, client.room.Players)
+		client.room = nil
+	}
+}
+
+func remove(name string, place []string) []string {
+	i := 0
+	for idx, item := range place {
+		if item != name {
+			place[i] = place[idx]
+			i++
+		}
+	}
+	return place[:i]
 }

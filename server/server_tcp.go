@@ -4,18 +4,18 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"the_answer_protocol/game"
-	"os"
 )
 
 func handleClient(connection net.Conn, dispatcher *Dispatcher,
-				  world *game.World) {
+	world *game.World) {
 
 	defer connection.Close()
-	var client *Client
-	for _, room := range(world.Rooms) {
-		if room.Name == world.Start {
+	client := &Client{conn: connection}
+	for _, room := range world.Rooms {
+		if room.Id == world.Start {
 			client = &Client{conn: connection, name: "", group: nil, room: room}
 		}
 	}

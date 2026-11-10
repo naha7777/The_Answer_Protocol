@@ -5,22 +5,18 @@ import (
 	"os"
 )
 
-type Recipient interface {
-	Send(format string, a ...any)
-	Name()	string
-}
-
 type World struct {
 	Start	string
 	Rooms	map[string]*Room
 }
 
 type Room struct {
-	Name		string
-	Exits		map[string]string
-	Items		[]string
-	NPCs		[]string
-	Visitors	map[string]Recipient
+	Id		string
+	Name	string
+	Exits	map[string]string
+	Items	[]string
+	NPCs	[]string
+	Players	[]string
 }
 
 type Item struct {
@@ -52,13 +48,13 @@ func LoadWorld(path string) (*World, error) {
 		}
 	}
 	room_lst := make(map[string]*Room, len(w.Rooms))
-	for str, room := range(w.Rooms) {
-		r := &Room{Name: room.Name, Exits: room.Exits, Items: room.Items,
-				   NPCs: room.NPCs, Visitors: make(map[string]Recipient),}
+	for str, room := range w.Rooms {
+		r := &Room{Id: room.Id, Name: room.Name, Exits: room.Exits,
+				   Items: room.Items, NPCs: room.NPCs,
+				   Players: []string{}}
 		room_lst[str] = r
 	}
 
 	real_w := World{Start: w.Start, Rooms: room_lst}
 	return &real_w, nil
 }
-

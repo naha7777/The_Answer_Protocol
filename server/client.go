@@ -14,8 +14,6 @@ type Client struct {
 	inventory	map[string]*game.Item
 }
 
-var _ game.Recipient = (*Client)(nil)
-
 func (c *Client) Send(format string, a ...any) {
 	fmt.Fprintf(c.conn, format+"\n", a...)
 }
