@@ -3,6 +3,7 @@ package server
 import (
 	"strings"
 	"sync"
+	"the_answer_protocol/game"
 )
 
 type CommandFunc func(client *Client, args []string)
@@ -12,13 +13,15 @@ type Dispatcher struct {
 	commands	map[string]CommandFunc
 	clients		map[string]*Client
 	groups		map[string]*Group
+	world		*game.World
 }
 
-func NewDispatcher() *Dispatcher {
+func NewDispatcher(w *game.World) *Dispatcher {
 	d := &Dispatcher{
 		commands:	make(map[string]CommandFunc),
 		clients:	make(map[string]*Client),
 		groups:		make(map[string]*Group),
+		world:		w,
 	}
 	d.registerCommands()
 	return d

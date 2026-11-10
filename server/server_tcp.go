@@ -10,7 +10,7 @@ import (
 )
 
 func handleClient(connection net.Conn, dispatcher *Dispatcher,
-	world *game.World) {
+				  world *game.World) {
 
 	defer connection.Close()
 	client := &Client{conn: connection}
@@ -53,7 +53,7 @@ func Server() {
 		os.Exit(1)
 	}
 
-	dispatcher := NewDispatcher()
+	dispatcher := NewDispatcher(world)
 
 	for {
 		connection, err := listener.Accept()
