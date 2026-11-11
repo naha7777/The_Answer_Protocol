@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"strings"
 	"slices"
+	"strings"
 )
 
 func (d *Dispatcher) handleTake(client *Client, args []string) {
@@ -82,9 +82,9 @@ func (d *Dispatcher) handleMove(client *Client, args []string) {
 
 func Move(direction string, client *Client, d *Dispatcher) {
 	find := false
-	for k, v := range(client.room.Exits) {
+	for k, v := range client.room.Exits {
 		if strings.ToUpper(k) == direction {
-			for _, val := range(d.world.Rooms) {
+			for _, val := range d.world.Rooms {
 				if v == val.Id {
 					client.room.Players = remove(client.name, client.room.Players)
 					client.room = val

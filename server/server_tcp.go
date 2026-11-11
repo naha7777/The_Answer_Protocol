@@ -10,15 +10,15 @@ import (
 )
 
 func handleClient(connection net.Conn, dispatcher *Dispatcher,
-				  world *game.World) {
+	world *game.World) {
 
 	defer connection.Close()
 	client := &Client{conn: connection}
 	for _, room := range world.Rooms {
 		if room.Id == world.Start {
 			client = &Client{conn: connection, name: "", group: nil, room: room,
-							 inventory: nil, hp: 100, hp_max: 100,
-							 status: "very healthy"}
+				inventory: nil, hp: 100, hp_max: 100,
+				status: "very healthy"}
 		}
 	}
 

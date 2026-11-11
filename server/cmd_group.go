@@ -5,10 +5,10 @@ import (
 )
 
 type Group struct {
-	id		int
-	leader	string
-	members	map[string]*Client
-	invited	map[string]bool
+	id      int
+	leader  string
+	members map[string]*Client
+	invited map[string]bool
 }
 
 func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
@@ -19,10 +19,10 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 		return
 	}
 	g := &Group{
-		id:			len(d.groups) + 1,
-		leader:		client.name,
-		members:	map[string]*Client{client.name: client},
-		invited:	map[string]bool{},
+		id:      len(d.groups) + 1,
+		leader:  client.name,
+		members: map[string]*Client{client.name: client},
+		invited: map[string]bool{},
 	}
 	d.groups[client.name] = g
 	client.group = g
@@ -79,7 +79,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 		c.Send("EVT GROUP LEAVE")
 	}
 	if len(current_group.members) > 0 {
-		for _, m := range(current_group.members) {
+		for _, m := range current_group.members {
 			current_group.leader = m.name
 			break
 		}
@@ -96,7 +96,7 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 		client.Send("ERR 107 CANT_FIND_USER")
 		return
 	}
-	for _, m := range(client.group.members) {
+	for _, m := range client.group.members {
 		if m.name == username {
 			client.Send("ERR 402 ALREADY_IN_GROUP")
 			return

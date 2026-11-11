@@ -17,7 +17,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	for _, c := range(d.clients) {
+	for _, c := range d.clients {
 		if c.name == username {
 			client.Send("ERR 201 NAME_IN_USE")
 			return

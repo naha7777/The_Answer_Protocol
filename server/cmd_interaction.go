@@ -36,7 +36,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 				if client.name == p {
 					client.Send("OK")
 				} else {
-					for _, c := range(d.clients) {
+					for _, c := range d.clients {
 						if c.name == p {
 							c.Send("%s: %s", client.name, message)
 						}

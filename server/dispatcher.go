@@ -9,19 +9,19 @@ import (
 type CommandFunc func(client *Client, args []string)
 
 type Dispatcher struct {
-	mu			sync.Mutex
-	commands	map[string]CommandFunc
-	clients		map[string]*Client
-	groups		map[string]*Group
-	world		*game.World
+	mu       sync.Mutex
+	commands map[string]CommandFunc
+	clients  map[string]*Client
+	groups   map[string]*Group
+	world    *game.World
 }
 
 func NewDispatcher(w *game.World) *Dispatcher {
 	d := &Dispatcher{
-		commands:	make(map[string]CommandFunc),
-		clients:	make(map[string]*Client),
-		groups:		make(map[string]*Group),
-		world:		w,
+		commands: make(map[string]CommandFunc),
+		clients:  make(map[string]*Client),
+		groups:   make(map[string]*Group),
+		world:    w,
 	}
 	d.registerCommands()
 	return d
@@ -53,7 +53,7 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["ABANDON_QUEST"] = d.handleAbandonQuest
 }
 
-func (d* Dispatcher) Dispatch(client *Client, line string) {
+func (d *Dispatcher) Dispatch(client *Client, line string) {
 	line = strings.TrimSpace(line)
 	if line == "" {
 		return
@@ -63,7 +63,7 @@ func (d* Dispatcher) Dispatch(client *Client, line string) {
 	var args []string
 	first := strings.ToUpper(parts[0])
 	if first == "GROUP" {
-		cmd = strings.ToUpper(parts[0]+" "+parts[1])
+		cmd = strings.ToUpper(parts[0] + " " + parts[1])
 		args = parts[2:]
 	} else {
 		cmd = strings.ToUpper(parts[0])
