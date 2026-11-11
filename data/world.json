@@ -8,7 +8,7 @@
       "description": "A bustling square.",
       "exits": { "north": "loc.forest", "east": "loc.market" },
       "items": ["item.herbs", "item.herbs"],
-      "npcs": ["npc.guard"]
+      "npcs": ["npc.village_guard"]
     },
     "loc.forest": {
       "id": "loc.forest",
@@ -78,7 +78,7 @@
     "item.gold":     { "id": "item.gold", "name": "Gold", "description": "You are rich!", "obtainable": true }
   },
   "npcs": {
-    "npc.guard":       { "name": "Village Guard", "hp": 40, "hostile": false, "dialogue": ["Stay safe, traveler."] },
+    "npc.village_guard":       { "name": "Village Guard", "hp": 40, "hostile": false, "dialogue": ["Stay safe, traveler."] },
     "npc.ghost":       { "name": "Rich Ghost", "hp": 1000, "hostile": false, "dialogue": ["BOUH."] },
     "npc.merchant":    { "name": "Merchant", "hp": 10, "hostile": false, "dialogue": ["WHO WANTS MY NECKLACE? $100 FOR THIS BEAUTIFUL NECKLACE!"] },
     "npc.woman":       { "name": "Woman", "hp": 20, "hostile": false, "dialogue": ["This is my favorite place."] },
