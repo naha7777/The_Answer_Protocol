@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"strings"
 	"slices"
 )
@@ -17,22 +18,19 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 	for i, id := range client.room.Items {
 		item, ok := d.world.Items[id]
 		if !ok {
+			fmt.Print("a")
 			continue
 		}
 		if !strings.EqualFold(id, query) && !strings.EqualFold(item.Name, query) {
+			fmt.Print("b")
 			continue
 		}
 		if !item.Obtainable {
 			client.Send("ERR 116 ITEM_NOT_OBTAINABLE")
 			return
 		}
-		if item.Owner != "" {
-			client.Send("ERR 404 ITEM_NOT_FOUND")
-			return
-		}
 		client.room.Items = slices.Delete(client.room.Items, i, i+1)
 		client.inventory = append(client.inventory, item)
-		item.Owner = client.name
 		client.Send("OK taken=%s", id)
 		return
 	}
@@ -54,7 +52,6 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 		}
 		client.room.Items = append(client.room.Items, item.Id)
 		client.inventory = slices.Delete(client.inventory, i, i+1)
-		item.Owner = ""
 		client.Send("OK dropped=%s", item.Id)
 		return
 	}

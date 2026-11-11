@@ -24,7 +24,6 @@ type Room struct {
 type Item struct {
 	Id			string
 	Name		string
-	Owner		string
 	Description	string
 	Obtainable	bool
 }
@@ -63,7 +62,7 @@ func LoadWorld(path string) (*World, error) {
 	item_lst := make(map[string]*Item, len(w.Items))
 	for str, item := range w.Items {
 		i := &Item{Name: item.Name, Description: item.Description,
-				   Obtainable: item.Obtainable, Id: item.Id, Owner: ""}
+				   Obtainable: item.Obtainable, Id: item.Id}
 		item_lst[str] = i
 	}
 

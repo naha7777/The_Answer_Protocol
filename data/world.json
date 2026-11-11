@@ -7,7 +7,7 @@
       "name": "Village Square",
       "description": "A bustling square.",
       "exits": { "north": "loc.forest", "east": "loc.market" },
-      "items": ["item.herbs"],
+      "items": ["item.herbs", "item.herbs"],
       "npcs": ["npc.guard"]
     },
     "loc.forest": {

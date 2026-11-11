@@ -13,6 +13,12 @@ func (d *Dispatcher) removeClient(client *Client) {
 		delete(client.group.members, client.name)
 		client.group = nil
 	}
+	if client.inventory != nil {
+		for _, item := range client.inventory {
+			client.room.Items = append(client.room.Items, item.Id)
+		}
+		client.inventory = nil
+	}
 	if client.room != nil {
 		remove(client.name, client.room.Players)
 		client.room = nil
