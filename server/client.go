@@ -12,6 +12,9 @@ type Client struct {
 	group		*Group
 	room		*game.Room
 	inventory	[]*game.Item
+	hp			int
+	hp_max		int
+	status		string
 }
 
 func (c *Client) Send(format string, a ...any) {
