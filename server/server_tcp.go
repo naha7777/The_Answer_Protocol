@@ -16,7 +16,8 @@ func handleClient(connection net.Conn, dispatcher *Dispatcher,
 	client := &Client{conn: connection}
 	for _, room := range world.Rooms {
 		if room.Id == world.Start {
-			client = &Client{conn: connection, name: "", group: nil, room: room}
+			client = &Client{conn: connection, name: "", group: nil, room: room,
+							 inventory: nil,}
 		}
 	}
 

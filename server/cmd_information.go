@@ -14,6 +14,8 @@ func (d *Dispatcher) handleWho(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleLook(client *Client, args []string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	jsonData, err := json.Marshal(client.room)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s", err)
@@ -23,5 +25,11 @@ func (d *Dispatcher) handleLook(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleInventory(client *Client, args []string) {
-	fmt.Print("a")
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	var item_lst []string
+	for _, v := range client.inventory {
+		item_lst = append(item_lst, v.Id)
+	}
+	client.Send("OK %v", item_lst)
 }

@@ -8,6 +8,8 @@ import (
 type World struct {
 	Start	string
 	Rooms	map[string]*Room
+	Items	map[string]*Item
+	NPCs	map[string]*NPC
 }
 
 type Room struct {
@@ -20,16 +22,18 @@ type Room struct {
 }
 
 type Item struct {
-	name		string
-	description	string
-	obtainable	bool
+	Id			string
+	Name		string
+	Owner		string
+	Description	string
+	Obtainable	bool
 }
 
 type NPC struct {
-	name		string
-	hp			int
-	hostile		bool
-	dialogue	string
+	Name		string
+	Hp			int
+	Hostile		bool
+	Dialogue	[]string
 }
 
 func LoadWorld(path string) (*World, error) {
@@ -37,7 +41,7 @@ func LoadWorld(path string) (*World, error) {
 	w, err := extractor(path)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		return nil, nil
+		return nil, err
 	}
 
 	for id, room := range w.Rooms {
@@ -47,6 +51,7 @@ func LoadWorld(path string) (*World, error) {
 			}
 		}
 	}
+
 	room_lst := make(map[string]*Room, len(w.Rooms))
 	for str, room := range w.Rooms {
 		r := &Room{Id: room.Id, Name: room.Name, Exits: room.Exits,
@@ -55,6 +60,21 @@ func LoadWorld(path string) (*World, error) {
 		room_lst[str] = r
 	}
 
-	real_w := World{Start: w.Start, Rooms: room_lst}
+	item_lst := make(map[string]*Item, len(w.Items))
+	for str, item := range w.Items {
+		i := &Item{Name: item.Name, Description: item.Description,
+				   Obtainable: item.Obtainable, Id: item.Id, Owner: ""}
+		item_lst[str] = i
+	}
+
+	npc_lst := make(map[string]*NPC, len(w.NPCs))
+	for str, npc := range w.NPCs {
+		n := &NPC{Name: npc.Name, Hp: npc.HP, Hostile: npc.Hostile,
+				  Dialogue: npc.Dialogue,}
+		npc_lst[str] = n
+	}
+
+	real_w := World{Start: w.Start, Rooms: room_lst, Items: item_lst,
+					NPCs: npc_lst}
 	return &real_w, nil
 }

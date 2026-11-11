@@ -68,14 +68,14 @@
     }
   },
   "items": {
-    "item.herbs":    { "name": "Herbs", "description": "Medicinal herbs", "obtainable": true },
-    "item.spirit":   { "name": "Spirit", "description": "Useless spirit of a rich man", "obtainable": true },
-    "item.necklace": { "name": "Necklace", "description": "Gold necklace", "obtainable": true },
-    "item.flower":   { "name": "Flower", "description": "Red flower", "obtainable": true },
-    "item.fish":     { "name": "Fish", "description": "Very little fish", "obtainable": true },
-    "item.potion":   { "name": "Unknown Potion", "description": "This green potion seems strange.", "obtainable": true },
-    "item.sword":    { "name": "Sword", "description": "Long, sharp sword", "obtainable": true },
-    "item.gold":     { "name": "Gold", "description": "You are rich!", "obtainable": true }
+    "item.herbs":    { "id": "item.herbs", "name": "Herbs", "description": "Medicinal herbs", "obtainable": true },
+    "item.spirit":   { "id": "item.spirit", "name": "Spirit", "description": "Useless spirit of a rich man", "obtainable": true },
+    "item.necklace": { "id": "item.necklace", "name": "Necklace", "description": "Gold necklace", "obtainable": true },
+    "item.flower":   { "id": "item.flower", "name": "Flower", "description": "Red flower", "obtainable": true },
+    "item.fish":     { "id": "item.fish", "name": "Fish", "description": "Very little fish", "obtainable": true },
+    "item.potion":   { "id": "item.potion", "name": "Unknown Potion", "description": "This green potion seems strange.", "obtainable": true },
+    "item.sword":    { "id": "item.sword", "name": "Sword", "description": "Long, sharp sword", "obtainable": true },
+    "item.gold":     { "id": "item.gold", "name": "Gold", "description": "You are rich!", "obtainable": true }
   },
   "npcs": {
     "npc.guard":       { "name": "Village Guard", "hp": 40, "hostile": false, "dialogue": ["Stay safe, traveler."] },

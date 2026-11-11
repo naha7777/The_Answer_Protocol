@@ -11,7 +11,7 @@ type Client struct {
 	name		string
 	group		*Group
 	room		*game.Room
-	inventory	map[string]*game.Item
+	inventory	[]*game.Item
 }
 
 func (c *Client) Send(format string, a ...any) {

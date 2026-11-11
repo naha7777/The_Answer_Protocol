@@ -47,8 +47,8 @@ During developpement, we needed to add more error codes :
 | 101 | YOU_HAVE_A_NAME | Try to connect twice without deconnection |
 | 109 | REQUIRE_INVITATION | If a client try to join a group without invitation |
 | 110 | NO_CHAT_SPECIFIED | If a client don't choose a specific chat |
-| 111 | INVALID_DIRECTION | If a client don't move on north, south, est or west |
-| 112 | NO_ROOM_IN_THIS_DIRECTION | If a client write a valid direction but the room doesn't have a path to this direction |
+| 115 | MISSING_ITEM | If a client try to take nothing |
+| 116 | ITEM_NOT_OBTAINABLE | If a client try to take an non obtainable item |
 
 ## Resources
 

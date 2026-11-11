@@ -24,6 +24,7 @@ type RoomData struct {
 }
 
 type ItemData struct {
+	Id			string	`json:"id"`
 	Name		string	`json:"name"`
 	Description	string	`json:"description"`
 	Obtainable	bool	`json:"obtainable"`
