@@ -41,13 +41,7 @@ func handleClient(connection net.Conn, dispatcher *Dispatcher,
 	}
 }
 
-func Server() {
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error listening:", err)
-		return
-	}
-	defer listener.Close()
+func Server(listener net.Listener) {
 
 	world, err := game.LoadWorld("data/world.json")
 	if err != nil {
