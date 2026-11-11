@@ -1,23 +1,51 @@
 package server
 
-import (
-	"fmt"
-)
+import "strings"
 
 func (d *Dispatcher) handleAttack(client *Client, args []string) {
-	fmt.Print("a")
-}
+	target := strings.ToUpper(strings.Join(args, " "))
+	damage := 10
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
-func (d *Dispatcher) handleDefend(client *Client, args []string) {
-	fmt.Print("a")
-}
-
-func (d *Dispatcher) handleFlee(client *Client, args []string) {
-	fmt.Print("a")
-}
-
-func (d *Dispatcher) handleUseItem(client *Client, args []string) {
-	fmt.Print("a")
+	for _, npcs := range client.room.NPCs {
+		if strings.ToUpper(npcs) == target {
+			if  d.world.NPCs[npcs].Hp > 0 {
+				if d.world.NPCs[npcs].Hostile {
+				client.status = "combat"
+				if d.world.NPCs[npcs].Hp > 0 {
+					d.world.NPCs[npcs].Hp -= damage
+				}
+				if d.world.NPCs[npcs].Hp < 0 {
+					d.world.NPCs[npcs].Hp = 0
+				}
+				client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+				return
+				} else {
+					client.Send("ERR 405 NPC_NOT_HOSTILE")
+					return
+				}
+			}
+		} else if target == strings.ToUpper(d.world.NPCs[npcs].Name) {
+			if d.world.NPCs[npcs].Hp > 0 {
+				if d.world.NPCs[npcs].Hostile {
+				client.status = "combat"
+				if d.world.NPCs[npcs].Hp > 0 {
+					d.world.NPCs[npcs].Hp -= damage
+				}
+				if d.world.NPCs[npcs].Hp < 0 {
+					d.world.NPCs[npcs].Hp = 0
+				}
+				client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+				return
+				} else {
+					client.Send("ERR 405 NPC_NOT_HOSTILE")
+					return
+				}
+			}
+		}
+	}
+	client.Send("ERR 404 NPC_NOT_FOUND")
 }
 
 func (d *Dispatcher) handleStatus(client *Client, args []string) {

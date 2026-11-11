@@ -46,11 +46,7 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["STATUS"] = d.handleStatus
 	d.commands["QUEST"] = d.handleQuest
 	d.commands["QUESTS"] = d.handleQuests
-	d.commands["DEFEND"] = d.handleDefend
-	d.commands["FLEE"] = d.handleFlee
-	d.commands["USE_ITEM"] = d.handleUseItem
 	d.commands["COMPLETE_QUEST"] = d.handleCompleteQuest
-	d.commands["ABANDON_QUEST"] = d.handleAbandonQuest
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {

@@ -15,7 +15,3 @@ func (d *Dispatcher) handleQuests(client *Client, args []string) {
 func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 	fmt.Print("a")
 }
-
-func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
-	fmt.Print("a")
-}
