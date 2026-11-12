@@ -9,7 +9,7 @@ import (
 	"the_answer_protocol/game"
 )
 
-func handleClient(connection net.Conn, dispatcher *Dispatcher,
+func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	world *game.World) {
 
 	defer connection.Close()
@@ -57,6 +57,6 @@ func Server(listener net.Listener) {
 			fmt.Fprintln(os.Stderr, "Error accepting:", err)
 			continue
 		}
-		go handleClient(connection, dispatcher, world)
+		go HandleConnection(connection, dispatcher, world)
 	}
 }

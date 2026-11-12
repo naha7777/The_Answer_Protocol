@@ -44,10 +44,10 @@ func NewChat(w fyne.Window) *Chat {
 	c.scroll = container.NewScroll(c.messages)
 	c.entry = widget.NewEntry()
 	c.entry.SetPlaceHolder("Global chat...")
-	// Send with enter key 
+	// Send with enter key
 	c.entry.OnSubmitted = func(string) {c.send()}
 
-	// Chat Buttons 
+	// Chat Buttons
 	cbut_glob := widget.NewButton("Global", func() {c.setChannel("Global", lime)})
 	cbut_room := widget.NewButton("Room", func() {c.setChannel("Room", cyan)})
 	cbut_grp := widget.NewButton("Group", func() {

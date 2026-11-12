@@ -28,7 +28,7 @@ var (
 // |				  Display				   |
 // \===========================================/
 
-func Gui() {
+func main() {
 	conn, err := net.Dial("tcp", "localhost:8080")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error listening:", err)
@@ -46,7 +46,7 @@ func Gui() {
 		}
 	})
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
-	background := canvas.NewImageFromFile("VillageMap.png")
+	background := canvas.NewImageFromFile("./data/VillageMap.png")
 	background.FillMode = canvas.ImageFillStretch
 
 	btnExit := widget.NewButton("EXIT", func() { fmt.Fprintln(conn, "QUIT") })

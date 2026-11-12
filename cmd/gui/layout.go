@@ -94,7 +94,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 }
 
 func newButtonContainer(app fyne.App) *fyne.Container {
-	
+
 	newBtn := func(label string, action func()) *widget.Button {
 		btn := widget.NewButton(label, action)
 		btn.Importance = widget.LowImportance

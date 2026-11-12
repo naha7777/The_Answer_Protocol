@@ -21,7 +21,7 @@ func popup(w fyne.Window, txt string) {
 
 	popup := widget.NewPopUp(widget.NewLabel(txt), w.Canvas())
 	popup.ShowAtPosition(fyne.Position{X: width/2, Y: 3*(height/4)})
-	
+
 	time.AfterFunc(3*time.Second, func() {
 			fyne.Do(func() {
 				popup.Hide()
