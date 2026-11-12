@@ -6,8 +6,8 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 )
 
 // /===========================================\
@@ -16,8 +16,8 @@ import (
 
 // Colors
 var (
-	lime = color.RGBA{R: 33, G: 222, B: 20, A: 255}
-	cyan = color.RGBA{R: 17, G: 233, B: 237, A: 255}
+	lime   = color.RGBA{R: 33, G: 222, B: 20, A: 255}
+	cyan   = color.RGBA{R: 17, G: 233, B: 237, A: 255}
 	orange = color.RGBA{R: 237, G: 123, B: 17, A: 255}
 )
 
@@ -29,7 +29,12 @@ func main() {
 	a := app.New()
 	w := a.NewWindow("TAP")
 	w.Resize(fyne.NewSize(1920, 1080))
-	
+
+	// TEMP inventory test
+	str := "[item.herbs, item.herbs, item.fish, item.herbs, item.herbs, item.fish, item.fish, item.fish]"
+	Str_to_inv(str, w)
+	//
+
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
 			a.Quit()
@@ -43,7 +48,7 @@ func main() {
 	chat := NewChat(w)
 
 	btnContainer := newButtonContainer(a, game)
-	hudContent := container.New(&Hud{}, btnContainer, chat.Content()) 
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
 	FullContent := container.NewStack(
 		background,
 		overlay,
