@@ -6,6 +6,21 @@ _This project has been created as part of the 42 curriculum by anacharp, frrenau
 
 ## Instructions
 
+Server:
+```bash
+go run ./cmd/server
+```
+
+GUI:
+```bash
+go run ./cmd/gui
+```
+
+CLI:
+```bash
+go run ./cmd/cli
+```
+
 ## Architecture
 section explaining your server design choices (dispatcher/router vs inline handling, concurrency model, etc.)
 
