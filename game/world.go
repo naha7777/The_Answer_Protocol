@@ -13,12 +13,13 @@ type World struct {
 }
 
 type Room struct {
-	Id		string
-	Name	string
-	Exits	map[string]string
-	Items	[]string
-	NPCs	[]string
-	Players	[]string
+	Id			string
+	Name		string
+	Description	string
+	Exits		map[string]string
+	Players		[]string
+	Items		[]string
+	NPCs		[]string
 }
 
 type Item struct {
@@ -54,6 +55,7 @@ func LoadWorld(path string) (*World, error) {
 	room_lst := make(map[string]*Room, len(w.Rooms))
 	for str, room := range w.Rooms {
 		r := &Room{Id: room.Id, Name: room.Name, Exits: room.Exits,
+				   Description: room.Description,
 				   Items: room.Items, NPCs: room.NPCs,
 				   Players: []string{}}
 		room_lst[str] = r

@@ -21,7 +21,7 @@ func (d *Dispatcher) handleLook(client *Client, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: %s", err)
 		return
 	}
-	client.Send("OK %s", jsonData)
+	client.Send(`OK {"room": %s}`, jsonData)
 }
 
 func (d *Dispatcher) handleInventory(client *Client, args []string) {
