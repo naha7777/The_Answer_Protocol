@@ -7,11 +7,12 @@ import (
 )
 
 type WorldData struct {
-	Start	string				`json:"start"`
-	Respawn	string				`json:"respawn"`
-	Rooms	map[string]RoomData	`json:"rooms"`
-	Items	map[string]ItemData	`json:"items"`
-	NPCs	map[string]NPCData	`json:"npcs"`
+	Start	string					`json:"start"`
+	Respawn	string					`json:"respawn"`
+	Rooms	map[string]RoomData		`json:"rooms"`
+	Items	map[string]ItemData		`json:"items"`
+	NPCs	map[string]NPCData		`json:"npcs"`
+	Quests	map[string]QuestData	`json:"quests"`
 }
 
 type RoomData struct {
@@ -35,6 +36,14 @@ type NPCData struct {
 	HP			int			`json:"hp"`
 	Hostile		bool		`json:"hostile"`
 	Dialogue	[]string	`json:"dialogue"`
+	Quest		string		`json:"quest"`
+}
+
+type QuestData struct {
+	Id			string		`json:"quest_id"`
+	Description	string		`json:"description"`
+	Reward		string		`json:"reward"`
+	Status		string		`json:"status"`
 }
 
 func extractor(path string) (*WorldData, error) {

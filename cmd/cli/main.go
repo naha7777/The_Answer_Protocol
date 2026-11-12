@@ -7,6 +7,11 @@ import (
 	"bufio"
 )
 
+var Reset = "\033[0m"
+var Red = "\033[31m"
+var Green = "\033[32m"
+var Cyan = "\033[36m"
+
 func main() {
 	c, err := client.Dial("localhost:8080")
 	if err != nil {
@@ -17,7 +22,16 @@ func main() {
 
 	go func() {
 		for msg := range c.Messages() {
-			fmt.Println(msg.Raw)
+			switch msg.Kind {
+			case "EVT":
+				fmt.Println(Green + msg.Raw + Reset)
+			case "ERR":
+				fmt.Println(Red + msg.Raw + Reset)
+			case "OK":
+				fmt.Println(Cyan + msg.Raw + Reset)
+			default:
+				fmt.Println(msg.Raw)
+			}
 		}
 		fmt.Println("Server disconnected")
 		os.Exit(0)
