@@ -21,7 +21,6 @@ import (
 // struct for the HUD needed to implement the fyne layout Interface
 // /!\ Need at least 4 widget
 type Hud struct {
-
 }
 
 // /===========================================\
@@ -31,70 +30,48 @@ type Hud struct {
 // Need to implement the Layout Interface with MinSize and Layout func
 
 func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	// if len(objects) < 4 {
-	// 	fmt.Println("Error: Hud needs 4 arguments")
-	// }
-	// w, h := float32(0), float32(0)
-	// for _, o := range objects {
-	// 	childSize := o.MinSize()
 
-	// 	w += childSize.Width
-	// 	h += childSize.Height
-	// }
-	// return fyne.NewSize(w, h)
-	if len(objects) < 4 {
-		return fyne.NewSize(0,0)
+	if len(objects) < 2 {
+		return fyne.NewSize(0, 0)
 	}
-	minW := objects[2].MinSize().Width + 200
-	minH := objects[0].MinSize().Height + objects[2].MinSize().Height + 30
+	btnMin := objects[0].MinSize()
+	chatMin := objects[1].MinSize()
+
+	margin := float32(10)
+	minW := btnMin.Width + chatMin.Width + 3*margin
+	minH := btnMin.Height + 2*margin
 	return fyne.NewSize(minW, minH)
 }
 
 func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
-	if len(objects) < 4 {
+	if len(objects) < 2 {
 		return
 	}
 	w, h := containerSize.Width, containerSize.Height
 
-	// for _, o := range objects {
-	// 	o.Resize(o.MinSize())
-	// }
-
-	// objects[0].Move(fyne.NewPos(0, 0))
-	// objects[1].Move(fyne.NewPos(w - objects[1].MinSize().Width, 0))
-	// objects[2].Move(fyne.NewPos(0, h-objects[2].MinSize().Height))
-	// objects[3].Move(fyne.NewPos(w-objects[3].MinSize().Width, h-objects[3].MinSize().Height))
 	margin := float32(10)
 
-	exitSize := objects[0].MinSize()
-	objects[0].Resize(exitSize)
-	objects[0].Move(fyne.NewPos(margin, margin))
-
-	txtSize := objects[1].MinSize()
-	objects[1].Resize(txtSize)
-	objects[1].Move(fyne.NewPos(w-txtSize.Width-margin, margin))
-
-	btnSize := objects[2].MinSize()
+	btnSize := objects[0].MinSize()
 	btnX := margin
 	btnY := h - btnSize.Height - margin
-	objects[2].Resize(btnSize)
-	objects[2].Move(fyne.NewPos(btnX, btnY))
+	objects[0].Resize(btnSize)
+	objects[0].Move(fyne.NewPos(btnX, btnY))
 
 	chatX := btnX + btnSize.Width + margin
-	chatWidth := w - chatX - margin
+	chatWidth := (w - chatX - margin) / 2
 	if chatWidth < 50 {
 		chatWidth = 50
 	}
 
-	chatHeight := containerSize.Height / 5
-	chatY := h - chatHeight - margin
+	chatHeight := btnSize.Height
+	chatY := btnY
 
-	objects[3].Resize(fyne.NewSize(chatWidth, chatHeight))
-	objects[3].Move(fyne.NewPos(chatX, chatY))
+	objects[1].Resize(fyne.NewSize(chatWidth, chatHeight))
+	objects[1].Move(fyne.NewPos(chatX, chatY))
 }
 
 func newButtonContainer(app fyne.App) *fyne.Container {
-	
+
 	newBtn := func(label string, action func()) *widget.Button {
 		btn := widget.NewButton(label, action)
 		btn.Importance = widget.LowImportance
