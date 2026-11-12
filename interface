@@ -1,0 +1,64 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"net"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/canvas"
+)
+
+type ClientTCP struct {
+	conn		net.Conn
+	incoming	chan string
+}
+
+type InterfaceTAP struct {
+	window         fyne.Window
+	clientTCP      *ClientTCP
+	background     *canvas.Image // <--- Référence vers l'image de fond
+	chatView       *widget.Entry
+	logView        *widget.Entry
+	roomDetails    *widget.Label
+	playerCounters *widget.Label
+	inventoryList  *widget.List
+	inventoryItems []string
+}
+
+func NewClientTCP(address string) (*ClientTCP, error) {
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &ClientTCP{
+		conn:	conn,
+		incoming:	make(chan string),
+	}
+
+	// goroutine d'ecoute
+	go client.listenServer()
+
+	return client, nil
+}
+
+func (c *ClientTCP) listenServer() {
+	reader := bufio.NewReader(c.conn)
+	for {
+		message, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Server deconnexion...")
+			break
+		}
+
+		// envoi du message recu vers le GUI
+		c.incoming <- message
+	}
+}
+
+// envoi d'un commande vers le server
+func (c *ClientTCP) sendCommand(cmd string) {
+	fmt.Fprintf(c.conn, cmd+"\n")
+}

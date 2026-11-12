@@ -6,7 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	// "fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/canvas"
 )
@@ -31,23 +30,19 @@ func main() {
 	w := a.NewWindow("TAP")
 	w.Resize(fyne.NewSize(1920, 1080))
 	
-	// Key hook for esc to close the app
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
 			a.Quit()
 		}
 	})
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
-	background := canvas.NewImageFromFile("VillageMap.png")
+	background := canvas.NewImageFromFile("pictures/Village_Map.png")
 	background.FillMode = canvas.ImageFillStretch
 
-	// btnExit := widget.NewButton("EXIT", func() { a.Quit() })
-	// btnExit.Importance = widget.HighImportance
-
-	// txt1 := widget.NewLabel("topl")
+	game := NewGame(w, background)
 	chat := NewChat(w)
 
-	btnContainer := newButtonContainer(a)
+	btnContainer := newButtonContainer(a, game)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content()) 
 	FullContent := container.NewStack(
 		background,

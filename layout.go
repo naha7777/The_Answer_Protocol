@@ -71,7 +71,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	objects[1].Move(fyne.NewPos(chatX, chatY))
 }
 
-func newButtonContainer(app fyne.App) *fyne.Container {
+func newButtonContainer(app fyne.App, g *Game) *fyne.Container {
 	
 	newBtn := func(label string, action func()) *widget.Button {
 		btn := widget.NewButton(label, action)
@@ -92,13 +92,14 @@ func newButtonContainer(app fyne.App) *fyne.Container {
 	butWho := newBtn("WHO", func() { fmt.Println("WHO") })
 	butGroup := newBtn("GROUP", func() { fmt.Println("GROUP") })
 	butQuit := widget.NewButton("QUIT", func() { app.Quit() })
+	butMap := newBtn("MAP", func() { g.ToggleMap() })
 	butQuit.Importance = widget.LowImportance
 
 	// Cardinals Buttons
-	butNorth := newBtn("NORTH", func() { fmt.Println("NORTH") })
-	butSouth := newBtn("SOUTH", func() { fmt.Println("SOUTH") })
-	butEast := newBtn("EAST", func() { fmt.Println("EAST") })
-	butWest := newBtn("WEST", func() { fmt.Println("WEST") })
+	butNorth := newBtn("NORTH", func() { g.Move("north") })
+	butSouth := newBtn("SOUTH", func() { g.Move("south") })
+	butEast := newBtn("EAST", func() { g.Move("east") })
+	butWest := newBtn("WEST", func() { g.Move("west") })
 
 	butsActions := container.NewGridWithColumns(3,
 		butLook, butMove, butTake,
@@ -109,7 +110,7 @@ func newButtonContainer(app fyne.App) *fyne.Container {
 
 	butsCardinals := container.NewGridWithColumns(3,
 		widget.NewLabel(""), butNorth, widget.NewLabel(""),
-		butWest, widget.NewLabel(""), butEast,
+		butWest, butMap, butEast,
 		widget.NewLabel(""), butSouth, widget.NewLabel(""),
 	)
 
