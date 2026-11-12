@@ -5,8 +5,8 @@ import (
 )
 
 func (d *Dispatcher) handleChat(client *Client, args []string) {
-	if len(args) == 0 {
-		client.Send("ERR 117 MISSING_MESSAGE")
+	if len(args) <= 1 {
+		client.Send("ERR 08 MISSING_MESSAGE")
 		return
 	}
 	message := strings.Join(args[1:], " ")
@@ -50,7 +50,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 			client.Send("ERR 401 NOT_IN_GROUP")
 		}
 	default:
-		client.Send("ERR 110 NO_CHAT_SPECIFIED")
+		client.Send("ERR 06 NO_CHAT_SPECIFIED")
 		return
 	}
 }

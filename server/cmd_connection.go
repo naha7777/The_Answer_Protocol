@@ -6,11 +6,11 @@ import (
 
 func (d *Dispatcher) handleConnect(client *Client, args []string) {
 	if client.name != "" {
-		client.Send("ERR 101 YOU_HAVE_A_NAME")
+		client.Send("ERR 10 YOU_HAVE_A_NAME")
 		return
 	}
 	if len(args) == 0 {
-		client.Send("ERR 102 THIS_IS_NOT_A_NAME")
+		client.Send("ERR 09 THIS_IS_NOT_A_NAME")
 		return
 	}
 	username := strings.Join(args, " ")

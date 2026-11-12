@@ -17,27 +17,26 @@ section explaining your server design choices (dispatcher/router vs inline handl
 |---|---|---|---|---|
 | *(on connect)* | `OK hello proto=1` | | | done |
 | any command before `CONNECT` | | `ERR 100 YOU_MUST_BE_CONNECTED` | | done |
-| `CONNECT <name>` | `OK connected` | `ERR 101 YOU_HAVE_A_NAME`, `ERR 102 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE` | none | done |
+| `CONNECT <name>` | `OK connected` | `ERR 10 YOU_HAVE_A_NAME`, `ERR 09 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE` | none | done |
 | `QUIT` | `OK bye` | | none | partial |
-| `LOOK` | `OK {"room": {...}}` | | | partial |
+| `LOOK` | `OK {"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | | partial |
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none | partial |
-| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 115 MISSING_ITEM`, `ERR 116 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | none | done |
-| `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 115 MISSING_ITEM`, `ERR 404 ITEM_NOT_FOUND` | none | done |
+| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | none | done |
+| `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none | done |
 | `INVENTORY` | `OK [item.a item.b]` | | | partial |
 | `TALK <npc id or name>` | `OK <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | | partial |
 | `ATTACK <npc id or name>` | `OK {'attacker_hp': N, 'target_hp': N, 'damage': N, 'status': S}` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none | partial |
 | `STATUS` | `OK {'hp': N, 'max_hp': N, 'status': S}` | | | done |
 | `WHO` | `OK players=<n>` | | | partial |
-| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 110 NO_CHAT_SPECIFIED` | `<name>: <msg>` to others | partial |
-| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 110 NO_CHAT_SPECIFIED` | `<name>: <msg>` to others in room | partial |
-| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 110 NO_CHAT_SPECIFIED` | `<name>: <msg>` to group members | partial |
+| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others | partial |
+| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room | partial |
+| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GROUP CHAT <username> <message>` to group members | partial |
 | `GROUP CREATE` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
-| `GROUP INVITE <user>` | `OK` | `ERR 107 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE` to the invited user | partial |
-| `GROUP JOIN <leader>` | `OK group=<id>` | `ERR 104 MISSING_ARGUMENT=LEADER_NAME`, `ERR 402 ALREADY_IN_GROUP`, `ERR 107 CANT_FIND_LEADER`, `ERR 108 THIS_USER_IS_NOT_A_LEADER`, `ERR 109 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members | partial |
+| `GROUP INVITE <user>` | `OK` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE` to the invited user | partial |
+| `GROUP JOIN <leader>` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members | partial |
 | `GROUP LEAVE` | `OK` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members | partial |
-| `QUEST`, `QUESTS`, `COMPLETE_QUEST` | | | | not implemented |
-| `DEFEND`, `FLEE`, `USE_ITEM` | | | | not implemented |
-| unknown command | `Unknown command: <cmd>` | | | to fix |
+| `QUEST`, `QUESTS` | | | | not implemented |
+| UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
 
 ### Error codes
 
@@ -50,18 +49,15 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 404 | ITEM_NOT_FOUND / NPC_NOT_FOUND | RFC |
 | 405 | NPC_NOT_HOSTILE | RFC |
 | 01  | UNKNOWN_COMMAND | **custom (not in RFC)** |
-| 100 | YOU_MUST_BE_CONNECTED | **custom (not in RFC)** |
-| 107 | CANT_FIND_USER | **custom (not in RFC)** |
-| 108 | THIS_USER_IS_NOT_A_LEADER | **custom (not in RFC)** |
-| 104 | MISSING_ARGUMENT=LEADER_NAME | **custom (not in RFC)** |
-| 102 | THIS_IS_NOT_A_NAME | **custom (not in RFC)** |
-| 101 | YOU_HAVE_A_NAME | **custom (not in RFC)** |
-| 109 | REQUIRE_INVITATION | **custom (not in RFC)** |
-| 110 | NO_CHAT_SPECIFIED | **custom (not in RFC)** |
-| 115 | MISSING_ITEM | **custom (not in RFC)** |
-| 116 | ITEM_NOT_OBTAINABLE | **custom (not in RFC)** |
-| 117 | MISSING_MESSAGE | **custom (not in RFC)** |
-| 118 | MISSING_PLAYER_NAME | **custom (not in RFC)** |
+| 02 | YOU_MUST_BE_CONNECTED | **custom (not in RFC)** |
+| 03 | CANT_FIND_USER | **custom (not in RFC)** |
+| 04 | THIS_USER_IS_NOT_A_LEADER | **custom (not in RFC)** |
+| 05 | REQUIRE_INVITATION | **custom (not in RFC)** |
+| 06 | NO_CHAT_SPECIFIED | **custom (not in RFC)** |
+| 07 | ITEM_NOT_OBTAINABLE | **custom (not in RFC)** |
+| 08 | MISSING_MESSAGE | **custom (not in RFC)** |
+| 09 | THIS_IS_NOT_A_NAME | **custom (not in RFC)** |
+| 10 | YOU_HAVE_A_NAME | **custom (not in RFC)** |
 
 ### Events
 

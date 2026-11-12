@@ -33,7 +33,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		} else if client.name != "" {
 			dispatcher.Dispatch(client, scanner.Text())
 		} else {
-			client.Send("ERR 100 YOU_MUST_BE_CONNECTED")
+			client.Send("ERR 02 YOU_MUST_BE_CONNECTED")
 		}
 	}
 	if err := scanner.Err(); err != nil {

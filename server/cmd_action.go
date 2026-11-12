@@ -8,7 +8,7 @@ import (
 
 func (d *Dispatcher) handleTake(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 115 MISSING_ITEM")
+		client.Send("ERR 404 ITEM_NOT_FOUND")
 		return
 	}
 	query := strings.ToUpper(strings.Join(args, " "))
@@ -26,7 +26,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 			continue
 		}
 		if !item.Obtainable {
-			client.Send("ERR 116 ITEM_NOT_OBTAINABLE")
+			client.Send("ERR 07 ITEM_NOT_OBTAINABLE")
 			return
 		}
 		client.room.Items = slices.Delete(client.room.Items, i, i+1)
@@ -39,7 +39,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 
 func (d *Dispatcher) handleDrop(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 115 MISSING_ITEM")
+		client.Send("ERR 404 ITEM_NOT_FOUND")
 		return
 	}
 	query := strings.ToUpper(strings.Join(args, " "))
@@ -70,7 +70,7 @@ func (d *Dispatcher) handleMove(client *Client, args []string) {
 		Move("NORTH", client, d)
 	case "SOUTH":
 		Move("SOUTH", client, d)
-	case "EST":
+	case "EAST":
 		Move("EAST", client, d)
 	case "WEST":
 		Move("WEST", client, d)

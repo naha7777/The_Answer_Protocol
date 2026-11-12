@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"image/color"
+	"os"
 	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
@@ -19,8 +19,8 @@ import (
 
 // Colors
 var (
-	lime = color.RGBA{R: 33, G: 222, B: 20, A: 255}
-	cyan = color.RGBA{R: 17, G: 233, B: 237, A: 255}
+	lime   = color.RGBA{R: 33, G: 222, B: 20, A: 255}
+	cyan   = color.RGBA{R: 17, G: 233, B: 237, A: 255}
 	orange = color.RGBA{R: 237, G: 123, B: 17, A: 255}
 )
 
@@ -38,7 +38,7 @@ func main() {
 
 	a := app.New()
 	w := a.NewWindow("TAP")
-	w.Resize(fyne.NewSize(1920, 1080))
+	w.Resize(fyne.NewSize(1920, 040))
 
 	// Key hook for esc to close the app
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
