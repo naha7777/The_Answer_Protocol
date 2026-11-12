@@ -38,7 +38,7 @@ func main() {
 
 	a := app.New()
 	w := a.NewWindow("TAP")
-	w.Resize(fyne.NewSize(1920, 040))
+	w.Resize(fyne.NewSize(1920, 1080))
 
 	// Key hook for esc to close the app
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
@@ -50,6 +50,7 @@ func main() {
 	background := canvas.NewImageFromFile("./data/VillageMap.png")
 	background.FillMode = canvas.ImageFillStretch
 
+	// envoie de commandes avec conn.Send
 	btnExit := widget.NewButton("EXIT", func() {
 		if err := conn.Send("QUIT"); err != nil {
 			fmt.Fprintln(os.Stderr, "901 SEND_FAILED")
@@ -79,6 +80,7 @@ func main() {
 			line := msg.Raw
 			fyne.Do(func() {
 				logLabel.SetText(logLabel.Text + line + "\n")
+				fmt.Fprintln(os.Stdout, logLabel.Text + line + "\n")
 			})
 		}
 		fyne.Do(func() {
