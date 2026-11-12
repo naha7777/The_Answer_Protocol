@@ -7,8 +7,6 @@ func (d *Dispatcher) removeClient(client *Client) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	client.Send("OK bye")
-	delete(d.clients, client.name)
-	client.name = ""
 	if client.group != nil {
 		delete(client.group.members, client.name)
 		client.group = nil
@@ -23,6 +21,8 @@ func (d *Dispatcher) removeClient(client *Client) {
 		remove(client.name, client.room.Players)
 		client.room = nil
 	}
+	delete(d.clients, client.name)
+	client.name = ""
 }
 
 func remove(name string, place []string) []string {

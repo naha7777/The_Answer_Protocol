@@ -58,15 +58,15 @@ func (d *Dispatcher) handleStatus(client *Client, args []string) {
 }
 
 func ChangeStatus(client *Client) {
-	if client.hp <= client.hp_max && client.hp >= (80%*&client.hp_max) {
+	if client.hp <= client.hp_max && (client.hp*100/client.hp_max >= 80) {
 		client.status = "very healthy"
-	} else if client.hp < (80%*&client.hp_max) && client.hp >= (60%*&client.hp_max) {
+	} else if (client.hp*100/client.hp_max < 80) && (client.hp*100/client.hp_max >= 60) {
 		client.status = "good"
-	} else if client.hp < (60%*&client.hp_max) && client.hp >= (40%*&client.hp_max) {
+	} else if (client.hp*100/client.hp_max < 60) && (client.hp*100/client.hp_max >= 40) {
 		client.status = "mid"
-	} else if client.hp < (40%*&client.hp_max) && client.hp >= (20%*&client.hp_max) {
+	} else if (client.hp*100/client.hp_max < 40) && (client.hp*100/client.hp_max >= 20) {
 		client.status = "suffering"
-	} else if client.hp < (20%*&client.hp_max) && client.hp > 0 {
+	} else if (client.hp*100/client.hp_max < 20) && client.hp > 0 {
 		client.status = "almost dead"
 	} else if client.hp == 0 {
 		client.status = "dead"

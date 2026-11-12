@@ -68,6 +68,6 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	if function, exists := d.commands[cmd]; exists {
 		function(client, args)
 	} else {
-		client.Send("Unknown command: %s", cmd)
+		client.Send("ERR 01 UNKNOWN_COMMAND: %s", cmd)
 	}
 }

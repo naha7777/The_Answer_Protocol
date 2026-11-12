@@ -45,6 +45,10 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 		client.Send("ERR 107 CANT_FIND_LEADER")
 		return
 	}
+	if d.groups[leader] == nil {
+		client.Send("ERR 108 THIS_USER_IS_NOT_A_LEADER")
+		return
+	}
 	l_group := d.groups[leader]
 	if l_group.leader != leader {
 		client.Send("ERR 108 THIS_USER_IS_NOT_A_LEADER")
@@ -55,7 +59,7 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 		return
 	}
 	for _, c := range l_group.members {
-		c.Send("EVT GROUP JOIN")
+		c.Send("EVT GROUP JOIN %s", client.name)
 	}
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
@@ -76,7 +80,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	client.group = nil
 	client.Send("OK")
 	for _, c := range current_group.members {
-		c.Send("EVT GROUP LEAVE")
+		c.Send("EVT GROUP LEAVE %s", client.name)
 	}
 	if len(current_group.members) > 0 {
 		for _, m := range current_group.members {
@@ -89,8 +93,16 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
+	if len(args) == 0 {
+		client.Send("ERR 118 MISSING_PLAYER_NAME")
+		return
+	}
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	if client.group == nil {
+		client.Send("ERR 401 NOT_IN_GROUP")
+		return
+	}
 	username := strings.Join(args, " ")
 	if _, exists := d.clients[username]; !exists {
 		client.Send("ERR 107 CANT_FIND_USER")
@@ -107,7 +119,7 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	client.Send("OK")
 	for _, c := range d.clients {
 		if c.name == username {
-			c.Send("EVT GROUP INVITE")
+			c.Send("EVT GROUP INVITE %s", client.name)
 		}
 	}
 }

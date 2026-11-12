@@ -49,6 +49,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 402 | ALREADY_IN_GROUP | RFC |
 | 404 | ITEM_NOT_FOUND / NPC_NOT_FOUND | RFC |
 | 405 | NPC_NOT_HOSTILE | RFC |
+| 01  | UNKNOWN_COMMAND | **custom (not in RFC)** |
 | 100 | YOU_MUST_BE_CONNECTED | **custom (not in RFC)** |
 | 107 | CANT_FIND_USER | **custom (not in RFC)** |
 | 108 | THIS_USER_IS_NOT_A_LEADER | **custom (not in RFC)** |
@@ -59,6 +60,8 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 110 | NO_CHAT_SPECIFIED | **custom (not in RFC)** |
 | 115 | MISSING_ITEM | **custom (not in RFC)** |
 | 116 | ITEM_NOT_OBTAINABLE | **custom (not in RFC)** |
+| 117 | MISSING_MESSAGE | **custom (not in RFC)** |
+| 118 | MISSING_PLAYER_NAME | **custom (not in RFC)** |
 
 ### Events
 
@@ -69,7 +72,6 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | Group leave | `EVT GROUP LEAVE` | `EVT GROUP LEAVE <username>` |
 | Chat | `<name>: <msg>` | `EVT <SCOPE> CHAT <username> <message>` |
 | Room presence | not sent | `EVT ROOM PRESENCE ENTER/LEAVE <username>` |
-| Stats | not sent | `EVT STATS players=<n>` |
 
 ## Combat System
 section describing your turn-based combat mechanics, damage formulas, initiative order, and additional combat commands (DEFEND, FLEE, etc.).

@@ -71,7 +71,7 @@ func (d *Dispatcher) handleMove(client *Client, args []string) {
 	case "SOUTH":
 		Move("SOUTH", client, d)
 	case "EST":
-		Move("EST", client, d)
+		Move("EAST", client, d)
 	case "WEST":
 		Move("WEST", client, d)
 	default:
@@ -86,11 +86,25 @@ func Move(direction string, client *Client, d *Dispatcher) {
 		if strings.ToUpper(k) == direction {
 			for _, val := range d.world.Rooms {
 				if v == val.Id {
+					for _, c := range d.clients {
+						if slices.Contains(client.room.Players, c.name) {
+							if c.name != client.name {
+								c.Send("EVT ROOM PRESENCE LEAVE %s", client.name)
+							}
+						}
+					}
 					client.room.Players = remove(client.name, client.room.Players)
 					client.room = val
 					client.room.Players = append(client.room.Players, client.name)
 					client.Send("OK room=%s", v)
 					find = true
+					for _, c := range d.clients {
+						if slices.Contains(client.room.Players, c.name) {
+							if c.name != client.name {
+								c.Send("EVT ROOM PRESENCE ENTER %s", client.name)
+							}
+						}
+					}
 					return
 				}
 			}

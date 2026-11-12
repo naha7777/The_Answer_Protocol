@@ -5,6 +5,10 @@ import (
 )
 
 func (d *Dispatcher) handleChat(client *Client, args []string) {
+	if len(args) == 0 {
+		client.Send("ERR 117 MISSING_MESSAGE")
+		return
+	}
 	message := strings.Join(args[1:], " ")
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -14,7 +18,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 			if client == c {
 				c.Send("OK")
 			} else {
-				c.Send("%s: %s", client.name, message)
+				c.Send("EVT GLOBAL CHAT %s %s", client.name, message)
 			}
 		}
 	case "GROUP":
@@ -23,7 +27,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 				if client == c {
 					c.Send("OK")
 				} else {
-					c.Send("%s: %s", client.name, message)
+					c.Send("EVT GROUP CHAT %s %s", client.name, message)
 				}
 			}
 		} else {
@@ -37,7 +41,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 				} else {
 					for _, c := range d.clients {
 						if c.name == p {
-							c.Send("%s: %s", client.name, message)
+							c.Send("EVT ROOM CHAT %s %s", client.name, message)
 						}
 					}
 				}
