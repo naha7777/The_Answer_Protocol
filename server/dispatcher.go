@@ -9,11 +9,11 @@ import (
 type CommandFunc func(client *Client, args []string)
 
 type Dispatcher struct {
-	mu       sync.Mutex
-	commands map[string]CommandFunc
-	clients  map[string]*Client
-	groups   map[string]*Group
-	world    *game.World
+	mu			sync.Mutex
+	commands	map[string]CommandFunc
+	clients		map[string]*Client
+	groups		map[string]*Group
+	world		*game.World
 }
 
 func NewDispatcher(w *game.World) *Dispatcher {

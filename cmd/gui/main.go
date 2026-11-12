@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"image/color"
-	"net"
 	"os"
+	"image/color"
+	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/widget"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 // /===========================================\
@@ -29,11 +29,12 @@ var (
 // \===========================================/
 
 func main() {
-	conn, err := net.Dial("tcp", "localhost:8080")
+	conn, err := client.Dial("localhost:8080")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error listening:", err)
-		return
+		fmt.Fprintln(os.Stderr, "Can't connect:", err)
+		os.Exit(1)
 	}
+	defer conn.Close()
 
 	a := app.New()
 	w := a.NewWindow("TAP")
@@ -49,21 +50,40 @@ func main() {
 	background := canvas.NewImageFromFile("./data/VillageMap.png")
 	background.FillMode = canvas.ImageFillStretch
 
-	btnExit := widget.NewButton("EXIT", func() { fmt.Fprintln(conn, "QUIT") })
+	btnExit := widget.NewButton("EXIT", func() { conn.Send("QUIT") })
 	btnExit.Importance = widget.HighImportance
 
-	txt1 := widget.NewLabel("topl")
+	logLabel := widget.NewLabel("")
+	logLabel.Wrapping = fyne.TextWrapWord
+	logView := container.NewVScroll(logLabel)
+
+	// ajouter conn en parametre de la fonction
 	chat := NewChat(w)
 
+	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(a)
-	hudContent := container.New(&Hud{}, btnExit, txt1, btnContainer, chat.Content())
+	hudContent := container.New(&Hud{}, btnExit, logView, btnContainer, chat.Content())
 	FullContent := container.NewStack(
 		background,
 		overlay,
 		hudContent,
 	)
-
 	w.SetContent(FullContent)
+
+	go func() {
+		for msg := range conn.Messages() {
+			line := msg.Raw
+			fyne.Do(func() {
+				logLabel.SetText(logLabel.Text + line + "\n")
+			})
+		}
+		fyne.Do(func() {
+			logView.ScrollToBottom()
+			logLabel.SetText(logLabel.Text + "-- lost connection --\n")
+			fmt.Fprintln(os.Stderr, "-- lost connection --\n")
+		})
+	}()
+
 	w.ShowAndRun()
 	fmt.Println("Exited, end of TAP")
 }
