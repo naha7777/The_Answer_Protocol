@@ -86,7 +86,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 		chatWidth = 50
 	}
 
-	chatHeight := objects[3].MinSize().Height
+	chatHeight := containerSize.Height / 5
 	chatY := h - chatHeight - margin
 
 	objects[3].Resize(fyne.NewSize(chatWidth, chatHeight))
