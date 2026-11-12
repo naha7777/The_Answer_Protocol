@@ -6,7 +6,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/widget"
+	// "fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/canvas"
 )
@@ -41,14 +41,14 @@ func main() {
 	background := canvas.NewImageFromFile("VillageMap.png")
 	background.FillMode = canvas.ImageFillStretch
 
-	btnExit := widget.NewButton("EXIT", func() { a.Quit() })
-	btnExit.Importance = widget.HighImportance
+	// btnExit := widget.NewButton("EXIT", func() { a.Quit() })
+	// btnExit.Importance = widget.HighImportance
 
-	txt1 := widget.NewLabel("topl")
+	// txt1 := widget.NewLabel("topl")
 	chat := NewChat(w)
 
 	btnContainer := newButtonContainer(a)
-	hudContent := container.New(&Hud{}, btnExit, txt1, btnContainer, chat.Content()) 
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content()) 
 	FullContent := container.NewStack(
 		background,
 		overlay,
