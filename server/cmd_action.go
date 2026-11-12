@@ -39,7 +39,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 
 func (d *Dispatcher) handleDrop(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 404 ITEM_NOT_FOUND")
+		client.Send("ERR 404 ITEM_NOT_IN_INVENTORY")
 		return
 	}
 	query := strings.ToUpper(strings.Join(args, " "))
@@ -55,7 +55,7 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 		client.Send("OK dropped=%s", item.Id)
 		return
 	}
-	client.Send("ERR 404 ITEM_NOT_FOUND")
+	client.Send("ERR 404 ITEM_NOT_IN_INVENTORY")
 }
 
 func (d *Dispatcher) handleMove(client *Client, args []string) {

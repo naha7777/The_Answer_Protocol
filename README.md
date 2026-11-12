@@ -52,6 +52,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `GROUP LEAVE` | `OK` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
 | `QUEST`, `QUESTS` | | | | not implemented |
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
+| error CLI or GUI connection | | `900 CONNECTION_FAILED` |
+| error CLI or GUI send | | `900 SEND_FAILED` |
+
 
 ### Error codes
 
@@ -61,8 +64,10 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 301 | NO_EXIT | RFC |
 | 401 | NOT_IN_GROUP | RFC |
 | 402 | ALREADY_IN_GROUP | RFC |
-| 404 | ITEM_NOT_FOUND / NPC_NOT_FOUND | RFC |
+| 404 | ITEM_NOT_FOUND / NPC_NOT_FOUND / ITEM_NOT_IN_INVENTORY | RFC |
 | 405 | NPC_NOT_HOSTILE | RFC |
+| 900 | CONNECTION_FAILED | RFC |
+| 901 | SEND_FAILED | RFC |
 | 01  | UNKNOWN_COMMAND | **custom (not in RFC)** |
 | 02 | YOU_MUST_BE_CONNECTED | **custom (not in RFC)** |
 | 03 | CANT_FIND_USER | **custom (not in RFC)** |

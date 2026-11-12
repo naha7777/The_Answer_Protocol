@@ -31,7 +31,7 @@ var (
 func main() {
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Can't connect:", err)
+		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -50,7 +50,11 @@ func main() {
 	background := canvas.NewImageFromFile("./data/VillageMap.png")
 	background.FillMode = canvas.ImageFillStretch
 
-	btnExit := widget.NewButton("EXIT", func() { conn.Send("QUIT") })
+	btnExit := widget.NewButton("EXIT", func() {
+		if err := conn.Send("QUIT"); err != nil {
+			fmt.Fprintln(os.Stderr, "901 SEND_FAILED")
+			return
+		}})
 	btnExit.Importance = widget.HighImportance
 
 	logLabel := widget.NewLabel("")

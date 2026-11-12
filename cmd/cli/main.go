@@ -10,7 +10,7 @@ import (
 func main() {
 	c, err := client.Dial("localhost:8080")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Can't connect:", err)
+		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
 		os.Exit(1)
 	}
 	defer c.Close()
@@ -26,7 +26,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		if err := c.Send(scanner.Text()); err != nil {
-			fmt.Fprintln(os.Stderr, "Impossible to send:", err)
+			fmt.Fprintln(os.Stderr, "901 SEND_FAILED")
 			return
 		}
 	}
