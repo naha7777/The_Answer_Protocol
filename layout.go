@@ -21,7 +21,6 @@ import (
 // struct for the HUD needed to implement the fyne layout Interface
 // /!\ Need at least 4 widget
 type Hud struct {
-
 }
 
 // /===========================================\
