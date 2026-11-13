@@ -60,10 +60,16 @@ func NewChat(w fyne.Window) *Chat {
 	})
 	cbut_say := widget.NewButton("SAY", c.send)
 
+	// frame around the chat
+	chatFrame := canvas.NewRectangle(color.NRGBA{R: 20, G: 20, B: 20, A: 200})
+	chatFrame.StrokeColor = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+	chatFrame.StrokeWidth = 2
+
 	// Containers on top of each others
 	cbut_box := container.NewBorder(nil, nil, container.NewHBox(cbut_glob, cbut_room, cbut_grp), nil)
 	send_box := container.NewBorder(nil, nil, nil, cbut_say, c.entry)
-	c.root = container.NewBorder(cbut_box, send_box, nil, nil, c.scroll)
+	inside := container.NewBorder(cbut_box, send_box, nil, nil, c.scroll)
+	c.root = container.NewStack(chatFrame, container.NewPadded(inside))
 
 	return c
 }
