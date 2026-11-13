@@ -60,8 +60,10 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var args []string
 	first := strings.ToUpper(parts[0])
 	if first == "GROUP" {
-		cmd = strings.ToUpper(parts[0] + " " + parts[1])
-		args = parts[2:]
+		if len(parts) >= 2 {
+			cmd = strings.ToUpper(parts[0] + " " + parts[1])
+			args = parts[2:]
+		}
 	} else {
 		cmd = strings.ToUpper(parts[0])
 		args = parts[1:]
@@ -69,6 +71,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	if function, exists := d.commands[cmd]; exists {
 		function(client, args)
 	} else {
-		client.Send("ERR 01 UNKNOWN_COMMAND: %s", cmd)
+		client.Send("ERR 01 UNKNOWN_COMMAND: %s", first)
+		return
 	}
 }

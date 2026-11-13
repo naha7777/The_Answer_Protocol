@@ -31,7 +31,7 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 
 func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 401 NOT_IN_GROUP")
+		client.Send("ERR 03 CANT_FIND_LEADER")
 		return
 	}
 	d.mu.Lock()
@@ -94,7 +94,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 
 func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 401 NOT_IN_GROUP")
+		client.Send("ERR 03 CANT_FIND_USER")
 		return
 	}
 	d.mu.Lock()
