@@ -50,7 +50,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `GROUP INVITE <user>` | `OK` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE` to the invited user |
 | `GROUP JOIN <leader>` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members |
 | `GROUP LEAVE` | `OK` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
-| `QUEST`, `QUESTS` | | | | not implemented |
+| `QUEST` | `OK  {"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
+| `QUESTS` | `OK []`, `OK [{"quest_id: "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
+| `COMPLETE_QUEST` | `OK quest_id: completed, reward: quest_reward` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` |
 | error CLI or GUI send | | `900 SEND_FAILED` |
@@ -78,6 +80,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 08 | MISSING_MESSAGE | **custom (not in RFC)** |
 | 09 | THIS_IS_NOT_A_NAME | **custom (not in RFC)** |
 | 10 | YOU_HAVE_A_NAME | **custom (not in RFC)** |
+| 11 | INCOMPLETE_QUEST_REQUIREMENTS | **custom (not in RFC)** |
 
 ### Events
 
@@ -88,6 +91,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | Group leave | `EVT GROUP LEAVE <username>` |
 | Chat | `EVT <SCOPE> CHAT <username> <message>` |
 | Room presence | `EVT ROOM PRESENCE ENTER/LEAVE <username>` |
+| Stats | `EVT STATS players= <nb_player>` |
 
 ## Combat System
 section describing your turn-based combat mechanics, damage formulas, initiative order, and additional combat commands (DEFEND, FLEE, etc.).

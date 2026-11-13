@@ -39,6 +39,7 @@ type NPC struct {
 }
 
 type Quest struct {
+	NPC			string
 	Id			string
 	Description	string
 	Reward		string
@@ -86,8 +87,9 @@ func LoadWorld(path string) (*World, error) {
 
 	quest_lst := make(map[string]*Quest, len(w.Quests))
 	for str, quest := range w.Quests {
-		q := &Quest{Id: quest.Id, Description: quest.Description,
-				    Reward: quest.Reward, Status: quest.Status}
+		q := &Quest{NPC: quest.NPC, Id: quest.Id,
+					Description: quest.Description,
+					Reward: quest.Reward, Status: quest.Status}
 		quest_lst[str] = q
 	}
 

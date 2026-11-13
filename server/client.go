@@ -15,6 +15,7 @@ type Client struct {
 	hp        int
 	hp_max    int
 	status    string
+	quests    []*game.Quest
 }
 
 func (c *Client) Send(format string, a ...any) {

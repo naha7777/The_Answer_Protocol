@@ -40,6 +40,7 @@ type NPCData struct {
 }
 
 type QuestData struct {
+	NPC			string		`json:"quest_npc"`
 	Id			string		`json:"quest_id"`
 	Description	string		`json:"description"`
 	Reward		string		`json:"reward"`

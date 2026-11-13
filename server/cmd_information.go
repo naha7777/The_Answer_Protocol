@@ -35,3 +35,11 @@ func (d *Dispatcher) handleInventory(client *Client, args []string) {
 	lst := strings.Join(item_lst, " ")
 	client.Send("OK [%s]", lst)
 }
+
+func (d *Dispatcher) displayStats() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	for _, c := range d.clients {
+		c.Send("EVT STATS players= %d", len(d.clients))
+	}
+}

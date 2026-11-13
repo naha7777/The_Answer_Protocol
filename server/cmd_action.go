@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 )
@@ -18,11 +17,9 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 	for i, id := range client.room.Items {
 		item, ok := d.world.Items[id]
 		if !ok {
-			fmt.Print("a")
 			continue
 		}
 		if !strings.EqualFold(id, query) && !strings.EqualFold(item.Name, query) {
-			fmt.Print("b")
 			continue
 		}
 		if !item.Obtainable {

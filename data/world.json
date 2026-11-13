@@ -88,6 +88,6 @@
     "npc.robber":         { "name": "Robber", "hp": 100, "hostile": true, "dialogue": ["This gold is mine MOUAHAHAHA!"], "quest": "" }
   },
   "quests": {
-    "princess_necklace": {"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}
+    "princess_necklace": {"quest_npc": "npc.princess", "quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}
   }
 }

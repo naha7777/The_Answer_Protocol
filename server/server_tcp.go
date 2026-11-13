@@ -23,13 +23,14 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	}
 
 	defer dispatcher.removeClient(client)
-
 	client.Send("OK hello proto=1")
+
 	scanner := bufio.NewScanner(connection)
 	for scanner.Scan() {
 		line := strings.ToUpper(scanner.Text())
 		if client.name == "" && strings.HasPrefix(line, "CONNECT") {
 			dispatcher.Dispatch(client, scanner.Text())
+			dispatcher.displayStats()
 		} else if client.name != "" {
 			dispatcher.Dispatch(client, scanner.Text())
 		} else {
