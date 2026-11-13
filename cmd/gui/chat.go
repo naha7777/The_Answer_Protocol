@@ -6,6 +6,7 @@ package main
 
 import (
 	"image/color"
+	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -27,20 +28,23 @@ type Chat struct {
 	scroll		*container.Scroll
 	entry		*widget.Entry
 	root		fyne.CanvasObject
-	name		string
+	player		*Player
+	msg			bool
 }
 
 // /===========================================\
 // |				Constructor 			   |
 // \===========================================/
 
-func NewChat(w fyne.Window) *Chat {
+func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	c := &Chat{
-		window: w,
-		activeChat: "Global",
-		txtColor: lime,
+		window:		w,
+		activeChat:	"Global",
+		txtColor:	lime,
+		player:		p,
+		msg:		false,
 	}
-
+	
 	c.messages = container.NewVBox()
 	c.scroll = container.NewScroll(c.messages)
 	c.entry = widget.NewEntry()
@@ -53,12 +57,17 @@ func NewChat(w fyne.Window) *Chat {
 	cbut_room := widget.NewButton("Room", func() {c.setChannel("Room", cyan)})
 	cbut_grp := widget.NewButton("Group", func() {
 		if c.inGroup {
-			c.setChannel("Group", orange)
+			c.setChannel(c.player.group, orange)
 		} else {
 			popup(w, "You are not in a group")
 		}
 	})
-	cbut_say := widget.NewButton("SAY", c.send)
+	// cbut_say := widget.NewButton("SAY", c.send)
+	cbut_say := widget.NewButton("SAY", func() {
+		conn.Send("CHAT" + c.activeChat + c.entry.Text)
+		if c.msg {c.send()}
+		c.msg = false
+	})
 
 	// frame around the chat
 	chatFrame := canvas.NewRectangle(color.NRGBA{R: 20, G: 20, B: 20, A: 200})
@@ -82,16 +91,31 @@ func (c *Chat) Content() fyne.CanvasObject {
 	return c.root
 }
 
+func (c *Chat) addLine(channel, author, text string, col color.Color) {
+	c.messages.Add(canvas.NewText("[" + channel + "] " + get_time() + " [" + author +" ]: " + text, col))
+	c.scroll.ScrollToBottom()
+}
+
 func (c *Chat) send() {
-	if c.entry.Text != "" {
-		c.messages.Add(canvas.NewText("[" + c.activeChat + "] " + get_time() + " [" + c.name + "]: " + c.entry.Text, c.txtColor))
-		c.entry.SetText("")
-		c.scroll.ScrollToBottom()
+	if c.entry.Text == "" {
+		return
 	}
+	c.addLine(c.activeChat, c.player.name, c.entry.Text, c.txtColor)
 }
 
 func (c *Chat) setChannel(name string, col color.Color) {
 	c.activeChat = name
 	c.txtColor = col
 	c.entry.SetPlaceHolder(name + " chat...")
+}
+
+func (c *Chat) Receive(channel, author, text string) {
+	col := color.Color(lime)
+	switch channel {
+	case "ROOM":
+		col = cyan
+	case "GROUP":
+		col = orange
+	}
+	c.addLine(channel, author, text, col)
 }

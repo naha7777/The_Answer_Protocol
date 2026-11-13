@@ -14,6 +14,10 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+type Player struct {
+	name	string
+	group	string
+}
 // /===========================================\
 // |				 Var/Const				   |
 // \===========================================/
@@ -30,6 +34,8 @@ var (
 // \===========================================/
 
 func main() {
+	player := Player{}
+
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
@@ -57,7 +63,7 @@ func main() {
 	logView := container.NewVScroll(logLabel)
 
 	// ajouter conn en parametre de la fonction
-	chat := NewChat(w)
+	chat := NewChat(w, &player, conn)
 
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(w, conn, background)
@@ -71,7 +77,7 @@ func main() {
 	loggedIn := false
 
 	loginView, onLoginMsg := LoginScreen(conn ,func(name string) {
-		chat.name = name
+		player.name = name
 		loggedIn = true
 		w.SetContent(gameContent)
 	})
@@ -85,16 +91,46 @@ func main() {
 					onLoginMsg(msg)
 					return
 				}
-				if msg.Kind == "OK" && strings.HasPrefix(msg.Rest, "room=") {
-					roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
-					background.File = "./data/" + roomID + ".jpeg"
-					background.Refresh()
+				switch msg.Kind {
+				case "OK":
+					switch {
+					case strings.HasPrefix(msg.Rest, "room="):
+						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
+						background.File = "./data/" + roomID + ".jpeg"
+						background.Refresh()
+
+					case msg.Rest == "bye":
+						a.Quit()
+					case strings.HasPrefix(msg.Raw, "GROUP CREATE"):
+						player.group = strings.TrimPrefix(msg.Rest, "group=")
+					case strings.HasPrefix(msg.Raw, "GROUP LEAVE"):
+						popup(w, "You leave your group")
+						player.group = ""
+					case strings.HasPrefix(msg.Raw, "GROUP JOIN"):
+						groupID := strings.TrimPrefix(msg.Rest, "group=")
+						popup(w, "You join the " + groupID + "group")
+						player.group = groupID
+					case strings.HasPrefix(msg.Raw, "CHAT"):
+						chat.msg = true
+					}
+
+				case "EVT":
+					parts := strings.SplitN(msg.Rest, " ", 4)
+					if len(parts) == 4 && parts[1] == "CHAT" {
+						chat.Receive(parts[0], parts[2], parts[3])
+					}
+
+					case "ERR":
+						popup(w, msg.Rest)
 				}
-				logView.ScrollToBottom()
-				logLabel.SetText(logLabel.Text + "-- lost connection --\n")
-				fmt.Fprintln(os.Stderr, "-- lost connection --\n")
 			})
 		}
+
+		fyne.Do(func() {
+			logLabel.SetText(logLabel.Text + "-- lost connection --\n")
+			logView.ScrollToBottom()
+		})
+		fmt.Fprintln(os.Stderr, "-- lost connection --")
 	}()
 
 	w.ShowAndRun()
