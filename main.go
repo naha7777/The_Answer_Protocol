@@ -30,11 +30,6 @@ func main() {
 	w := a.NewWindow("TAP")
 	w.Resize(fyne.NewSize(1920, 1080))
 
-	// TEMP inventory test
-	str := "[item.herbs, item.herbs, item.fish, item.herbs, item.herbs, item.fish, item.fish, item.fish]"
-	Str_to_inv(str, w)
-	//
-
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
 			a.Quit()

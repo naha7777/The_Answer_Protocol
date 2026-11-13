@@ -6,6 +6,7 @@ package main
 
 import (
 	"image/color"
+	"os"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -33,8 +34,14 @@ func Str_to_inv(str string, w fyne.Window) {
 	inv_cont := container.NewBorder(container.NewCenter(widget.NewLabel("Inventory")), nil, nil, nil, items_scroll)
 
 	for _, item := range items {
-		item = strings.TrimLeft(item, "item.")
-		image := canvas.NewImageFromFile("pictures/items/" + item + ".png")
+		item, _ = strings.CutPrefix(item, "item.")
+		
+		// img
+		image := canvas.NewImageFromFile("pictures/items/placeholder.png")
+		if _, err := os.Stat("pictures/items/" + item + ".png"); err == nil {
+			image = canvas.NewImageFromFile("pictures/items/" + item + ".png")
+		}
+
 		image.FillMode = canvas.ImageFillContain
 		image.SetMinSize(fyne.NewSize(50, 50))
 
@@ -51,6 +58,6 @@ func Str_to_inv(str string, w fyne.Window) {
 	inv := container.NewStack(inv_frame, container.NewPadded(inv_cont))
 
 	popup := widget.NewPopUp(inv, w.Canvas())
-	popup.ShowAtPosition(fyne.Position{X: (width / 2) - items_cont.MinSize().Width, Y: height / 2})
+	popup.ShowAtPosition(fyne.Position{X: 7*(width/9) - items_cont.MinSize().Width*2, Y: height - 50*4 - 15})
 	popup.Resize(fyne.Size{Width: items_cont.MinSize().Width * 2, Height: 50 * 4})
 }

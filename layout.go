@@ -71,7 +71,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 }
 
 func newButtonContainer(app fyne.App, g *Game) *fyne.Container {
-	
+
 	newBtn := func(label string, action func()) *widget.Button {
 		btn := widget.NewButton(label, action)
 		btn.Importance = widget.LowImportance
@@ -92,6 +92,7 @@ func newButtonContainer(app fyne.App, g *Game) *fyne.Container {
 	butGroup := newBtn("GROUP", func() { fmt.Println("GROUP") })
 	butQuit := widget.NewButton("QUIT", func() { app.Quit() })
 	butMap := newBtn("MAP", func() { g.ToggleMap() })
+	butInv := newBtn("INVENTORY", func() { Str_to_inv("[item.herbs, item.fish, item.iron]", g.window) })
 	butQuit.Importance = widget.LowImportance
 
 	// Cardinals Buttons
@@ -105,6 +106,7 @@ func newButtonContainer(app fyne.App, g *Game) *fyne.Container {
 		butDrop, butTalk, butAttack,
 		butStatus, butQuest, butQuests,
 		butWho, butGroup, butQuit,
+		widget.NewLabel(""), butInv,
 	)
 
 	butsCardinals := container.NewGridWithColumns(3,
