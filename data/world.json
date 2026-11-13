@@ -6,7 +6,7 @@
       "id": "loc.square",
       "name": "Village Square",
       "description": "A bustling square.",
-      "exits": { "north": "loc.forest", "east": "loc.market" },
+      "exits": { "north": "loc.tavern", "east": "loc.market" },
       "items": ["item.herbs", "item.herbs"],
       "npcs": ["npc.village_guard"]
     },
@@ -14,7 +14,7 @@
       "id": "loc.forest",
       "name": "Haunted Forest",
       "description": "A scary forest.",
-      "exits": { "north": "loc.garden", "east": "loc.meadow", "south": "loc.square", "west": "loc.lake" },
+      "exits": { "north": "loc.castle", "south": "loc.tavern", "west": "loc.lake" },
       "items": ["item.spirit"],
       "npcs": ["npc.ghost"]
     },
@@ -30,7 +30,7 @@
       "id": "loc.meadow",
       "name": "Flowery Meadow",
       "description": "A meadow with a lot of flowers.",
-      "exits": { "west": "loc.forest", "south": "loc.market" },
+      "exits": { "west": "loc.tavern", "south": "loc.market" },
       "items": ["item.flower"],
       "npcs": ["npc.woman"]
     },
@@ -38,7 +38,7 @@
       "id": "loc.lake",
       "name": "Lake",
       "description": "A huge lake.",
-      "exits": { "east": "loc.forest", "north": "loc.castle" },
+      "exits": { "east": "loc.forest", "south": "loc.garden" },
       "items": ["item.fish"],
       "npcs": ["npc.fisherman"]
     },
@@ -46,7 +46,7 @@
       "id": "loc.castle",
       "name": "Castle",
       "description": "A big castle.",
-      "exits": { "east": "loc.garden", "south": "loc.lake" },
+      "exits": { "south": "loc.forest" },
       "items": ["item.potion"],
       "npcs": ["npc.royal_guard"]
     },
@@ -54,7 +54,7 @@
       "id": "loc.garden",
       "name": "Secret Garden",
       "description": "A secret garden hiding something.",
-      "exits": { "north": "loc.tavern", "south": "loc.forest", "west": "loc.castle" },
+      "exits": { "north": "loc.lake", "east": "loc.tavern" },
       "items": ["item.sword"],
       "npcs": ["npc.princess"]
     },
@@ -62,7 +62,7 @@
       "id": "loc.tavern",
       "name": "Gold Tavern",
       "description": "A tavern with a lot of gold.",
-      "exits": { "south": "loc.garden" },
+      "exits": { "north": "loc.forest", "south": "loc.square", "east": "loc.meadow", "west": "loc.garden"},
       "items": ["item.gold"],
       "npcs": ["npc.robber"]
     }
