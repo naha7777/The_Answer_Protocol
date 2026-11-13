@@ -18,15 +18,16 @@ import (
 // \===========================================/
 
 type Chat struct {
-	window	fyne.Window
-	activeChat string
-	txtColor color.Color
-	inGroup bool
+	window		fyne.Window
+	activeChat	string
+	txtColor	color.Color
+	inGroup		bool
 
-	messages *fyne.Container
-	scroll *container.Scroll
-	entry *widget.Entry
-	root fyne.CanvasObject
+	messages	*fyne.Container
+	scroll		*container.Scroll
+	entry		*widget.Entry
+	root		fyne.CanvasObject
+	name		string
 }
 
 // /===========================================\
@@ -77,7 +78,7 @@ func (c *Chat) Content() fyne.CanvasObject {
 
 func (c *Chat) send() {
 	if c.entry.Text != "" {
-		c.messages.Add(canvas.NewText("[" + c.activeChat + "] " + get_time() +" Me: " + c.entry.Text, c.txtColor))
+		c.messages.Add(canvas.NewText("[" + c.activeChat + "] " + get_time() + " [" + c.name + "]: " + c.entry.Text, c.txtColor))
 		c.entry.SetText("")
 		c.scroll.ScrollToBottom()
 	}

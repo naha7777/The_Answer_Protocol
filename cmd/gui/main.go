@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"strings"
 	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
@@ -46,17 +47,10 @@ func main() {
 			a.Quit()
 		}
 	})
-	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
-	background := canvas.NewImageFromFile("./data/VillageMap.png")
-	background.FillMode = canvas.ImageFillStretch
 
-	// envoie de commandes avec conn.Send
-	btnExit := widget.NewButton("EXIT", func() {
-		if err := conn.Send("QUIT"); err != nil {
-			fmt.Fprintln(os.Stderr, "901 SEND_FAILED")
-			return
-		}})
-	btnExit.Importance = widget.HighImportance
+	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
+	background := canvas.NewImageFromFile("./data/square.jpeg")
+	background.FillMode = canvas.ImageFillStretch
 
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
@@ -66,28 +60,41 @@ func main() {
 	chat := NewChat(w)
 
 	// ajouter conn en parametre de la fonction
-	btnContainer := newButtonContainer(a)
-	hudContent := container.New(&Hud{}, btnExit, logView, btnContainer, chat.Content())
-	FullContent := container.NewStack(
+	btnContainer := newButtonContainer(w, conn, background)
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
+	gameContent := container.NewStack(
 		background,
 		overlay,
 		hudContent,
 	)
-	w.SetContent(FullContent)
+
+	loggedIn := false
+
+	loginView, onLoginMsg := LoginScreen(conn ,func(name string) {
+		chat.name = name
+		loggedIn = true
+		w.SetContent(gameContent)
+	})
+
+	w.SetContent(loginView)
 
 	go func() {
 		for msg := range conn.Messages() {
-			line := msg.Raw
 			fyne.Do(func() {
-				logLabel.SetText(logLabel.Text + line + "\n")
-				fmt.Fprintln(os.Stdout, logLabel.Text + line + "\n")
+				if !loggedIn {
+					onLoginMsg(msg)
+					return
+				}
+				if msg.Kind == "OK" && strings.HasPrefix(msg.Rest, "room=") {
+					roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
+					background.File = "./data/" + roomID + ".jpeg"
+					background.Refresh()
+				}
+				logView.ScrollToBottom()
+				logLabel.SetText(logLabel.Text + "-- lost connection --\n")
+				fmt.Fprintln(os.Stderr, "-- lost connection --\n")
 			})
 		}
-		fyne.Do(func() {
-			logView.ScrollToBottom()
-			logLabel.SetText(logLabel.Text + "-- lost connection --\n")
-			fmt.Fprintln(os.Stderr, "-- lost connection --\n")
-		})
 	}()
 
 	w.ShowAndRun()
