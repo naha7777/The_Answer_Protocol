@@ -87,12 +87,18 @@ func newButtonContainer(app fyne.App, g *Game) *fyne.Container {
 	butTalk := newBtn("TALK", func() { fmt.Println("TALK") })
 	butStatus := newBtn("STATUS", func() { fmt.Println("STATUS") })
 	butQuest := newBtn("QUEST", func() { fmt.Println("QUEST") })
-	butQuests := newBtn("QUESTS", func() { fmt.Println("QUESTS") })
+	butQuests := newBtn("QUESTS", func() {
+		fmt.Println("QUESTS")
+		Str_to_quests(`[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]`, g.window)
+	})
 	butWho := newBtn("WHO", func() { fmt.Println("WHO") })
 	butGroup := newBtn("GROUP", func() { fmt.Println("GROUP") })
 	butQuit := widget.NewButton("QUIT", func() { app.Quit() })
 	butMap := newBtn("MAP", func() { g.ToggleMap() })
-	butInv := newBtn("INVENTORY", func() { Str_to_inv("[item.herbs, item.fish, item.iron]", g.window) })
+	butInv := newBtn("INVENTORY", func() {
+		fmt.Println("QUESTS")
+		Str_to_inv("[item.herbs, item.fish, item.iron]", g.window)
+	})
 	butQuit.Importance = widget.LowImportance
 
 	// Cardinals Buttons

@@ -30,6 +30,8 @@ func main() {
 	w := a.NewWindow("TAP")
 	w.Resize(fyne.NewSize(1920, 1080))
 
+	Str_to_quests(`[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]`, w)
+
 	w.Canvas().SetOnTypedKey(func(keyEvent *fyne.KeyEvent) {
 		if keyEvent.Name == fyne.KeyEscape {
 			a.Quit()
