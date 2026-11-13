@@ -35,15 +35,16 @@ type NPC struct {
 	Hp			int
 	Hostile		bool
 	Dialogue	[]string
-	Quest		string
+	Quest		[]string
 }
 
 type Quest struct {
 	NPC			string
 	Id			string
 	Description	string
-	Reward		string
+	Reward		[]string
 	Status		string
+	Objective	[]string
 }
 
 func LoadWorld(path string) (*World, error) {
@@ -89,7 +90,8 @@ func LoadWorld(path string) (*World, error) {
 	for str, quest := range w.Quests {
 		q := &Quest{NPC: quest.NPC, Id: quest.Id,
 					Description: quest.Description,
-					Reward: quest.Reward, Status: quest.Status}
+					Reward: quest.Reward, Status: quest.Status,
+					Objective: quest.Objective,}
 		quest_lst[str] = q
 	}
 

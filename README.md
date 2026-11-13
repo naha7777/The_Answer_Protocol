@@ -52,7 +52,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `GROUP LEAVE` | `OK` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
 | `QUEST` | `OK  {"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
 | `QUESTS` | `OK []`, `OK [{"quest_id: "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
-| `COMPLETE_QUEST` | `OK quest_id: completed, reward: quest_reward` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
+| `COMPLETE_QUEST` | `OK quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` |
 | error CLI or GUI send | | `900 SEND_FAILED` |

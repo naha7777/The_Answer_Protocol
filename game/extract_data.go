@@ -25,26 +25,27 @@ type RoomData struct {
 }
 
 type ItemData struct {
-	Id			string	`json:"id"`
-	Name		string	`json:"name"`
-	Description	string	`json:"description"`
-	Obtainable	bool	`json:"obtainable"`
+	Id			string				`json:"id"`
+	Name		string				`json:"name"`
+	Description	string				`json:"description"`
+	Obtainable	bool				`json:"obtainable"`
 }
 
 type NPCData struct {
-	Name		string		`json:"name"`
-	HP			int			`json:"hp"`
-	Hostile		bool		`json:"hostile"`
-	Dialogue	[]string	`json:"dialogue"`
-	Quest		string		`json:"quest"`
+	Name		string				`json:"name"`
+	HP			int					`json:"hp"`
+	Hostile		bool				`json:"hostile"`
+	Dialogue	[]string			`json:"dialogue"`
+	Quest		[]string			`json:"quests"`
 }
 
 type QuestData struct {
-	NPC			string		`json:"quest_npc"`
-	Id			string		`json:"quest_id"`
-	Description	string		`json:"description"`
-	Reward		string		`json:"reward"`
-	Status		string		`json:"status"`
+	NPC			string				`json:"quest_npc"`
+	Id			string				`json:"quest_id"`
+	Description	string				`json:"description"`
+	Reward		[]string			`json:"reward"`
+	Status		string				`json:"status"`
+	Objective	[]string			`json:"objective"`
 }
 
 func extractor(path string) (*WorldData, error) {
