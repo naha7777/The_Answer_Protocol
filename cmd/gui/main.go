@@ -15,9 +15,9 @@ import (
 )
 
 type Player struct {
-	name	string
-	group	string
-	move	bool
+	name  string
+	group string
+	move  bool
 }
 
 // /===========================================\
@@ -68,10 +68,9 @@ func main() {
 	// ajouter conn en parametre de la fonction
 	chat := NewChat(w, &player, conn)
 	inv := NewInv(w, &player, conn)
-	inv.BuildInv(`["item.herbs", "item.fish", "item.fish", "item.iron"]`)
 
 	// ajouter conn en parametre de la fonction
-	btnContainer := newButtonContainer(w, conn, background)
+	btnContainer := newButtonContainer(w, conn, background, &player)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
@@ -85,6 +84,7 @@ func main() {
 		player.name = name
 		loggedIn = true
 		w.SetContent(gameContent)
+		conn.Send("INVENTORY")
 	})
 
 	w.SetContent(loginView)
@@ -116,6 +116,18 @@ func main() {
 						groupID := strings.TrimPrefix(msg.Rest, "group=")
 						popup(w, "You join the "+groupID+"group")
 						player.group = groupID
+					case strings.HasPrefix(msg.Rest, "taken="):
+						item := strings.TrimPrefix(msg.Rest, "taken=item.")
+						item = strings.Title(strings.ToLower(item))
+						item = strings.ReplaceAll(item, "_", " ")
+						inv.take(item)
+					case strings.HasPrefix(msg.Rest, "dropped="):
+						item := strings.TrimPrefix(msg.Rest, "dropped=item.")
+						item = strings.Title(strings.ToLower(item))
+						item = strings.ReplaceAll(item, "_", " ")
+						inv.drop(item)
+					case strings.HasPrefix(msg.Rest, "{"):
+						inv.BuildInv(msg.Rest)
 					}
 
 				case "EVT":

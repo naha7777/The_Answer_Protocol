@@ -23,13 +23,13 @@ import (
 // struct for the HUD needed to implement the fyne layout Interface
 // /!\ Need at least 4 widget
 type Hud struct {
-
 }
 
 type Layout struct {
-	backgroundFile	string
-	container	*fyne.Container
+	backgroundFile string
+	container      *fyne.Container
 }
+
 // /===========================================\
 // |				 Function				   |
 // \===========================================/
@@ -100,7 +100,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 			background.File = previous
 		} else {
 			previous = background.File
-			 background.File = mapImg
+			background.File = mapImg
 		}
 		background.Refresh()
 	}
@@ -112,30 +112,30 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	}
 
 	send := func(cmd string) func() {
-		return func () {
+		return func() {
 			if strings.HasPrefix(cmd, "MOVE") {
 				p.move = true
 			}
 			if err := conn.Send(cmd); err != nil {
-					fyne.Do(func() { popup(w, "901 SEND_FAILED") })
-				}
+				fyne.Do(func() { popup(w, "901 SEND_FAILED") })
 			}
 		}
+	}
 
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
 	// butMove := newBtn("MOVE", send("MOVE") )
-	butTake := newBtn("TAKE", send("TAKE") )
+	butTake := newBtn("TAKE", send("TAKE"))
 	// butDrop := newBtn("DROP", send("DROP") )
 	// butTalk := newBtn("TALK", send("TALK") )
-	butStatus := newBtn("STATUS", send("STATUS") )
-	butQuest := newBtn("QUEST", send("QUEST") )
-	butQuests := newBtn("QUESTS", send("QUESTS") )
-	butWho := newBtn("WHO", send("WHO") )
+	butStatus := newBtn("STATUS", send("STATUS"))
+	butQuest := newBtn("QUEST", send("QUEST"))
+	butQuests := newBtn("QUESTS", send("QUESTS"))
+	butWho := newBtn("WHO", send("WHO"))
 	butMap := newBtn("MAP", toggleMap)
 
-	butQuit := widget.NewButton("QUIT", func () { 
+	butQuit := widget.NewButton("QUIT", func() {
 		d := dialog.NewConfirm(
 			"QUIT",
 			"YOU REALLY WANT TO QUIT ?",
@@ -166,10 +166,10 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	})
 
 	// Cardinals Buttons
-	butNorth := newBtn("NORTH", send("MOVE NORTH") )
-	butSouth := newBtn("SOUTH", send("MOVE SOUTH") )
-	butEast := newBtn("EAST", send("MOVE EAST") )
-	butWest := newBtn("WEST", send("MOVE WEST") )
+	butNorth := newBtn("NORTH", send("MOVE NORTH"))
+	butSouth := newBtn("SOUTH", send("MOVE SOUTH"))
+	butEast := newBtn("EAST", send("MOVE EAST"))
+	butWest := newBtn("WEST", send("MOVE WEST"))
 
 	butsActions := container.NewGridWithColumns(3,
 		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),

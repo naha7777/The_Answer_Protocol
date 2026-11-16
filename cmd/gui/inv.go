@@ -47,8 +47,8 @@ func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
 	invFrame.StrokeWidth = 2
 
 	// Buttons
-	take_but := widget.NewButton("TAKE", func() { conn.Send("TAKE") })
-	drop_but := widget.NewButton("DROP", func() { i.drop("Fish") })
+	take_but := widget.NewButton("TAKE", func() { conn.Send("TAKE Herbs") })
+	drop_but := widget.NewButton("DROP", func() { conn.Send("DROP Herbs") })
 
 	// Containers on top of each others
 	inv_title := container.NewCenter(widget.NewLabel("Inventory"))
