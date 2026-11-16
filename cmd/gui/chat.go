@@ -6,6 +6,7 @@ package main
 
 import (
 	"image/color"
+	"strings"
 	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
@@ -20,7 +21,7 @@ import (
 
 type Chat struct {
 	window		fyne.Window
-	activeChat	string
+	scope		string
 	txtColor	color.Color
 	inGroup		bool
 
@@ -29,7 +30,7 @@ type Chat struct {
 	entry		*widget.Entry
 	root		fyne.CanvasObject
 	player		*Player
-	msg			bool
+	conn		*client.Conn
 }
 
 // /===========================================\
@@ -39,10 +40,10 @@ type Chat struct {
 func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	c := &Chat{
 		window:		w,
-		activeChat:	"Global",
+		scope:		"GLOBAL",
 		txtColor:	lime,
 		player:		p,
-		msg:		false,
+		conn:		conn,
 	}
 	
 	c.messages = container.NewVBox()
@@ -53,21 +54,16 @@ func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	c.entry.OnSubmitted = func(string) {c.send()}
 
 	// Chat Buttons
-	cbut_glob := widget.NewButton("Global", func() {c.setChannel("Global", lime)})
-	cbut_room := widget.NewButton("Room", func() {c.setChannel("Room", cyan)})
+	cbut_glob := widget.NewButton("Global", func() {c.setChannel("GLOBAL", lime)})
+	cbut_room := widget.NewButton("Room", func() {c.setChannel("ROOM", cyan)})
 	cbut_grp := widget.NewButton("Group", func() {
-		if c.inGroup {
-			c.setChannel(c.player.group, orange)
+		if c.player.group != "" {
+			c.setChannel("GROUP", orange)
 		} else {
 			popup(w, "You are not in a group")
 		}
 	})
-	// cbut_say := widget.NewButton("SAY", c.send)
-	cbut_say := widget.NewButton("SAY", func() {
-		conn.Send("CHAT" + c.activeChat + c.entry.Text)
-		if c.msg {c.send()}
-		c.msg = false
-	})
+	cbut_say := widget.NewButton("SAY", c.send)
 
 	// frame around the chat
 	chatFrame := canvas.NewRectangle(color.NRGBA{R: 20, G: 20, B: 20, A: 200})
@@ -92,21 +88,31 @@ func (c *Chat) Content() fyne.CanvasObject {
 }
 
 func (c *Chat) addLine(channel, author, text string, col color.Color) {
-	c.messages.Add(canvas.NewText("[" + channel + "] " + get_time() + " [" + author +" ]: " + text, col))
+	c.messages.Add(canvas.NewText("[" + channel + "] " + get_time() + " [" + author +"]: " + text, col))
 	c.scroll.ScrollToBottom()
 }
 
 func (c *Chat) send() {
-	if c.entry.Text == "" {
+	text := strings.TrimSpace(c.entry.Text)
+	if text == "" {
 		return
 	}
-	c.addLine(c.activeChat, c.player.name, c.entry.Text, c.txtColor)
+	if c.scope == "GROUP" && c.player.group == "" {
+		popup(c.window, "You are not in a group")
+		return
+	}
+	if err := c.conn.Send("CHAT " + c.scope + " " + text); err != nil {
+		popup(c.window, "901 SEND_FAILED")
+		return
+	}
+	c.addLine(c.scope, c.player.name, text, c.txtColor)
+	c.entry.SetText("")
 }
 
-func (c *Chat) setChannel(name string, col color.Color) {
-	c.activeChat = name
+func (c *Chat) setChannel(scope string, col color.Color) {
+	c.scope = scope
 	c.txtColor = col
-	c.entry.SetPlaceHolder(name + " chat...")
+	c.entry.SetPlaceHolder(scope + " chat...")
 }
 
 func (c *Chat) Receive(channel, author, text string) {

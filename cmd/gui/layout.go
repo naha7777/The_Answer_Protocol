@@ -6,6 +6,7 @@ package main
 
 import (
 	"image/color"
+	"strings"
 	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
@@ -70,7 +71,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	objects[1].Move(fyne.NewPos(chatX, chatY))
 }
 
-func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image) *fyne.Container {
+func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image, p *Player) *fyne.Container {
 
 	mapImg := "./data/map.jpeg"
 	previous := background.File
@@ -92,28 +93,41 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	}
 
 	send := func(cmd string) func() {
-		return func() {
+		return func () {
+			if strings.HasPrefix(cmd, "MOVE") {
+				p.move = true
+			}
 			if err := conn.Send(cmd); err != nil {
-				fyne.Do(func() { popup(w, "901 SEND_FAILED") })
+					fyne.Do(func() { popup(w, "901 SEND_FAILED") })
+				}
 			}
 		}
-	}
 
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
-	butMove := newBtn("MOVE", send("MOVE"))
+	// butMove := newBtn("MOVE", send("MOVE"))
 	butTake := newBtn("TAKE", send("TAKE"))
-	butDrop := newBtn("DROP", send("DROP"))
-	butTalk := newBtn("TALK", send("TALK"))
+	// butDrop := newBtn("DROP", send("DROP"))
+	// butTalk := newBtn("TALK", send("TALK"))
 	butStatus := newBtn("STATUS", send("STATUS"))
 	butQuest := newBtn("QUEST", send("QUEST"))
 	butQuests := newBtn("QUESTS", send("QUESTS"))
 	butWho := newBtn("WHO", send("WHO"))
-	butGroup := newBtn("GROUP", send("GROUP"))
 	butMap := newBtn("MAP", toggleMap)
 	butQuit := widget.NewButton("QUIT", send("QUIT"))
-	butQuit.Importance = widget.LowImportance
+
+	var butGroup *widget.Button
+	butGroup = newBtn("GROUP", func() {
+		menu := fyne.NewMenu("",
+			fyne.NewMenuItem("CREATE", func() { send("GROUP CREATE")() }),
+			fyne.NewMenuItem("QUIT", func() { send("GROUP LEAVE")() }),
+			fyne.NewMenuItem("JOIN", func() { send("GROUP JOIN")() }),
+			fyne.NewMenuItem("INVIT", func() { send("GROUP INVITE")() }),
+		)
+		pop := widget.NewPopUpMenu(menu, w.Canvas())
+		pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), butGroup)
+	})
 
 	// Cardinals Buttons
 	butNorth := newBtn("NORTH", send("MOVE NORTH"))
@@ -122,10 +136,14 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	butWest := newBtn("WEST", send("MOVE WEST"))
 
 	butsActions := container.NewGridWithColumns(3,
-		butLook, butMove, butTake,
-		butDrop, butTalk, butAttack,
+		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
+		butLook, butTake, butAttack,
+		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
+		// butDrop, butTalk, butMove,
 		butStatus, butQuest, butQuests,
+		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 		butWho, butGroup, butQuit,
+		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 	)
 
 	butsCardinals := container.NewGridWithColumns(3,

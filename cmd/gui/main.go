@@ -17,6 +17,7 @@ import (
 type Player struct {
 	name	string
 	group	string
+	move	bool
 }
 // /===========================================\
 // |				 Var/Const				   |
@@ -35,6 +36,7 @@ var (
 
 func main() {
 	player := Player{}
+	player.move = false
 
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
@@ -66,7 +68,7 @@ func main() {
 	chat := NewChat(w, &player, conn)
 
 	// ajouter conn en parametre de la fonction
-	btnContainer := newButtonContainer(w, conn, background)
+	btnContainer := newButtonContainer(w, conn, background, &player)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
 	gameContent := container.NewStack(
 		background,
@@ -94,14 +96,15 @@ func main() {
 				switch msg.Kind {
 				case "OK":
 					switch {
-					case strings.HasPrefix(msg.Rest, "room="):
+					case strings.HasPrefix(msg.Rest, "room=") && player.move:
 						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
 						background.File = "./data/" + roomID + ".jpeg"
 						background.Refresh()
+						player.move = false
 
 					case msg.Rest == "bye":
 						a.Quit()
-					case strings.HasPrefix(msg.Raw, "GROUP CREATE"):
+					case strings.HasPrefix(msg.Rest, "group="):
 						player.group = strings.TrimPrefix(msg.Rest, "group=")
 					case strings.HasPrefix(msg.Raw, "GROUP LEAVE"):
 						popup(w, "You leave your group")
@@ -110,8 +113,6 @@ func main() {
 						groupID := strings.TrimPrefix(msg.Rest, "group=")
 						popup(w, "You join the " + groupID + "group")
 						player.group = groupID
-					case strings.HasPrefix(msg.Raw, "CHAT"):
-						chat.msg = true
 					}
 
 				case "EVT":
@@ -120,8 +121,8 @@ func main() {
 						chat.Receive(parts[0], parts[2], parts[3])
 					}
 
-					case "ERR":
-						popup(w, msg.Rest)
+				case "ERR":
+					popup(w, msg.Rest)
 				}
 			})
 		}
