@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -22,8 +23,13 @@ import (
 // struct for the HUD needed to implement the fyne layout Interface
 // /!\ Need at least 4 widget
 type Hud struct {
+
 }
 
+type Layout struct {
+	backgroundFile	string
+	container	*fyne.Container
+}
 // /===========================================\
 // |				 Function				   |
 // \===========================================/
@@ -45,7 +51,7 @@ func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 }
 
 func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
-	if len(objects) < 2 {
+		if len(objects) < 2 {
 		return
 	}
 	w, h := containerSize.Width, containerSize.Height
@@ -81,7 +87,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 			background.File = previous
 		} else {
 			previous = background.File
-			background.File = mapImg
+			 background.File = mapImg
 		}
 		background.Refresh()
 	}
@@ -106,16 +112,33 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
-	// butMove := newBtn("MOVE", send("MOVE"))
-	butTake := newBtn("TAKE", send("TAKE"))
-	// butDrop := newBtn("DROP", send("DROP"))
-	// butTalk := newBtn("TALK", send("TALK"))
-	butStatus := newBtn("STATUS", send("STATUS"))
-	butQuest := newBtn("QUEST", send("QUEST"))
-	butQuests := newBtn("QUESTS", send("QUESTS"))
-	butWho := newBtn("WHO", send("WHO"))
+	// butMove := newBtn("MOVE", send("MOVE") )
+	butTake := newBtn("TAKE", send("TAKE") )
+	// butDrop := newBtn("DROP", send("DROP") )
+	// butTalk := newBtn("TALK", send("TALK") )
+	butStatus := newBtn("STATUS", send("STATUS") )
+	butQuest := newBtn("QUEST", send("QUEST") )
+	butQuests := newBtn("QUESTS", send("QUESTS") )
+	butWho := newBtn("WHO", send("WHO") )
 	butMap := newBtn("MAP", toggleMap)
-	butQuit := widget.NewButton("QUIT", send("QUIT"))
+
+	butQuit := widget.NewButton("QUIT", func () { 
+		d := dialog.NewConfirm(
+			"QUIT",
+			"YOU REALLY WANT TO QUIT ?",
+			func(confirmed bool) {
+				if !confirmed {
+					return
+				}
+				send("QUIT")()
+			},
+			w,
+		)
+		d.SetConfirmText("YES")
+		d.SetDismissText("NO")
+		d.Show()
+	})
+	butQuit.Importance = widget.LowImportance
 
 	var butGroup *widget.Button
 	butGroup = newBtn("GROUP", func() {
@@ -130,10 +153,10 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	})
 
 	// Cardinals Buttons
-	butNorth := newBtn("NORTH", send("MOVE NORTH"))
-	butSouth := newBtn("SOUTH", send("MOVE SOUTH"))
-	butEast := newBtn("EAST", send("MOVE EAST"))
-	butWest := newBtn("WEST", send("MOVE WEST"))
+	butNorth := newBtn("NORTH", send("MOVE NORTH") )
+	butSouth := newBtn("SOUTH", send("MOVE SOUTH") )
+	butEast := newBtn("EAST", send("MOVE EAST") )
+	butWest := newBtn("WEST", send("MOVE WEST") )
 
 	butsActions := container.NewGridWithColumns(3,
 		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
