@@ -31,6 +31,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		if client.name == "" && strings.HasPrefix(line, "CONNECT") {
 			dispatcher.Dispatch(client, scanner.Text())
 			dispatcher.displayStats()
+			dispatcher.displayRoomStats()
 		} else if client.name != "" {
 			dispatcher.Dispatch(client, scanner.Text())
 		} else {

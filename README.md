@@ -56,6 +56,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` |
 | error CLI or GUI send | | `900 SEND_FAILED` |
+| when someone CONNECT himself or QUIT | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` | |
 
 
 ### Error codes

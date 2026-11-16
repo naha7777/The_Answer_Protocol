@@ -1,12 +1,11 @@
 package server
 
 func (d *Dispatcher) removeClient(client *Client) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	if client.name == "" {
 		return
 	}
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	client.Send("OK bye")
 	if client.group != nil {
 		delete(client.group.members, client.name)
 		client.group = nil
@@ -18,20 +17,20 @@ func (d *Dispatcher) removeClient(client *Client) {
 		client.inventory = nil
 	}
 	if client.room != nil {
-		remove(client.name, client.room.Players)
+		client.room.Players = remove(client.name, client.room.Players)
 		client.room = nil
 	}
 	delete(d.clients, client.name)
 	client.name = ""
+	client.Send("OK bye")
 }
 
 func remove(name string, place []string) []string {
-	i := 0
-	for idx, item := range place {
+	var new []string
+	for _, item := range place {
 		if item != name {
-			place[i] = place[idx]
-			i++
+			new = append(new, item)
 		}
 	}
-	return place[:i]
+	return new
 }
