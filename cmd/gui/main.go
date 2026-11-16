@@ -19,6 +19,7 @@ type Player struct {
 	group	string
 	move	bool
 }
+
 // /===========================================\
 // |				 Var/Const				   |
 // \===========================================/
@@ -66,10 +67,12 @@ func main() {
 
 	// ajouter conn en parametre de la fonction
 	chat := NewChat(w, &player, conn)
+	inv := NewInv(w, &player, conn)
+	inv.BuildInv(`["item.herbs", "item.fish", "item.fish", "item.iron"]`)
 
 	// ajouter conn en parametre de la fonction
-	btnContainer := newButtonContainer(w, conn, background, &player)
-	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
+	btnContainer := newButtonContainer(w, conn, background)
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
@@ -78,7 +81,7 @@ func main() {
 
 	loggedIn := false
 
-	loginView, onLoginMsg := LoginScreen(conn ,func(name string) {
+	loginView, onLoginMsg := LoginScreen(conn, func(name string) {
 		player.name = name
 		loggedIn = true
 		w.SetContent(gameContent)
@@ -111,7 +114,7 @@ func main() {
 						player.group = ""
 					case strings.HasPrefix(msg.Raw, "GROUP JOIN"):
 						groupID := strings.TrimPrefix(msg.Rest, "group=")
-						popup(w, "You join the " + groupID + "group")
+						popup(w, "You join the "+groupID+"group")
 						player.group = groupID
 					}
 
