@@ -21,7 +21,6 @@ import (
 // struct for the HUD needed to implement the fyne layout Interface
 // /!\ Need at least 4 widget
 type Hud struct {
-
 }
 
 // /===========================================\
@@ -45,7 +44,7 @@ func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 }
 
 func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
-		if len(objects) < 2 {
+	if len(objects) < 2 {
 		return
 	}
 	w, h := containerSize.Width, containerSize.Height
@@ -81,7 +80,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 			background.File = previous
 		} else {
 			previous = background.File
-			 background.File = mapImg
+			background.File = mapImg
 		}
 		background.Refresh()
 	}
@@ -93,34 +92,34 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	}
 
 	send := func(cmd string) func() {
-		return func () {
-				if err := conn.Send(cmd); err != nil {
-					fyne.Do(func() { popup(w, "901 SEND_FAILED") })
-				}
+		return func() {
+			if err := conn.Send(cmd); err != nil {
+				fyne.Do(func() { popup(w, "901 SEND_FAILED") })
 			}
 		}
+	}
 
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
-	butMove := newBtn("MOVE", send("MOVE") )
-	butTake := newBtn("TAKE", send("TAKE") )
-	butDrop := newBtn("DROP", send("DROP") )
-	butTalk := newBtn("TALK", send("TALK") )
-	butStatus := newBtn("STATUS", send("STATUS") )
-	butQuest := newBtn("QUEST", send("QUEST") )
-	butQuests := newBtn("QUESTS", send("QUESTS") )
-	butWho := newBtn("WHO", send("WHO") )
-	butGroup := newBtn("GROUP", send("GROUP") )
+	butMove := newBtn("MOVE", send("MOVE"))
+	butTake := newBtn("TAKE", send("TAKE"))
+	butDrop := newBtn("DROP", send("DROP"))
+	butTalk := newBtn("TALK", send("TALK"))
+	butStatus := newBtn("STATUS", send("STATUS"))
+	butQuest := newBtn("QUEST", send("QUEST"))
+	butQuests := newBtn("QUESTS", send("QUESTS"))
+	butWho := newBtn("WHO", send("WHO"))
+	butGroup := newBtn("GROUP", send("GROUP"))
 	butMap := newBtn("MAP", toggleMap)
-	butQuit := widget.NewButton("QUIT", send("QUIT") )
+	butQuit := widget.NewButton("QUIT", send("QUIT"))
 	butQuit.Importance = widget.LowImportance
 
 	// Cardinals Buttons
-	butNorth := newBtn("NORTH", send("MOVE NORTH") )
-	butSouth := newBtn("SOUTH", send("MOVE SOUTH") )
-	butEast := newBtn("EAST", send("MOVE EAST") )
-	butWest := newBtn("WEST", send("MOVE WEST") )
+	butNorth := newBtn("NORTH", send("MOVE NORTH"))
+	butSouth := newBtn("SOUTH", send("MOVE SOUTH"))
+	butEast := newBtn("EAST", send("MOVE EAST"))
+	butWest := newBtn("WEST", send("MOVE WEST"))
 
 	butsActions := container.NewGridWithColumns(3,
 		butLook, butMove, butTake,
