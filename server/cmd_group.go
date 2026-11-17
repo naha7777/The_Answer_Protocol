@@ -77,8 +77,8 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	}
 	current_group := client.group
 	delete(current_group.members, client.name)
+	client.Send("OK group_leaved=%s", client.group.id)
 	client.group = nil
-	client.Send("OK")
 	for _, c := range current_group.members {
 		c.Send("EVT GROUP LEAVE %s", client.name)
 	}
@@ -116,7 +116,7 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	}
 	client.group.invited[username] = true
 
-	client.Send("OK")
+	client.Send("OK group_invited=%s", username)
 	for _, c := range d.clients {
 		if c.name == username {
 			c.Send("EVT GROUP INVITE %s", client.name)

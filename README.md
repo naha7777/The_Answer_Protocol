@@ -46,10 +46,10 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room |
 | `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GROUP CHAT <username> <message>` to group members |
-| `GROUP CREATE` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
-| `GROUP INVITE <user>` | `OK` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE` to the invited user |
+| `GROUP CREATE <id>` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
+| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE` to the invited user |
 | `GROUP JOIN <leader>` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members |
-| `GROUP LEAVE` | `OK` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
+| `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
 | `QUEST <npc name or npc id>` | `OK  {"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
 | `QUESTS` | `OK []`, `OK [{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
 | `COMPLETE_QUEST <quest_id>` | `OK quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
