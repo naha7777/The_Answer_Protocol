@@ -98,6 +98,7 @@ func main() {
 		loggedIn = true
 		w.SetContent(gameContent)
 		conn.Send("INVENTORY")
+		conn.Send("LOOK")
 	})
 
 	w.SetContent(loginView)
@@ -118,6 +119,7 @@ func main() {
 						background.File = "./data/" + roomID + ".jpeg"
 						background.Refresh()
 						player.move = false
+						conn.Send("LOOK")
 
 					case msg.Rest == "bye":
 						a.Quit()
