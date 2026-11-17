@@ -10,17 +10,17 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 
 	for _, npcs := range client.room.NPCs {
 		if strings.ToUpper(npcs) == target {
-			if  d.world.NPCs[npcs].Hp > 0 {
+			if d.world.NPCs[npcs].Hp > 0 {
 				if d.world.NPCs[npcs].Hostile {
-				client.status = "combat"
-				if d.world.NPCs[npcs].Hp > 0 {
-					d.world.NPCs[npcs].Hp -= damage
-				}
-				if d.world.NPCs[npcs].Hp < 0 {
-					d.world.NPCs[npcs].Hp = 0
-				}
-				client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
-				return
+					client.status = "combat"
+					if d.world.NPCs[npcs].Hp > 0 {
+						d.world.NPCs[npcs].Hp -= damage
+					}
+					if d.world.NPCs[npcs].Hp < 0 {
+						d.world.NPCs[npcs].Hp = 0
+					}
+					client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+					return
 				} else {
 					client.Send("ERR 405 NPC_NOT_HOSTILE")
 					return
@@ -29,15 +29,15 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 		} else if target == strings.ToUpper(d.world.NPCs[npcs].Name) {
 			if d.world.NPCs[npcs].Hp > 0 {
 				if d.world.NPCs[npcs].Hostile {
-				client.status = "combat"
-				if d.world.NPCs[npcs].Hp > 0 {
-					d.world.NPCs[npcs].Hp -= damage
-				}
-				if d.world.NPCs[npcs].Hp < 0 {
-					d.world.NPCs[npcs].Hp = 0
-				}
-				client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
-				return
+					client.status = "combat"
+					if d.world.NPCs[npcs].Hp > 0 {
+						d.world.NPCs[npcs].Hp -= damage
+					}
+					if d.world.NPCs[npcs].Hp < 0 {
+						d.world.NPCs[npcs].Hp = 0
+					}
+					client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+					return
 				} else {
 					client.Send("ERR 405 NPC_NOT_HOSTILE")
 					return

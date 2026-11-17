@@ -155,14 +155,11 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 
 	var butGroup *widget.Button
 	butGroup = newBtn("GROUP", func() {
-		menu := fyne.NewMenu("",
-			fyne.NewMenuItem("CREATE", func() { send("GROUP CREATE")() }),
-			fyne.NewMenuItem("QUIT", func() { send("GROUP LEAVE")() }),
-			fyne.NewMenuItem("JOIN", func() { send("GROUP JOIN")() }),
-			fyne.NewMenuItem("INVIT", func() { send("GROUP INVITE")() }),
+		Option_popup(butGroup, w,
+			newBtn("CREATE", func() { send("GROUP CREATE")() }),
+			newBtn("QUIT", func() { send("GROUP LEAVE")() }),
+			newBtn("INVIT", func() { send("GROUP INVITE")() }),
 		)
-		pop := widget.NewPopUpMenu(menu, w.Canvas())
-		pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), butGroup)
 	})
 
 	// Cardinals Buttons

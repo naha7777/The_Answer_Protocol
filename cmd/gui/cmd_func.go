@@ -69,3 +69,11 @@ func Str_to_quests(str string, w fyne.Window) {
 	popup.ShowAtPosition(fyne.Position{X: 7*(width/9) - quests_cont.MinSize().Width*2, Y: height - 50*4 - 15})
 	popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width * 2, Height: 50 * 4})
 }
+
+func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) {
+	menu := container.NewVBox(
+		objects...,
+	)
+	pop := widget.NewPopUp(menu, w.Canvas())
+	pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), item)
+}
