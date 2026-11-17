@@ -34,14 +34,14 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | any command before `CONNECT` | | `ERR 100 YOU_MUST_BE_CONNECTED` | |
 | `CONNECT <name>` | `OK connected` | `ERR 10 YOU_HAVE_A_NAME`, `ERR 09 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE` | none |
 | `QUIT` | `OK bye` | | none |
-| `LOOK` | `OK {"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | |
+| `LOOK` | `OK look={"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | |
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none |
 | `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | none | done |
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
-| `INVENTORY` | `OK [item.a item.b]` | | |
-| `TALK <npc id or name>` | `OK <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
+| `INVENTORY` | `OK inventory=[item.a item.b]` | | |
+| `TALK <npc id or name>` | `OK talk=<dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
 | `ATTACK <npc id or name>` | `OK attack={'player_hp': 92, 'player_max_hp': 100, 'NPC_hp': 80, 'NPC_max_hp': 100, 'damage': 10, 'status': combat}`, `OK attack=<ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
-| `STATUS` | `OK {'hp': N, 'max_hp': N, 'status': S}` | | | none |
+| `STATUS` | `OK status={'hp': N, 'max_hp': N, 'status': S}` | | | none |
 | `FLEE` | `OK flee=succed, "status"="healthy"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | none |
 | `WHO` | `OK players=<n>` | | |
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
@@ -52,10 +52,10 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members |
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
-| `QUEST <npc name or npc id>` | `OK  {"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
-| `QUESTS` | `OK []`, `OK [{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
-| `COMPLETE_QUEST <quest_id>` | `OK quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
-| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | none |
+| `QUEST <npc name or npc id>` | `OK  quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
+| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
+| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=<quest_id>`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
+| `ABANDON_QUEST <quest_id>` | `OK abandon_quest=<quest_id>` | `406 NO_QUEST_AVAILABLE` | none |
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` |
 | error CLI or GUI send | | `900 SEND_FAILED` |
