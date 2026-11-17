@@ -34,6 +34,7 @@ type ItemData struct {
 type NPCData struct {
 	Name		string				`json:"name"`
 	HP			int					`json:"hp"`
+	Strengh		int					`json:"strengh"`
 	Hostile		bool				`json:"hostile"`
 	Dialogue	[]string			`json:"dialogue"`
 	Quest		[]string			`json:"quests"`

@@ -78,14 +78,14 @@
     "item.gold":     { "id": "item.gold", "name": "Gold", "description": "You are rich!", "obtainable": true }
   },
   "npcs": {
-    "npc.village_guard":  { "name": "Village Guard", "hp": 40, "hostile": false, "dialogue": ["Stay safe, traveler."], "quests": [] },
-    "npc.ghost":          { "name": "Rich Ghost", "hp": 1000, "hostile": false, "dialogue": ["BOUH."], "quests": [] },
-    "npc.merchant":       { "name": "Merchant", "hp": 10, "hostile": false, "dialogue": ["WHO WANTS MY NECKLACE? $100 FOR THIS BEAUTIFUL NECKLACE!"], "quests": [] },
-    "npc.woman":          { "name": "Woman", "hp": 20, "hostile": false, "dialogue": ["This is my favorite place."], "quests": [] },
-    "npc.fisherman":      { "name": "Fisherman", "hp": 50, "hostile": false, "dialogue": ["There are no fish anymore because of the queen. My life is over..."], "quests": [] },
-    "npc.royal_guard":    { "name": "Royal Guard", "hp": 120, "hostile": false, "dialogue": ["The queen is busy."], "quests": [] },
-    "npc.princess":       { "name": "Princess", "hp": 5, "hostile": false, "dialogue": ["North is dangerous, take my sword..."], "quests": ["princess_necklace", "poor_princess"] },
-    "npc.robber":         { "name": "Robber", "hp": 100, "hostile": true, "dialogue": ["This gold is mine MOUAHAHAHA!"], "quests": [] }
+    "npc.village_guard":  { "name": "Village Guard", "hp": 40, "strengh": 20, "hostile": false, "dialogue": ["Stay safe, traveler."], "quests": [] },
+    "npc.ghost":          { "name": "Rich Ghost", "hp": 1000, "strengh": 0, "hostile": false, "dialogue": ["BOUH."], "quests": [] },
+    "npc.merchant":       { "name": "Merchant", "hp": 10, "strengh": 5, "hostile": false, "dialogue": ["WHO WANTS MY NECKLACE? $100 FOR THIS BEAUTIFUL NECKLACE!"], "quests": [] },
+    "npc.woman":          { "name": "Woman", "hp": 20, "strengh": 50, "hostile": false, "dialogue": ["This is my favorite place."], "quests": [] },
+    "npc.fisherman":      { "name": "Fisherman", "hp": 50, "strengh": 10, "hostile": false, "dialogue": ["There are no fish anymore because of the queen. My life is over..."], "quests": [] },
+    "npc.royal_guard":    { "name": "Royal Guard", "hp": 120, "strengh": 30, "hostile": false, "dialogue": ["The queen is busy."], "quests": [] },
+    "npc.princess":       { "name": "Princess", "hp": 5, "strengh": 12, "hostile": false, "dialogue": ["North is dangerous, take my sword..."], "quests": ["princess_necklace", "poor_princess"] },
+    "npc.robber":         { "name": "Robber", "hp": 100, "strengh": 8, "hostile": true, "dialogue": ["This gold is mine MOUAHAHAHA!"], "quests": [] }
   },
   "quests": {
     "princess_necklace": {"quest_npc": "npc.princess", "quest_id": "princess_necklace", "description": "Bring me a necklace and some herbs.", "reward": ["item.potion"], "status": "available", "objective": ["item.necklace", "item.herbs"]},
