@@ -15,18 +15,19 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 		if strings.ToUpper(npcs) == target || target == strings.ToUpper(d.world.NPCs[npcs].Name) {
 			if  d.world.NPCs[npcs].Hp > 0 {
 				if d.world.NPCs[npcs].Hostile {
-				client.status = "combat"
-				if d.world.NPCs[npcs].Hp > 0 {
-					d.world.NPCs[npcs].Hp -= damage
-					client.Send("OK {'player_hp': %d, 'NPC_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
-					if d.world.NPCs[npcs].Hp <= 0 {
-						d.world.NPCs[npcs].Hp = 0
-						ChangeStatus(client)
-						client.Send(`OK %s=dead, "status"="%s"`, npcs, client.status)
+					client.status = "combat"
+					if d.world.NPCs[npcs].Hp > 0 {
+						d.world.NPCs[npcs].Hp -= damage
+						client.Send("OK {'player_hp': %d, 'NPC_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+						if d.world.NPCs[npcs].Hp <= 0 {
+							d.world.NPCs[npcs].Hp = 0
+							ChangeStatus(client)
+							client.Send(`OK %s=dead, "status"="%s"`, npcs, client.status)
+							return
+						}
+						NPCsAction("ATTACK", client, d.world.NPCs[npcs].Strengh, d.world.NPCs[npcs].Hp)
 						return
 					}
-					return
-				}
 				} else {
 					client.Send("ERR 405 NPC_NOT_HOSTILE")
 					return
@@ -54,6 +55,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 			return
 		} else {
 			client.Send(`OK fail_flee, "status"="combat"`)
+			NPCsAction("FLEE", client, 0, 0)
 			return
 		}
 	} else {
@@ -61,6 +63,31 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 		return
 	}
 
+}
+
+func NPCsAction(player_action string, client *Client, strengh int, npc_hp int) {
+	switch player_action {
+	case "ATTACK":
+		if rand.Float64() < 0.2 {
+			ChangeStatus(client)
+			client.Send(`EVT NPC FLEE : "status"="%s"`, client.status)
+			return
+		} else if rand.Float64() < 0.7 {
+			client.Send(`EVT NPC ATTACK`)
+			client.hp -= strengh
+			// gerer la mort
+			client.Send("OK {'player_hp': %d, 'NPC_hp': %v, 'damage': %d, 'status': %s}", client.hp, npc_hp, strengh, client.status)
+			return
+		} else {
+			client.Send(`EVT NPC REGENERATION`)
+			npc_hp += 5
+			return
+		}
+	case "FLEE":
+
+	case "DEFEND":
+
+	}
 }
 
 func ChangeStatus(client *Client) {
