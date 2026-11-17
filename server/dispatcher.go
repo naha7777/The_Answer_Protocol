@@ -48,6 +48,7 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["QUESTS"] = d.handleQuests
 	d.commands["COMPLETE_QUEST"] = d.handleCompleteQuest
 	d.commands["ABANDON_QUEST"] = d.handleAbandonQuest
+	d.commands["INFO_GROUP"] = d.handleInfoGroup
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {

@@ -3,6 +3,7 @@ package server
 import (
 	"strings"
 	"slices"
+	"maps"
 )
 
 func (d *Dispatcher) removeClient(client *Client) {
@@ -94,4 +95,10 @@ func Move(direction string, client *Client, d *Dispatcher) {
 		client.Send("ERR 301 NO_EXIT")
 		return
 	}
+}
+
+func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	client.Send(`OK group_infos={"group": {"Id":"%s", "Leader":"%s", "Members":"%v"}`, string(client.group.id), client.group.leader, slices.Collect(maps.Keys(client.group.members)))
 }

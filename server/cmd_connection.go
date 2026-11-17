@@ -11,7 +11,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 		client.Send("ERR 10 YOU_HAVE_A_NAME")
 		return
 	}
-	if len(args) == 0 {
+	if len(args) == 0 || len(args) > 1 {
 		client.Send("ERR 09 THIS_IS_NOT_A_NAME")
 		return
 	}
