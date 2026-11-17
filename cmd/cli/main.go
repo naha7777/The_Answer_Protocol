@@ -1,16 +1,19 @@
 package main
 
 import (
-	"the_answer_protocol/client"
+	"bufio"
 	"fmt"
 	"os"
-	"bufio"
+	"strings"
+	"the_answer_protocol/client"
 )
 
-var Reset = "\033[0m"
-var Red = "\033[31m"
-var Green = "\033[32m"
-var Cyan = "\033[36m"
+var Reset	= "\033[0m"
+var Red		= "\033[31m"
+var Green	= "\033[32m"
+var Cyan	= "\033[36m"
+var Italic	= "\033[3m"
+var Magenta	= "\033[35m"
 
 func main() {
 	c, err := client.Dial("localhost:8080")
@@ -28,7 +31,11 @@ func main() {
 			case "ERR":
 				fmt.Println(Red + msg.Raw + Reset)
 			case "OK":
-				fmt.Println(Cyan + msg.Raw + Reset)
+				if strings.HasPrefix(msg.Rest, "{'player_hp'") || strings.HasPrefix(msg.Rest, "fail_flee"){
+					fmt.Println(Italic + Magenta + msg.Raw + Reset)
+				} else {
+					fmt.Println(Cyan + msg.Raw + Reset)
+				}
 			default:
 				fmt.Println(msg.Raw)
 			}

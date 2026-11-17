@@ -40,8 +40,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
 | `INVENTORY` | `OK [item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
-| `ATTACK <npc id or name>` | `OK {'attacker_hp': N, 'target_hp': N, 'damage': N, 'status': S}` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
-| `STATUS` | `OK {'hp': N, 'max_hp': N, 'status': S}` | | | done |
+| `ATTACK <npc id or name>` | `OK {'player_hp': N, 'NPC_hp': N, 'damage': N, 'status': S}`, `OK <ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
+| `STATUS` | `OK {'hp': N, 'max_hp': N, 'status': S}` | | | none |
+| `FLEE` | `OK succed_flee, "status"="healthy"`, `OK fail_flee, "status"="combat"` | | none |
 | `WHO` | `OK players=<n>` | | |
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room |
@@ -84,6 +85,8 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 09 | THIS_IS_NOT_A_NAME | **custom (not in RFC)** |
 | 10 | YOU_HAVE_A_NAME | **custom (not in RFC)** |
 | 11 | INCOMPLETE_QUEST_REQUIREMENTS | **custom (not in RFC)** |
+| 12 | IN_FIGHT | **custom (not in RFC)** |
+| 13 | NOT_IN_FIGHT | **custom (not in RFC)** |
 
 ### Events
 

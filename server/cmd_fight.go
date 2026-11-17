@@ -1,6 +1,9 @@
 package server
 
-import "strings"
+import (
+	"strings"
+	"math/rand/v2"
+)
 
 func (d *Dispatcher) handleAttack(client *Client, args []string) {
 	target := strings.ToUpper(strings.Join(args, " "))
@@ -9,35 +12,21 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 	defer d.mu.Unlock()
 
 	for _, npcs := range client.room.NPCs {
-		if strings.ToUpper(npcs) == target {
+		if strings.ToUpper(npcs) == target || target == strings.ToUpper(d.world.NPCs[npcs].Name) {
 			if  d.world.NPCs[npcs].Hp > 0 {
 				if d.world.NPCs[npcs].Hostile {
 				client.status = "combat"
 				if d.world.NPCs[npcs].Hp > 0 {
 					d.world.NPCs[npcs].Hp -= damage
-				}
-				if d.world.NPCs[npcs].Hp < 0 {
-					d.world.NPCs[npcs].Hp = 0
-				}
-				client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
-				return
-				} else {
-					client.Send("ERR 405 NPC_NOT_HOSTILE")
+					client.Send("OK {'player_hp': %d, 'NPC_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+					if d.world.NPCs[npcs].Hp <= 0 {
+						d.world.NPCs[npcs].Hp = 0
+						ChangeStatus(client)
+						client.Send(`OK %s=dead, "status"="%s"`, npcs, client.status)
+						return
+					}
 					return
 				}
-			}
-		} else if target == strings.ToUpper(d.world.NPCs[npcs].Name) {
-			if d.world.NPCs[npcs].Hp > 0 {
-				if d.world.NPCs[npcs].Hostile {
-				client.status = "combat"
-				if d.world.NPCs[npcs].Hp > 0 {
-					d.world.NPCs[npcs].Hp -= damage
-				}
-				if d.world.NPCs[npcs].Hp < 0 {
-					d.world.NPCs[npcs].Hp = 0
-				}
-				client.Send("OK {'attacker_hp': %d, 'target_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
-				return
 				} else {
 					client.Send("ERR 405 NPC_NOT_HOSTILE")
 					return
@@ -55,6 +44,23 @@ func (d *Dispatcher) handleStatus(client *Client, args []string) {
 	ChangeStatus(client)
 	client.Send("OK {'hp': %d, 'max_hp': %d, 'status': %s}", client.hp,
 		client.hp_max, client.status)
+}
+
+func (d *Dispatcher) handleFlee(client *Client, args []string) {
+	if client.status == "combat" {
+		if rand.Float64() < 0.5 {
+			ChangeStatus(client)
+			client.Send(`OK succed_flee, "status"="%s"`, client.status)
+			return
+		} else {
+			client.Send(`OK fail_flee, "status"="combat"`)
+			return
+		}
+	} else {
+		client.Send("ERR 13 NOT_IN_FIGHT")
+		return
+	}
+
 }
 
 func ChangeStatus(client *Client) {
