@@ -19,7 +19,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 					if q.Id == quest {
 						if q.Status == "available" && q.Description != "" {
 							client.quests = append(client.quests, q)
-							client.Send(`OK {"quest_id": "%s", "description": "%s", "reward": "%s", "status": "%s"}`, q.Id, q.Description, q.Reward, q.Status)
+							client.Send(`OK quest={"quest_id": "%s", "description": "%s", "reward": "%s", "status": "%s"}`, q.Id, q.Description, q.Reward, q.Status)
 							q.Status = "active"
 							find = true
 							return
@@ -37,7 +37,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleQuests(client *Client, args []string) {
-	res := "OK ["
+	res := "OK quests=["
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	for i, v := range client.quests {
@@ -115,7 +115,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 						}
 					}
 					client.inventory = final_inventory
-					client.Send("OK %s: %s", quest.Id, quest.Status)
+					client.Send("OK complete_quest=%s", quest.Id)
 					for _, item_id := range quest.Reward {
 						for _, real_item := range d.world.Items {
 							if item_id == real_item.Id {
@@ -152,7 +152,7 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 	var final_quests []*game.Quest
 	for _, quest := range client.quests {
 		if quest.Id == args[0] {
-			client.Send("OK abandoned=%s", quest.Id)
+			client.Send("OK abandon_quest=%s", quest.Id)
 			quest.Status = "available"
 		} else {
 			final_quests = append(final_quests, quest)

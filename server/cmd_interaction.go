@@ -59,9 +59,9 @@ func (d *Dispatcher) handleTalk(client *Client, args []string) {
 	npc := strings.ToUpper(strings.Join(args, " "))
 	for _, npcs := range client.room.NPCs {
 		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(d.world.NPCs[npcs].Name){
-			client.Send("OK %v", d.world.NPCs[npcs].Dialogue[0])
+			client.Send("OK talk=%v", d.world.NPCs[npcs].Dialogue[0])
 			return
-		} 
+		}
 	}
 	client.Send("ERR 404 NPC_NOT_FOUND")
 }
