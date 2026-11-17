@@ -152,6 +152,7 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 	var final_quests []*game.Quest
 	for _, quest := range client.quests {
 		if quest.Id == args[0] {
+			client.Send("OK abandoned=%s", quest.Id)
 			quest.Status = "available"
 		} else {
 			final_quests = append(final_quests, quest)
