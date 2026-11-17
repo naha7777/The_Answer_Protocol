@@ -47,6 +47,9 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["QUEST"] = d.handleQuest
 	d.commands["QUESTS"] = d.handleQuests
 	d.commands["COMPLETE_QUEST"] = d.handleCompleteQuest
+	d.commands["INFO_GROUP"] = d.handleInfoGroup
+	d.commands["ABANDON_QUEST"] = d.handleAbandonQuest
+	d.commands["FLEE"] = d.handleFlee
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {
@@ -58,16 +61,35 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var cmd string
 	var args []string
 	first := strings.ToUpper(parts[0])
-	if first == "GROUP" {
-		cmd = strings.ToUpper(parts[0] + " " + parts[1])
-		args = parts[2:]
+	if client.status != "combat" {
+		if first == "GROUP" {
+			if len(parts) >= 2 {
+				cmd = strings.ToUpper(parts[0] + " " + parts[1])
+				args = parts[2:]
+			}
+		} else {
+			cmd = strings.ToUpper(parts[0])
+			args = parts[1:]
+		}
+		if function, exists := d.commands[cmd]; exists {
+			function(client, args)
+		} else {
+			client.Send("ERR 01 UNKNOWN_COMMAND: %s", first)
+			return
+		}
 	} else {
-		cmd = strings.ToUpper(parts[0])
-		args = parts[1:]
-	}
-	if function, exists := d.commands[cmd]; exists {
-		function(client, args)
-	} else {
-		client.Send("ERR 01 UNKNOWN_COMMAND: %s", cmd)
+		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" || first == "STATUS" {
+			cmd = strings.ToUpper(parts[0])
+			args = parts[1:]
+		} else {
+			client.Send("ERR 12 IN_FIGHT")
+			return
+		}
+		if function, exists := d.commands[cmd]; exists {
+			function(client, args)
+		} else {
+			client.Send("ERR 12 IN_FIGHT")
+			return
+		}
 	}
 }

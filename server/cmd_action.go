@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 )
@@ -18,11 +17,9 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 	for i, id := range client.room.Items {
 		item, ok := d.world.Items[id]
 		if !ok {
-			fmt.Print("a")
 			continue
 		}
 		if !strings.EqualFold(id, query) && !strings.EqualFold(item.Name, query) {
-			fmt.Print("b")
 			continue
 		}
 		if !item.Obtainable {
@@ -80,38 +77,3 @@ func (d *Dispatcher) handleMove(client *Client, args []string) {
 	}
 }
 
-func Move(direction string, client *Client, d *Dispatcher) {
-	find := false
-	for k, v := range client.room.Exits {
-		if strings.ToUpper(k) == direction {
-			for _, val := range d.world.Rooms {
-				if v == val.Id {
-					for _, c := range d.clients {
-						if slices.Contains(client.room.Players, c.name) {
-							if c.name != client.name {
-								c.Send("EVT ROOM PRESENCE LEAVE %s", client.name)
-							}
-						}
-					}
-					client.room.Players = remove(client.name, client.room.Players)
-					client.room = val
-					client.room.Players = append(client.room.Players, client.name)
-					client.Send("OK room=%s", v)
-					find = true
-					for _, c := range d.clients {
-						if slices.Contains(client.room.Players, c.name) {
-							if c.name != client.name {
-								c.Send("EVT ROOM PRESENCE ENTER %s", client.name)
-							}
-						}
-					}
-					return
-				}
-			}
-		}
-	}
-	if !find {
-		client.Send("ERR 301 NO_EXIT")
-		return
-	}
-}

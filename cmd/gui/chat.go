@@ -57,7 +57,7 @@ func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	cbut_glob := widget.NewButton("Global", func() {c.setChannel("GLOBAL", lime)})
 	cbut_room := widget.NewButton("Room", func() {c.setChannel("ROOM", cyan)})
 	cbut_grp := widget.NewButton("Group", func() {
-		if c.player.group != "" {
+		if c.player.group.id != "" {
 			c.setChannel("GROUP", orange)
 		} else {
 			popup(w, "You are not in a group")
@@ -88,7 +88,7 @@ func (c *Chat) Content() fyne.CanvasObject {
 }
 
 func (c *Chat) addLine(channel, author, text string, col color.Color) {
-	c.messages.Add(canvas.NewText("[" + channel + "] " + get_time() + " [" + author +"]: " + text, col))
+	c.messages.Add(canvas.NewText("[" + channel + "] " + get_time() + " [" + strings.ToUpper(author) +"]: " + text, col))
 	c.scroll.ScrollToBottom()
 }
 
@@ -97,7 +97,7 @@ func (c *Chat) send() {
 	if text == "" {
 		return
 	}
-	if c.scope == "GROUP" && c.player.group == "" {
+	if c.scope == "GROUP" && c.player.group.id == "" {
 		popup(c.window, "You are not in a group")
 		return
 	}

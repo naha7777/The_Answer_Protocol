@@ -51,21 +51,19 @@ func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 }
 
 func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
-	if len(objects) < 3 {
+	if len(objects) < 2 {
 		return
 	}
 	w, h := containerSize.Width, containerSize.Height
 
 	margin := float32(10)
 
-	// Buttons
 	btnSize := objects[0].MinSize()
 	btnX := margin
-	Y := h - btnSize.Height - margin
+	btnY := h - btnSize.Height - margin
 	objects[0].Resize(btnSize)
-	objects[0].Move(fyne.NewPos(btnX, Y))
+	objects[0].Move(fyne.NewPos(btnX, btnY))
 
-	// Chat
 	chatX := btnX + btnSize.Width + margin
 	chatWidth := (w - chatX - margin) / 2
 	if chatWidth < 50 {
@@ -73,21 +71,10 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	}
 
 	chatHeight := btnSize.Height
+	chatY := btnY
 
 	objects[1].Resize(fyne.NewSize(chatWidth, chatHeight))
-	objects[1].Move(fyne.NewPos(chatX, Y))
-
-	// Inventory
-	invX := chatX + chatWidth + margin
-	invY := Y - 50
-	invWidth := (w - invX - margin) / 3
-	if invWidth < 50 {
-		invWidth = 50
-	}
-
-	invHeight := h - invY - margin
-	objects[2].Resize(fyne.NewSize(invWidth, invHeight))
-	objects[2].Move(fyne.NewPos(invX, invY))
+	objects[1].Move(fyne.NewPos(chatX, chatY))
 }
 
 func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image, p *Player) *fyne.Container {
@@ -154,11 +141,19 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	butQuit.Importance = widget.LowImportance
 
 	var butGroup *widget.Button
+
+	askAndSend := func(title, label, cmd string) func() {
+		return func() {
+			askText(w, title, label, func(text string) {
+				send(strings.TrimSpace(cmd + " " + text))()
+			})
+		}
+	}
 	butGroup = newBtn("GROUP", func() {
 		Option_popup(butGroup, w,
-			newBtn("CREATE", func() { send("GROUP CREATE")() }),
+			newBtn("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
 			newBtn("QUIT", func() { send("GROUP LEAVE")() }),
-			newBtn("INVIT", func() { send("GROUP INVITE")() }),
+			newBtn("INVIT", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
 		)
 	})
 

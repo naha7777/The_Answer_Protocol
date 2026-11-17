@@ -2,10 +2,21 @@ package server
 
 import (
 	"strings"
+	"strconv"
+	"maps"
+	"encoding/json"
+	"slices"
 )
 
+type groupInfo struct {
+	Id		string		`json:"Id"`
+	Leader	string		`json:"Leader"`
+	Members	[]string	`json:"Members"`
+	Invited	[]string	`json:"Invited"`
+}
+
 type Group struct {
-	id      int
+	id      string
 	leader  string
 	members map[string]*Client
 	invited map[string]bool
@@ -18,20 +29,30 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 		client.Send("ERR 402 ALREADY_IN_GROUP")
 		return
 	}
+	id := strings.Join(args, " ")
+	if id == "" {
+		id = strconv.Itoa(len(d.groups) + 1)
+	}
+	for _, g := range d.groups {
+		if g.id == id && len(g.members) > 0 {
+			client.Send("ERR 11 GROUP_NAME_IN_USE")
+			return
+		}
+	}
 	g := &Group{
-		id:      len(d.groups) + 1,
+		id:      id,
 		leader:  client.name,
 		members: map[string]*Client{client.name: client},
 		invited: map[string]bool{},
 	}
 	d.groups[client.name] = g
 	client.group = g
-	client.Send("OK group=%d", g.id)
+	client.Send("OK group_created=%s", g.id)
 }
 
 func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 401 NOT_IN_GROUP")
+		client.Send("ERR 03 CANT_FIND_LEADER")
 		return
 	}
 	d.mu.Lock()
@@ -64,7 +85,7 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
 	client.group = l_group
-	client.Send("OK group=%d", l_group.id)
+	client.Send("OK group_joined=%s", l_group.id)
 	delete(l_group.invited, client.name)
 }
 
@@ -78,7 +99,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	current_group := client.group
 	delete(current_group.members, client.name)
 	client.group = nil
-	client.Send("OK")
+	client.Send("OK group_leaved=%s", current_group.id)
 	for _, c := range current_group.members {
 		c.Send("EVT GROUP LEAVE %s", client.name)
 	}
@@ -94,7 +115,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 
 func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 401 NOT_IN_GROUP")
+		client.Send("ERR 03 CANT_FIND_USER")
 		return
 	}
 	d.mu.Lock()
@@ -116,10 +137,33 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	}
 	client.group.invited[username] = true
 
-	client.Send("OK")
+	client.Send("OK group_invited=%s", username)
 	for _, c := range d.clients {
 		if c.name == username {
-			c.Send("EVT GROUP INVITE %s", client.name)
+			c.Send("EVT GROUP INVITE %s %s", client.name, client.group.id)
 		}
 	}
+}
+
+func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if client.group == nil {
+		client.Send("ERR 401 NOT_IN_GROUP")
+		return
+	}
+	g := client.group
+	b, err := json.Marshal(map[string]groupInfo{
+		"group": {
+			Id:			g.id,
+			Leader:		g.leader,
+			Members:	slices.Sorted(maps.Keys(g.members)),
+			Invited:	slices.Sorted(maps.Keys(g.invited)),
+		},
+	})
+	if err != nil {
+		client.Send("ERR 500 INTERNAL")
+		return
+	}
+	client.Send("Ok group_infos=%s", b)
 }
