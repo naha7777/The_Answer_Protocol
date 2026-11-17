@@ -9,6 +9,16 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 )
+type GroupInfo struct {
+	id		string
+	leader	string
+	members	[]string
+	invited	[]string
+}
+
+type groupInfosMsg struct {
+	Group	GroupInfo	`json:"group"`
+}
 
 func confirmGroup(w fyne.Window, group []string, onYes func()) {
 	var groupName, leaderName string

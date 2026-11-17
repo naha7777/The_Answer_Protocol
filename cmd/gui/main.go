@@ -15,22 +15,15 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type GroupInfo struct {
-	id		string
-	leader	string
-	members	[]string
-	invited	[]string
+type Room struct {
+	name	string
+	exits	map[string]bool
 }
-
-type groupInfosMsg struct {
-	Group	GroupInfo	`json:"group"`
-}
-
 type Player struct {
 	name	string
 	health	int
 	group	GroupInfo
-	room	string
+	room	Room
 	move	bool
 }
 
@@ -84,17 +77,19 @@ func main() {
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(w, conn, background, &player)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
+	playerinfo := showPlayerInfo(&player)
 	gameContent := container.NewStack(
 		background,
 		overlay,
 		hudContent,
+		container.NewVBox(container.NewHBox(playerinfo.Content())),
 	)
 
 	loggedIn := false
-	// playerinfo := 
-	loginView, onLoginMsg := LoginScreen(conn ,func(name string) {
-		player.name = name
+	// playerinfo.Update()
+	loginView, onLoginMsg := LoginScreen(conn , &player, func(name string) {
 		loggedIn = true
+		playerinfo.Update()
 		w.SetContent(gameContent)
 	})
 
@@ -112,10 +107,11 @@ func main() {
 					switch {
 					case strings.HasPrefix(msg.Rest, "room=") && player.move:
 						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
-						player.room = roomID
+						player.room.name = strings.ToUpper(roomID)
 						background.File = "./data/" + roomID + ".jpeg"
 						background.Refresh()
 						player.move = false
+						playerinfo.Update()
 
 					case msg.Rest == "bye":
 						a.Quit()
@@ -127,6 +123,7 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
 						popup(w, "You leave " + strings.ToUpper(player.group.id) + " group")
 						player.group = GroupInfo{}
+						playerinfo.Update()
 					case strings.HasPrefix(msg.Rest, "group_joined="):
 						popup(w, "You join the " + strings.ToUpper(player.group.id) + "group")
 						conn.Send("INFO_GROUP")

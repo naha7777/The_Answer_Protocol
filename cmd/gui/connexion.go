@@ -11,7 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func LoginScreen(conn *client.Conn, onSuccess func(name string)) (fyne.CanvasObject, func(client.Message)) {
+func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string)) (fyne.CanvasObject, func(client.Message)) {
 	banner := canvas.NewText("ENTER YOUR NAME", color.White)
 	banner.TextSize = 40
 	banner.TextStyle = fyne.TextStyle{Bold: true}
@@ -34,7 +34,7 @@ func LoginScreen(conn *client.Conn, onSuccess func(name string)) (fyne.CanvasObj
 		if err := conn.Send("CONNECT " + name); err != nil {
 			errorLabel.SetText("901 SEND_FAILED")
 		}
-		pendingName = name
+		pendingName = strings.ToUpper(name)
 	}
 	nameEntry.OnSubmitted = func(string) { connect() } // touche entree
 	butConnect := widget.NewButton("CONNECT", connect)
@@ -50,6 +50,9 @@ func LoginScreen(conn *client.Conn, onSuccess func(name string)) (fyne.CanvasObj
 	onMessage := func(msg client.Message) {
 		switch {
 		case msg.Kind == "OK" && msg.Rest == "connected":
+			player.name = pendingName
+			player.room.name = "SQUARE"
+			player.room.exits = map[string]bool{"north": true, "south": false, "east": true, "west": false}
 			onSuccess(pendingName)
 		case msg.Kind == "ERR":
 			errorLabel.SetText(msg.Rest)

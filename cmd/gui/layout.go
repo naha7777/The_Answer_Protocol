@@ -30,6 +30,15 @@ type Layout struct {
 	backgroundFile	string
 	container	*fyne.Container
 }
+
+type ButtonManager struct {
+	Container	*fyne.Container
+	north		*widget.Button
+	south		*widget.Button
+	east		*widget.Button
+	west		*widget.Button
+}
+
 // /===========================================\
 // |				 Function				   |
 // \===========================================/
@@ -112,10 +121,9 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
-	// butMove := newBtn("MOVE", send("MOVE") )
-	butTake := newBtn("TAKE", send("TAKE") )
+	// butTake := newBtn("TAKE", send("TAKE") )
 	// butDrop := newBtn("DROP", send("DROP") )
-	// butTalk := newBtn("TALK", send("TALK") )
+	butTalk := newBtn("TALK", send("TALK") )
 	butStatus := newBtn("STATUS", send("STATUS") )
 	butQuest := newBtn("QUEST", send("QUEST") )
 	butQuests := newBtn("QUESTS", send("QUESTS") )
@@ -166,14 +174,11 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	butWest := newBtn("WEST", send("MOVE WEST") )
 
 	butsActions := container.NewGridWithColumns(3,
-		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
-		butLook, butTake, butAttack,
+		butLook, butTalk, butAttack,
 		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
-		// butDrop, butTalk, butMove,
 		butStatus, butQuest, butQuests,
 		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 		butWho, butGroup, butQuit,
-		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 	)
 
 	butsCardinals := container.NewGridWithColumns(3,
@@ -192,8 +197,21 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 		butsCardinals,
 	)
 
-	return container.NewStack(
+	mainContainer := container.NewStack(
 		btnsFrame,
 		container.NewPadded(insideBtn),
 	)
+
+	bm := &ButtonManager{
+		Container:	mainContainer,
+		north:		butNorth,
+		south:		butSouth,
+		east:		butEast,
+		west:		butWest,
+	}
+
+	bm.Update(p)
+	return bm
 }
+
+func (bm *)
