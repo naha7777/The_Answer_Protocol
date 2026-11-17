@@ -1,4 +1,4 @@
-_This project has been created as part of the 42 curriculum by anacharp, frrenaux._
+_This project has been created as part of the 42 curriculum by anacharp, frrenaux and tcolson._
 
 # The_Answer_Protocol
 
@@ -40,16 +40,16 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
 | `INVENTORY` | `OK [item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
-| `ATTACK <npc id or name>` | `OK {'player_hp': N, 'NPC_hp': N, 'damage': N, 'status': S}`, `OK <ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
+| `ATTACK <npc id or name>` | `OK attack={'player_hp': 92, 'player_max_hp': 100, 'NPC_hp': 80, 'NPC_max_hp': 100, 'damage': 10, 'status': combat}`, `OK attack=<ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
 | `STATUS` | `OK {'hp': N, 'max_hp': N, 'status': S}` | | | none |
-| `FLEE` | `OK succed_flee, "status"="healthy"`, `OK fail_flee, "status"="combat"` | | none |
+| `FLEE` | `OK flee=succed, "status"="healthy"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | none |
 | `WHO` | `OK players=<n>` | | |
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room |
 | `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GROUP CHAT <username> <message>` to group members |
-| `GROUP CREATE <id>` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
+| `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
 | `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE` to the invited user |
-| `GROUP JOIN <leader>` | `OK group=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members |
+| `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members |
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
 | `QUEST <npc name or npc id>` | `OK  {"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |

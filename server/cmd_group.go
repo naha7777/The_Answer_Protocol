@@ -2,10 +2,11 @@ package server
 
 import (
 	"strings"
+	"strconv"
 )
 
 type Group struct {
-	id      int
+	id      string
 	leader  string
 	members map[string]*Client
 	invited map[string]bool
@@ -18,15 +19,25 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 		client.Send("ERR 402 ALREADY_IN_GROUP")
 		return
 	}
+	id := strings.Join(args, " ")
+	if id == "" {
+		id = strconv.Itoa(len(d.groups) + 1)
+	}
+	for _, g := range d.groups {
+		if g.id == id && len(g.members) > 0 {
+			client.Send("ERR 11 GROUP_NAME_IN_USE")
+			return
+		}
+	}
 	g := &Group{
-		id:      len(d.groups) + 1,
+		id:      id,
 		leader:  client.name,
 		members: map[string]*Client{client.name: client},
 		invited: map[string]bool{},
 	}
 	d.groups[client.name] = g
 	client.group = g
-	client.Send("OK group=%d", g.id)
+	client.Send("OK group_created=%s", g.id)
 }
 
 func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
@@ -64,7 +75,7 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
 	client.group = l_group
-	client.Send("OK group=%d", l_group.id)
+	client.Send("OK group_joined=%s", l_group.id)
 	delete(l_group.invited, client.name)
 }
 

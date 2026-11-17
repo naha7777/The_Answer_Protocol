@@ -3,6 +3,7 @@ package server
 import (
 	"strings"
 	"math/rand/v2"
+	"time"
 )
 
 func (d *Dispatcher) handleAttack(client *Client, args []string) {
@@ -18,14 +19,15 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 					client.status = "combat"
 					if d.world.NPCs[npcs].Hp > 0 {
 						d.world.NPCs[npcs].Hp -= damage
-						client.Send("OK {'player_hp': %d, 'NPC_hp': %v, 'damage': %d, 'status': %s}", client.hp, d.world.NPCs[npcs].Hp, damage, client.status)
+						client.Send("OK attack={'player_hp': %d, 'player_max_hp': %d, 'NPC_hp': %d, 'NPC_max_hp': %d, 'damage': %d, 'status': %s}", client.hp, client.hp_max, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, damage, client.status)
 						if d.world.NPCs[npcs].Hp <= 0 {
 							d.world.NPCs[npcs].Hp = 0
 							ChangeStatus(client)
-							client.Send(`OK %s=dead, "status"="%s"`, npcs, client.status)
+							client.Send(`OK attack=%s=dead, "status"="%s"`, npcs, client.status)
 							return
 						}
-						NPCsAction("ATTACK", client, d.world.NPCs[npcs].Strengh, d.world.NPCs[npcs].Hp)
+						time.Sleep(2 * time.Second)
+						NPCsAction("ATTACK", client, d.world.NPCs[npcs].Strengh, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp)
 						return
 					}
 				} else {
@@ -51,11 +53,11 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 	if client.status == "combat" {
 		if rand.Float64() < 0.5 {
 			ChangeStatus(client)
-			client.Send(`OK succed_flee, "status"="%s"`, client.status)
+			client.Send(`OK flee=succed, "status"="%s"`, client.status)
 			return
 		} else {
-			client.Send(`OK fail_flee, "status"="combat"`)
-			NPCsAction("FLEE", client, 0, 0)
+			client.Send(`OK flee=fail, "status"="combat"`)
+			NPCsAction("FLEE", client, 0, 0, 0)
 			return
 		}
 	} else {
@@ -65,28 +67,52 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 
 }
 
-func NPCsAction(player_action string, client *Client, strengh int, npc_hp int) {
+func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, NPC_max_hp int) {
 	switch player_action {
 	case "ATTACK":
-		if rand.Float64() < 0.2 {
+		if rand.Float64() < 0.1 {
 			ChangeStatus(client)
-			client.Send(`EVT NPC FLEE : "status"="%s"`, client.status)
+			client.Send(`EVT NPC FLEE, "status"="%s"`, client.status)
 			return
-		} else if rand.Float64() < 0.7 {
+		} else if rand.Float64() < 0.8 {
 			client.Send(`EVT NPC ATTACK`)
 			client.hp -= strengh
 			// gerer la mort
-			client.Send("OK {'player_hp': %d, 'NPC_hp': %v, 'damage': %d, 'status': %s}", client.hp, npc_hp, strengh, client.status)
+			client.Send("OK attack={'player_hp': %d, 'player_max_hp': %d, 'NPC_hp': %d, 'NPC_max_hp': %d, 'damage': %d, 'status': %s}", client.hp, client.hp_max, npc_hp, NPC_max_hp, strengh, client.status)
 			return
 		} else {
-			client.Send(`EVT NPC REGENERATION`)
+			client.Send(`EVT NPC REGENERATION : +5 hp`)
 			npc_hp += 5
 			return
 		}
 	case "FLEE":
-
+		 if rand.Float64() < 0.95 {
+			client.Send(`EVT NPC ATTACK`)
+			client.hp -= strengh
+			// gerer la mort
+			client.Send("OK attack={'player_hp': %d, 'player_max_hp': %d, 'NPC_hp': %d, 'NPC_max_hp': %d, 'damage': %d, 'status': %s}", client.hp, client.hp_max, npc_hp, NPC_max_hp, strengh, client.status)
+			return
+		} else {
+			client.Send(`EVT NPC REGENERATION : +5 hp`)
+			npc_hp += 5
+			return
+		}
 	case "DEFEND":
-
+		if rand.Float64() < 0.07 {
+			ChangeStatus(client)
+			client.Send(`EVT NPC FLEE, "status"="%s"`, client.status)
+			return
+		} else if rand.Float64() < 0.73 {
+			client.Send(`EVT NPC ATTACK`)
+			client.hp -= strengh
+			// gerer la mort
+			client.Send("OK attack={'player_hp': %d, 'player_max_hp': %d, 'NPC_hp': %d, 'NPC_max_hp': %d, 'damage': %d, 'status': %s}", client.hp, client.hp_max, npc_hp, NPC_max_hp, strengh, client.status)
+			return
+		} else {
+			client.Send(`EVT NPC REGENERATION : +5 hp`)
+			npc_hp += 5
+			return
+		}
 	}
 }
 

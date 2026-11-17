@@ -33,6 +33,7 @@ type Item struct {
 type NPC struct {
 	Name		string
 	Hp			int
+	Max_hp		int
 	Strengh		int
 	Hostile		bool
 	Dialogue	[]string
@@ -82,7 +83,8 @@ func LoadWorld(path string) (*World, error) {
 
 	npc_lst := make(map[string]*NPC, len(w.NPCs))
 	for str, npc := range w.NPCs {
-		n := &NPC{Name: npc.Name, Hp: npc.HP, Strengh: npc.Strengh,
+		n := &NPC{Name: npc.Name, Hp: npc.HP, Max_hp: npc.Max_hp,
+				  Strengh: npc.Strengh,
 				  Hostile: npc.Hostile, Dialogue: npc.Dialogue,
 				  Quest: npc.Quest}
 		npc_lst[str] = n
