@@ -18,7 +18,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 	username := strings.Join(args, " ")
 
 	for _, c := range d.clients {
-		if c.name == username {
+		if strings.ToUpper(c.name) == strings.ToUpper(username) {
 			client.Send("ERR 201 NAME_IN_USE")
 			return
 		}
