@@ -7,7 +7,7 @@ import (
 
 func (d *Dispatcher) handleAttack(client *Client, args []string) {
 	target := strings.ToUpper(strings.Join(args, " "))
-	damage := 10
+	damage := client.strengh
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
