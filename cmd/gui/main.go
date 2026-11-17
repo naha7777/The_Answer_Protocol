@@ -16,22 +16,22 @@ import (
 )
 
 type GroupInfo struct {
-	id		string
-	leader	string
-	members	[]string
-	invited	[]string
+	id      string
+	leader  string
+	members []string
+	invited []string
 }
 
 type groupInfosMsg struct {
-	Group	GroupInfo	`json:"group"`
+	Group GroupInfo `json:"group"`
 }
 
 type Player struct {
-	name	string
-	health	int
-	group	GroupInfo
-	room	string
-	move	bool
+	name   string
+	health int
+	group  GroupInfo
+	room   string
+	move   bool
 }
 
 // /===========================================\
@@ -50,7 +50,7 @@ var (
 // \===========================================/
 
 func main() {
-	player := Player{health: 100, move: false,}
+	player := Player{health: 100, move: false}
 
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
@@ -80,10 +80,11 @@ func main() {
 
 	// ajouter conn en parametre de la fonction
 	chat := NewChat(w, &player, conn)
+	inv := NewInv(w, &player, conn)
 
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(w, conn, background, &player)
-	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
@@ -91,11 +92,12 @@ func main() {
 	)
 
 	loggedIn := false
-	// playerinfo := 
-	loginView, onLoginMsg := LoginScreen(conn ,func(name string) {
+	// playerinfo :=
+	loginView, onLoginMsg := LoginScreen(conn, func(name string) {
 		player.name = name
 		loggedIn = true
 		w.SetContent(gameContent)
+		conn.Send("INVENTORY")
 	})
 
 	w.SetContent(loginView)
@@ -122,13 +124,13 @@ func main() {
 
 					// GROUP
 					case strings.HasPrefix(msg.Rest, "group_created="):
-						popup(w, strings.ToUpper(player.group.id) + " group was created")
+						popup(w, strings.ToUpper(player.group.id)+" group was created")
 						conn.Send("INFO_GROUP")
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
-						popup(w, "You leave " + strings.ToUpper(player.group.id) + " group")
+						popup(w, "You leave "+strings.ToUpper(player.group.id)+" group")
 						player.group = GroupInfo{}
 					case strings.HasPrefix(msg.Rest, "group_joined="):
-						popup(w, "You join the " + strings.ToUpper(player.group.id) + "group")
+						popup(w, "You join the "+strings.ToUpper(player.group.id)+"group")
 						conn.Send("INFO_GROUP")
 					case strings.HasPrefix(msg.Rest, "group_infos="):
 						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
@@ -138,6 +140,18 @@ func main() {
 							break
 						}
 						player.group = infos.Group
+					case strings.HasPrefix(msg.Rest, "taken="):
+						item := strings.TrimPrefix(msg.Rest, "taken=item.")
+						item = strings.Title(strings.ToLower(item))
+						item = strings.ReplaceAll(item, "_", " ")
+						inv.take(item)
+					case strings.HasPrefix(msg.Rest, "dropped="):
+						item := strings.TrimPrefix(msg.Rest, "dropped=item.")
+						item = strings.Title(strings.ToLower(item))
+						item = strings.ReplaceAll(item, "_", " ")
+						inv.drop(item)
+					case strings.HasPrefix(msg.Rest, "{"):
+						inv.BuildInv(msg.Rest)
 					}
 
 				case "EVT":
