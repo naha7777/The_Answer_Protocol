@@ -150,8 +150,11 @@ func main() {
 						item = strings.Title(strings.ToLower(item))
 						item = strings.ReplaceAll(item, "_", " ")
 						inv.drop(item)
-					case strings.HasPrefix(msg.Rest, "{"):
+					case strings.HasPrefix(msg.Rest, "inventory="):
 						inv.BuildInv(msg.Rest)
+						inv.Update(msg.Rest)
+					case strings.HasPrefix(msg.Rest, "look="):
+						inv.Update(msg.Rest)
 					}
 
 				case "EVT":

@@ -5,6 +5,8 @@ package main
 // \===========================================/
 
 import (
+	"encoding/json"
+	"fmt"
 	"image/color"
 	"os"
 	"strings"
@@ -21,7 +23,9 @@ import (
 // \===========================================/
 
 type Inventory struct {
-	window fyne.Window
+	objects    []string
+	accessible []string
+	window     fyne.Window
 
 	items  *fyne.Container
 	scroll *container.Scroll
@@ -47,8 +51,9 @@ func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
 	invFrame.StrokeWidth = 2
 
 	// Buttons
-	take_but := widget.NewButton("TAKE", func() { conn.Send("TAKE Herbs") })
-	drop_but := widget.NewButton("DROP", func() { conn.Send("DROP Herbs") })
+	var take_but, drop_but *widget.Button
+	take_but = widget.NewButton("TAKE", func() { Option_popup(take_but, w, widget.NewButton("Herb", func() { conn.Send("TAKE Herbs") })) })
+	drop_but = widget.NewButton("DROP", func() { conn.Send("DROP Herbs") })
 
 	// Containers on top of each others
 	inv_title := container.NewCenter(widget.NewLabel("Inventory"))
@@ -124,4 +129,40 @@ func (i *Inventory) take(item string) {
 	single_cont := container.NewBorder(nil, nil, image, nil, container.NewCenter(widget.NewLabel(item)))
 	i.items.Add(single_cont)
 	i.items.Add(widget.NewSeparator())
+}
+
+type Response struct {
+	Items []string `json:"items"`
+}
+
+func (i *Inventory) Update(str string) {
+	if strings.HasPrefix(str, "inventory=") {
+		str = strings.TrimPrefix(str, "inventory=")
+		str = strings.Trim(str, "[]")
+		items := strings.Split(str, ", ")
+
+		for _, item := range items {
+			item = strings.TrimPrefix(item, "item.")
+			item = strings.ReplaceAll(item, "_", " ")
+			i.objects = append(i.objects, item)
+		}
+	} else if strings.HasPrefix(str, "look=") {
+		str = strings.TrimPrefix(str, "look=")
+		var data map[string]any
+		if err := json.Unmarshal([]byte(str), &data); err != nil {
+			fmt.Println("erreur de parsing:", err)
+			return
+		}
+		var items []string
+		if room, ok := data["room"].(map[string]any); ok {
+			if rawItems, ok := room["Items"].([]any); ok {
+				for _, item := range rawItems {
+					if str, ok := item.(string); ok {
+						items = append(items, str)
+					}
+				}
+			}
+		}
+		fmt.Println(items)
+	}
 }
