@@ -100,5 +100,9 @@ func Move(direction string, client *Client, d *Dispatcher) {
 func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	client.Send(`OK group_infos={"group": {"Id":"%s", "Leader":"%s", "Members":"%v"}`, string(client.group.id), client.group.leader, slices.Collect(maps.Keys(client.group.members)))
+	if client.group != nil {
+	client.Send(`OK group_infos={"group": {"Id":"%s", "Leader":"%s", "Members":"%v", "Invited":"%v"}`, string(client.group.id), client.group.leader, slices.Collect(maps.Keys(client.group.members)), slices.Collect(maps.Keys(client.group.invited)))
+	} else {
+		client.Send("ERR 401 NOT_IN_GROUP")
+	}
 }
