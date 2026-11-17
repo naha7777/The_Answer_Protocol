@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"image/color"
 	"os"
@@ -14,10 +15,23 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+type GroupInfo struct {
+	id		string
+	leader	string
+	members	[]string
+	invited	[]string
+}
+
+type groupInfosMsg struct {
+	Group	GroupInfo	`json:"group"`
+}
+
 type Player struct {
-	name  string
-	group string
-	move  bool
+	name	string
+	health	int
+	group	GroupInfo
+	room	string
+	move	bool
 }
 
 // /===========================================\
@@ -36,8 +50,7 @@ var (
 // \===========================================/
 
 func main() {
-	player := Player{}
-	player.move = false
+	player := Player{health: 100, move: false,}
 
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
@@ -67,11 +80,10 @@ func main() {
 
 	// ajouter conn en parametre de la fonction
 	chat := NewChat(w, &player, conn)
-	inv := NewInv(w, &player, conn)
 
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(w, conn, background, &player)
-	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
@@ -79,12 +91,11 @@ func main() {
 	)
 
 	loggedIn := false
-
-	loginView, onLoginMsg := LoginScreen(conn, func(name string) {
+	// playerinfo := 
+	loginView, onLoginMsg := LoginScreen(conn ,func(name string) {
 		player.name = name
 		loggedIn = true
 		w.SetContent(gameContent)
-		conn.Send("INVENTORY")
 	})
 
 	w.SetContent(loginView)
@@ -101,36 +112,48 @@ func main() {
 					switch {
 					case strings.HasPrefix(msg.Rest, "room=") && player.move:
 						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
+						player.room = roomID
 						background.File = "./data/" + roomID + ".jpeg"
 						background.Refresh()
 						player.move = false
 
 					case msg.Rest == "bye":
 						a.Quit()
-					case strings.HasPrefix(msg.Rest, "group="):
-						player.group = strings.TrimPrefix(msg.Rest, "group=")
-					case strings.HasPrefix(msg.Raw, "GROUP LEAVE"):
-						popup(w, "You leave your group")
-						player.group = ""
-					case strings.HasPrefix(msg.Raw, "GROUP JOIN"):
-						groupID := strings.TrimPrefix(msg.Rest, "group=")
-						popup(w, "You join the "+groupID+"group")
-						player.group = groupID
-					case strings.HasPrefix(msg.Rest, "taken="):
-						item := strings.TrimPrefix(msg.Rest, "taken=item.")
-						item = strings.Title(strings.ToLower(item))
-						item = strings.ReplaceAll(item, "_", " ")
-						inv.take(item)
-					case strings.HasPrefix(msg.Rest, "dropped="):
-						item := strings.TrimPrefix(msg.Rest, "dropped=item.")
-						item = strings.Title(strings.ToLower(item))
-						item = strings.ReplaceAll(item, "_", " ")
-						inv.drop(item)
-					case strings.HasPrefix(msg.Rest, "{"):
-						inv.BuildInv(msg.Rest)
+
+					// GROUP
+					case strings.HasPrefix(msg.Rest, "group_created="):
+						popup(w, strings.ToUpper(player.group.id) + " group was created")
+						conn.Send("INFO_GROUP")
+					case strings.HasPrefix(msg.Rest, "group_leaved="):
+						popup(w, "You leave " + strings.ToUpper(player.group.id) + " group")
+						player.group = GroupInfo{}
+					case strings.HasPrefix(msg.Rest, "group_joined="):
+						popup(w, "You join the " + strings.ToUpper(player.group.id) + "group")
+						conn.Send("INFO_GROUP")
+					case strings.HasPrefix(msg.Rest, "group_infos="):
+						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
+						var infos groupInfosMsg
+						if err := json.Unmarshal([]byte(raw), &infos); err != nil {
+							popup(w, "invalid group infos")
+							break
+						}
+						player.group = infos.Group
 					}
 
 				case "EVT":
+					m := strings.Split(msg.Raw, " ")
+					if len(m) >= 3 && m[1] == "GROUP" {
+						switch m[2] {
+						case "INVITE":
+							if len(m) >= 5 {
+								confirmGroup(w, []string{m[4], m[3]}, func() {
+									conn.Send("GROUP JOIN " + m[3])
+								})
+							}
+						case "JOIN", "LEAVE":
+							conn.Send("GROUP INFOS")
+						}
+					}
 					parts := strings.SplitN(msg.Rest, " ", 4)
 					if len(parts) == 4 && parts[1] == "CHAT" {
 						chat.Receive(parts[0], parts[2], parts[3])
