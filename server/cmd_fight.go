@@ -3,8 +3,6 @@ package server
 import (
 	"strings"
 	"math/rand/v2"
-	"slices"
-	"the_answer_protocol/game"
 )
 
 func (d *Dispatcher) handleAttack(client *Client, args []string) {
@@ -13,6 +11,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
+	// percentage chance of landing a critical hit
 	initial_strengh := client.strengh
 	damage_type := "normal"
 	if rand.Float64() < 0.1 {
@@ -24,6 +23,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 		if strings.ToUpper(npcs) == target || target == strings.ToUpper(d.world.NPCs[npcs].Name) {
 			if  d.world.NPCs[npcs].Hp > 0 {
 				if d.world.NPCs[npcs].Hostile {
+					// Hit the NPC
 					client.status = "combat"
 					client.target = npcs
 					if d.world.NPCs[npcs].Hp > 0 {
@@ -32,27 +32,12 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 							d.world.NPCs[npcs].Hp = 0
 						}
 						client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, d.world.NPCs[npcs].Name, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, client.strengh, damage_type, client.status)
+						// if the hit kill the NPC
 						if d.world.NPCs[npcs].Hp <= 0 {
-							client.status = "exploration"
-							client.Send(`OK attack=%s=dead, "status"="%s"`, npcs, client.status)
-							room_npc := []string{}
-							for _, np := range client.room.NPCs {
-								if np != npcs {
-									room_npc = append(room_npc, np)
-								}
-							}
-							client.room.NPCs = room_npc
-							client.target = ""
-							client.strengh = initial_strengh
-							for _, c := range d.clients {
-								if slices.Contains(client.room.Players, c.name) {
-									if c.name != client.name {
-										c.Send("EVT NPC %s DEAD", npcs)
-									}
-								}
-							}
+							DeadNPC(client, initial_strengh, npcs, d)
 							return
 						}
+						// NPC hit back
 						d.world.NPCs[npcs].Hp += NPCsAction("ATTACK", client, d.world.NPCs[npcs].Strengh, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, d.world.NPCs[npcs].Name, d)
 						client.strengh = initial_strengh
 						return
@@ -115,137 +100,4 @@ func (d *Dispatcher) handleDefend(client *Client, args []string) {
 		client.Send("ERR 13 NOT_IN_FIGHT")
 		return
 	}
-}
-
-func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, NPC_max_hp int, npc_name string, d *Dispatcher) int {
-	initial_strengh := strengh
-	damage_type := "normal"
-	if rand.Float64() < 0.1 {
-		strengh += (strengh*40/100)
-		damage_type = "critical"
-	}
-	switch player_action {
-	case "ATTACK":
-		if rand.Float64() < 0.1 {
-			client.status = "exploration"
-			client.Send(`EVT NPC FLEE, "status"="%s"`, client.status)
-			client.target = ""
-			return 0
-		} else if rand.Float64() < 0.8 {
-			client.Send(`EVT NPC ATTACK`)
-			client.hp -= strengh
-			if client.hp <= 0 {
-				client.status = "exploration"
-				client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
-				DeadPlayer(client, d)
-				return 0
-			}
-			client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
-			return 0
-		} else {
-			client.Send(`EVT NPC REGENERATION : +5 hp`)
-			new_hp := npc_hp + 5
-			if new_hp > NPC_max_hp {
-				new_hp = NPC_max_hp
-			}
-			client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strengh, damage_type, client.status)
-			return 5
-		}
-	case "FLEE":
-		 if rand.Float64() < 0.95 {
-			client.Send(`EVT NPC ATTACK`)
-			client.hp -= strengh
-			if client.hp <= 0 {
-				client.status = "exploration"
-				client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
-				DeadPlayer(client, d)
-				return 0
-			}
-			client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
-			return 0
-		} else {
-			client.Send(`EVT NPC REGENERATION : +5 hp`)
-			new_hp := npc_hp + 5
-			if new_hp > NPC_max_hp {
-				new_hp = NPC_max_hp
-			}
-			client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strengh, damage_type, client.status)
-			return 5
-		}
-	case "DEFEND":
-		if rand.Float64() < 0.05 {
-			client.status = "exploration"
-			client.Send(`EVT NPC FLEE, "status"="%s"`, client.status)
-			client.target = ""
-			return 0
-		} else if rand.Float64() < 0.75 {
-			client.Send(`EVT NPC ATTACK`)
-			client.hp -= (strengh - (strengh*40/100))
-			if client.hp <= 0 {
-				client.status = "exploration"
-				client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
-				DeadPlayer(client, d)
-				return 0
-			}
-			client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
-			return 0
-		} else {
-			client.Send(`EVT NPC REGENERATION : +5 hp`)
-			new_hp := npc_hp + 5
-			if new_hp > NPC_max_hp {
-				new_hp = NPC_max_hp
-			}
-			client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strengh, damage_type, client.status)
-			return 5
-		}
-	}
-	strengh = initial_strengh
-	return 0
-}
-
-func DeadPlayer(client *Client, d *Dispatcher) {
-	var final_inventory []*game.Item
-	for _, item := range client.inventory {
-		client.room.Items = append(client.room.Items, item.Id)
-	}
-	client.inventory = final_inventory
-
-	var final_quests []*game.Quest
-	for _, quest := range client.quests {
-		quest.Status = "available"
-	}
-	client.quests = final_quests
-
-	client.Send(`EVT DEATH`)
-	client.status = "exploration"
-	client.target = ""
-	for _, c := range d.clients {
-		if c != client {
-			c.Send(`EVT dead=%s`, client.name)
-		}
-	}
-
-	for _, val := range d.world.Rooms {
-		if d.world.Respawn == val.Id {
-			for _, c := range d.clients {
-				if slices.Contains(client.room.Players, c.name) {
-					if c.name != client.name {
-						c.Send(`EVT ROOM PRESENCE LEAVE %s`, client.name)
-					}
-				}
-			}
-			client.room.Players = remove(client.name, client.room.Players)
-			client.room = val
-			client.room.Players = append(client.room.Players, client.name)
-			client.Send(`OK room=%s`, d.world.Respawn)
-			for _, c := range d.clients {
-				if slices.Contains(client.room.Players, c.name) {
-					if c.name != client.name {
-						c.Send(`EVT ROOM PRESENCE ENTER %s`, client.name)
-					}
-				}
-			}
-		}
-	}
-	client.hp = client.hp_max
 }

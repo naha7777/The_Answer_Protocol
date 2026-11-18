@@ -14,6 +14,7 @@ var Green	= "\033[32m"
 var Cyan	= "\033[36m"
 var Italic	= "\033[3m"
 var Magenta	= "\033[35m"
+var Yellow  = "\033[33m"
 
 func main() {
 	c, err := client.Dial("localhost:8080")
@@ -27,7 +28,13 @@ func main() {
 		for msg := range c.Messages() {
 			switch msg.Kind {
 			case "EVT":
-				fmt.Println(Green + msg.Raw + Reset)
+				if strings.HasPrefix(msg.Rest, "DEATH") || strings.HasPrefix(msg.Rest, "dead") {
+					fmt.Println(Italic + Red + msg.Raw + Reset)
+				} else if strings.HasPrefix(msg.Rest, "NPC") {
+					fmt.Println(Yellow + msg.Raw + Reset)
+				}	else {
+					fmt.Println(Green + msg.Raw + Reset)
+				}
 			case "ERR":
 				fmt.Println(Red + msg.Raw + Reset)
 			case "OK":
