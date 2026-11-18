@@ -153,6 +153,9 @@ func main() {
 						inv.Update(msg.Rest)
 					case strings.HasPrefix(msg.Rest, "look="):
 						inv.Update(msg.Rest)
+					case strings.HasPrefix(msg.Rest, "quests="):
+						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
+						Str_to_quests(msg.Rest, w)
 					}
 
 				case "EVT":
