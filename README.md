@@ -40,7 +40,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
 | `INVENTORY` | `OK [item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
-| `ATTACK <npc id or name>` | `OK attack={'player_hp': 92, 'player_max_hp': 100, 'NPC_hp': 80, 'NPC_max_hp': 100, 'damage': 10, 'status': combat}`, `OK attack=<ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
+| `ATTACK <npc id or name>` | `OK attack={'player_hp': 92, 'player_max_hp': 100, 'NPC_name': 'robber', 'NPC_hp': 80, 'NPC_max_hp': 100, 'damage': 10, 'status': 'combat'}`, `OK attack=<ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
 | `STATUS` | `OK {'hp': N, 'max_hp': N, 'status': S}` | | | none |
 | `FLEE` | `OK flee=succed, "status"="healthy"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | none |
 | `WHO` | `OK players=<n>` | | |

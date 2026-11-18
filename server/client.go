@@ -17,6 +17,7 @@ type Client struct {
 	status    string
 	quests    []*game.Quest
 	strengh   int
+	target    string
 }
 
 func (c *Client) Send(format string, a ...any) {

@@ -31,7 +31,7 @@ func main() {
 			case "ERR":
 				fmt.Println(Red + msg.Raw + Reset)
 			case "OK":
-				if strings.HasPrefix(msg.Rest, "{'player_hp'") || strings.HasPrefix(msg.Rest, "fail_flee"){
+				if strings.HasPrefix(msg.Rest, "attack=") || strings.HasPrefix(msg.Rest, "flee=") || strings.HasPrefix(msg.Rest, "defend") {
 					fmt.Println(Italic + Magenta + msg.Raw + Reset)
 				} else {
 					fmt.Println(Cyan + msg.Raw + Reset)

@@ -50,6 +50,7 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["INFO_GROUP"] = d.handleInfoGroup
 	d.commands["ABANDON_QUEST"] = d.handleAbandonQuest
 	d.commands["FLEE"] = d.handleFlee
+	d.commands["DEFEND"] = d.handleDefend
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {
