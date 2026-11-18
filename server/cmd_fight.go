@@ -69,7 +69,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 			client.Send(`OK flee=succed, "status"="%s"`, client.status)
 			client.target = ""
 			return
-		} else if rand.Float64() < 0.6 {
+		} else {
 			for _, npcs := range client.room.NPCs {
 				if strings.EqualFold(strings.ToUpper(npcs), strings.ToUpper(client.target))  || strings.EqualFold(strings.ToUpper(client.target), strings.ToUpper(d.world.NPCs[npcs].Name)) {
 					client.Send(`OK flee=fail, "status"="combat"`)
