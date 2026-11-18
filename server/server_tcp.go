@@ -51,6 +51,12 @@ func Server(listener net.Listener) {
 		os.Exit(1)
 	}
 
+	for _, r := range world.Rooms {
+		if r.NPCs == nil { r.NPCs = []string{} }
+		if r.Items == nil { r.Items = []string{} }
+		if r.Players == nil { r.Players = []string{} }
+	}
+
 	dispatcher := NewDispatcher(world)
 
 	for {
