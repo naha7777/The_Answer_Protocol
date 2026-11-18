@@ -143,14 +143,10 @@ func main() {
 						}
 						player.group = infos.Group
 					case strings.HasPrefix(msg.Rest, "taken="):
-						item := strings.TrimPrefix(msg.Rest, "taken=item.")
-						item = strings.Title(strings.ToLower(item))
-						item = strings.ReplaceAll(item, "_", " ")
+						item := strings.TrimPrefix(msg.Rest, "taken=")
 						inv.take(item)
 					case strings.HasPrefix(msg.Rest, "dropped="):
-						item := strings.TrimPrefix(msg.Rest, "dropped=item.")
-						item = strings.Title(strings.ToLower(item))
-						item = strings.ReplaceAll(item, "_", " ")
+						item := strings.TrimPrefix(msg.Rest, "dropped=")
 						inv.drop(item)
 					case strings.HasPrefix(msg.Rest, "inventory="):
 						inv.BuildInv(msg.Rest)

@@ -27,6 +27,7 @@ type Inventory struct {
 	accessible []string
 	window     fyne.Window
 
+	pop    *widget.PopUp
 	items  *fyne.Container
 	scroll *container.Scroll
 	root   fyne.CanvasObject
@@ -52,8 +53,8 @@ func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
 
 	// Buttons
 	var take_but, drop_but *widget.Button
-	take_but = widget.NewButton("TAKE", func() { Option_popup(take_but, w, generate_option(i.accessible, "TAKE", conn)) })
-	drop_but = widget.NewButton("DROP", func() { Option_popup(drop_but, w, generate_option(i.objects, "DROP", conn)) })
+	take_but = widget.NewButton("TAKE", func() { i.pop = Option_popup(take_but, w, generate_option(i.accessible, "TAKE", conn)) })
+	drop_but = widget.NewButton("DROP", func() { i.pop = Option_popup(drop_but, w, generate_option(i.objects, "DROP", conn)) })
 
 	// Containers on top of each others
 	inv_title := container.NewCenter(widget.NewLabel("Inventory"))
@@ -84,7 +85,7 @@ func (i *Inventory) BuildInv(str string) {
 
 	for _, item := range items {
 		item = strings.Trim(item, `"`)
-		item, _ = strings.CutPrefix(item, "item.")
+		item = strings.TrimPrefix(item, "item.")
 
 		// img
 		image := canvas.NewImageFromFile("data/icons/placeholder.png")
@@ -107,12 +108,15 @@ func (i *Inventory) drop(item string) {
 	for n, obj := range i.items.Objects {
 		if cont, ok := obj.(*fyne.Container); ok {
 			text := cont.Objects[0].(*fyne.Container).Objects[0].(*widget.Label).Text
-			if text == item {
+			if text == itemIDToName(item) {
 				sep := i.items.Objects[n+1]
 				i.items.Remove(obj)
 				i.items.Remove(sep)
 				i.objects = Pop(item, i.objects)
 				i.accessible = append(i.accessible, item)
+				fyne.Do(func() {
+					i.pop.Hide()
+				})
 				return
 			}
 		}
@@ -121,8 +125,7 @@ func (i *Inventory) drop(item string) {
 
 func (i *Inventory) take(item string) {
 	// img
-	item_file := strings.ReplaceAll(item, " ", "_")
-	item_file = strings.ToLower(item_file)
+	item_file := strings.TrimPrefix(item, "item.")
 	image := canvas.NewImageFromFile("data/icons/placeholder.png")
 	if _, err := os.Stat("data/items/" + item_file + ".png"); err == nil {
 		image = canvas.NewImageFromFile("data/items/" + item_file + ".png")
@@ -132,11 +135,14 @@ func (i *Inventory) take(item string) {
 	image.SetMinSize(fyne.NewSize(50, 50))
 
 	// cont
-	single_cont := container.NewBorder(nil, nil, image, nil, container.NewCenter(widget.NewLabel(item)))
+	single_cont := container.NewBorder(nil, nil, image, nil, container.NewCenter(widget.NewLabel(itemIDToName(item))))
 	i.items.Add(single_cont)
 	i.items.Add(widget.NewSeparator())
 	i.objects = append(i.objects, item)
 	i.accessible = Pop(item, i.accessible)
+	fyne.Do(func() {
+		i.pop.Hide()
+	})
 }
 
 type Response struct {
@@ -149,12 +155,7 @@ func (i *Inventory) Update(str string) {
 		str = strings.Trim(str, "[]")
 		items := strings.Split(str, ", ")
 
-		for _, item := range items {
-			if item != "" {
-				item = itemIDToName(item)
-				i.objects = append(i.objects, item)
-			}
-		}
+		i.objects = items
 	} else if strings.HasPrefix(str, "look=") {
 		str = strings.TrimPrefix(str, "look=")
 		var data map[string]any
@@ -172,12 +173,7 @@ func (i *Inventory) Update(str string) {
 				}
 			}
 		}
-		var items []string
-		for _, item := range itemsID {
-			item = itemIDToName(item)
-			items = append(items, item)
-		}
-		i.accessible = items
+		i.accessible = itemsID
 	}
 }
 
@@ -192,7 +188,13 @@ func itemIDToName(id string) string {
 func generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
 	cont := container.NewVBox()
 	for _, option := range options {
-		but := widget.NewButton(option, func() { conn.Send(action + " " + option) })
+		var label string
+		if action == "TAKE" || action == "DROP" {
+			label = itemIDToName(option)
+		} else {
+			label = option
+		}
+		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
 		cont.Add(but)
 	}
 	return cont
