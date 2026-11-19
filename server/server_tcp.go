@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -62,6 +63,9 @@ func Server(listener net.Listener) {
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return
+			}
 			fmt.Fprintln(os.Stderr, "Error accepting:", err)
 			continue
 		}
