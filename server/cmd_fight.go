@@ -42,7 +42,6 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 						if damage_type == "critical" {
 							client.strengh -= (client.strengh*40/100)
 						}
-						CheckBuffDebuff(client, d)
 						return
 					}
 				} else {
@@ -79,7 +78,6 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 					CheckBuffDebuff(client, d)
 					npc := d.world.NPCs[npcs]
 					npc.Hp += NPCsAction("FLEE", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-					CheckBuffDebuff(client, d)
 					return
 				}
 			}
@@ -99,7 +97,6 @@ func (d *Dispatcher) handleDefend(client *Client, args []string) {
 				npc := d.world.NPCs[npcs]
 				npc_strengh := npc.Strengh - (npc.Strengh*40/100)
 				npc.Hp += NPCsAction("DEFEND", client, npc_strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-				CheckBuffDebuff(client, d)
 				return
 			}
 		}
@@ -128,31 +125,26 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 				client.hp -= UseBeer(client, 3)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-				CheckBuffDebuff(client, d)
 				return
 			case "SWORD":
 				client.strengh += UseSword(client, 10)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-				CheckBuffDebuff(client, d)
 				return
 			case "POISON POTION":
 				d.world.NPCs[client.target].Hp -= UsePoisonPotion(client, 5)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-				CheckBuffDebuff(client, d)
 				return
 			case "HEALTH POTION":
 				client.hp += UseHealthPotion(client, 4)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-				CheckBuffDebuff(client, d)
 				return
 			case "STRENGH POTION":
 				client.strengh += UseStrenghPotion(client, 4)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
-				CheckBuffDebuff(client, d)
 				return
 			default :
 				client.Send("ERR 12 IN_FIGHT")
