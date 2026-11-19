@@ -5,10 +5,12 @@ package main
 // \===========================================/
 
 import (
+	"fmt"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
+	"the_answer_protocol/client"
 )
 
 // /===========================================\
@@ -47,4 +49,24 @@ func Pop(name string, place []string) []string {
 		}
 	}
 	return new
+}
+
+func dialWithRetry(addr string) (*client.Conn, error) {
+	deadline := time.Now().Add(30*time.Second)
+	var lastErr error
+
+	for {
+		conn, err := client.Dial(addr)
+		if err == nil {
+			return conn, nil
+		}
+		lastErr = err
+
+		if time.Now().After(deadline) {
+			break
+		}
+		fmt.Println("attempt to reconnect")
+		time.Sleep(3*time.Second)
+	}
+	return nil, lastErr
 }

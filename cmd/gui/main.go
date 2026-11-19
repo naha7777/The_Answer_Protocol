@@ -51,7 +51,7 @@ var (
 
 func main() {
 	
-	conn, err := client.Dial("localhost:8080")
+	conn, err := dialWithRetry("localhost:8080")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
 		os.Exit(1)
@@ -111,98 +111,112 @@ func main() {
 	w.SetContent(loginView)
 
 	go func() {
-		for msg := range conn.Messages() {
-			fyne.Do(func() {
-				if !loggedIn {
-					onLoginMsg(msg)
-					return
-				}
-				switch msg.Kind {
-				case "OK":
-					switch {
-					case strings.HasPrefix(msg.Rest, "room=") && player.move:
-						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
-						player.room.name = strings.ToUpper(roomID)
-						background.File = "./data/" + roomID + ".jpeg"
-						background.Refresh()
-						player.move = false
-						playerinfo.Update()
-						data.cb.Update(player.room.exits)
-						data.conn.Send("LOOK")
-
-					case msg.Rest == "bye":
-						a.Quit()
-
-					// GROUP
-					case strings.HasPrefix(msg.Rest, "group_created="):
-						popup(w, strings.ToUpper(player.group.id)+" group was created")
-						conn.Send("INFO_GROUP")
-					case strings.HasPrefix(msg.Rest, "group_leaved="):
-						popup(w, "You leave "+strings.ToUpper(player.group.id)+" group")
-						player.group = GroupInfo{}
-						playerinfo.Update()
-					case strings.HasPrefix(msg.Rest, "group_joined="):
-						popup(w, "You join the "+strings.ToUpper(player.group.id)+"group")
-						conn.Send("INFO_GROUP")
-					case strings.HasPrefix(msg.Rest, "group_infos="):
-						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
-						var infos groupInfosMsg
-						if err := json.Unmarshal([]byte(raw), &infos); err != nil {
-							popup(w, "invalid group infos")
-							break
-						}
-						player.group = infos.Group
-					case strings.HasPrefix(msg.Rest, "taken="):
-						item := strings.TrimPrefix(msg.Rest, "taken=")
-						inv.take(item)
-					case strings.HasPrefix(msg.Rest, "dropped="):
-						item := strings.TrimPrefix(msg.Rest, "dropped=")
-						inv.drop(item)
-					case strings.HasPrefix(msg.Rest, "inventory="):
-						inv.BuildInv(msg.Rest)
-						inv.Update(msg.Rest)
-					case strings.HasPrefix(msg.Rest, "look="):
-						inv.Update(msg.Rest)
-						playerinfo.Update()
-						player.PlayerRoomUpdate(msg.Rest)
-						data.cb.Update(player.room.exits)
-					case strings.HasPrefix(msg.Rest, "quests="):
-						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
-						Str_to_quests(msg.Rest, w)
+		for {
+			for msg := range conn.Messages() {
+				fyne.Do(func() {
+					if !loggedIn {
+						onLoginMsg(msg)
+						return
 					}
+					switch msg.Kind {
+					case "OK":
+						switch {
+						case strings.HasPrefix(msg.Rest, "room=") && player.move:
+							roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
+							player.room.name = strings.ToUpper(roomID)
+							background.File = "./data/" + roomID + ".jpeg"
+							background.Refresh()
+							player.move = false
+							playerinfo.Update()
+							data.cb.Update(player.room.exits)
+							data.conn.Send("LOOK")
 
-				case "EVT":
-					m := strings.Split(msg.Raw, " ")
-					if len(m) >= 3 && m[1] == "GROUP" {
-						switch m[2] {
-						case "INVITE":
-							if len(m) >= 5 {
-								confirmGroup(w, []string{m[4], m[3]}, func() {
-									conn.Send("GROUP JOIN " + m[3])
-								})
+						case msg.Rest == "bye":
+							a.Quit()
+
+						// GROUP
+						case strings.HasPrefix(msg.Rest, "group_created="):
+							popup(w, strings.ToUpper(player.group.id)+" group was created")
+							conn.Send("INFO_GROUP")
+						case strings.HasPrefix(msg.Rest, "group_leaved="):
+							popup(w, "You leave "+strings.ToUpper(player.group.id)+" group")
+							player.group = GroupInfo{}
+							playerinfo.Update()
+						case strings.HasPrefix(msg.Rest, "group_joined="):
+							popup(w, "You join the "+strings.ToUpper(player.group.id)+"group")
+							conn.Send("INFO_GROUP")
+						case strings.HasPrefix(msg.Rest, "group_infos="):
+							raw := strings.TrimPrefix(msg.Rest, "group_infos=")
+							var infos groupInfosMsg
+							if err := json.Unmarshal([]byte(raw), &infos); err != nil {
+								popup(w, "invalid group infos")
+								break
 							}
-						case "JOIN", "LEAVE":
-							conn.Send("GROUP INFOS")
+							player.group = infos.Group
+						case strings.HasPrefix(msg.Rest, "taken="):
+							item := strings.TrimPrefix(msg.Rest, "taken=")
+							inv.take(item)
+						case strings.HasPrefix(msg.Rest, "dropped="):
+							item := strings.TrimPrefix(msg.Rest, "dropped=")
+							inv.drop(item)
+						case strings.HasPrefix(msg.Rest, "inventory="):
+							inv.BuildInv(msg.Rest)
+							inv.Update(msg.Rest)
+						case strings.HasPrefix(msg.Rest, "look="):
+							inv.Update(msg.Rest)
+							playerinfo.Update()
+							player.PlayerRoomUpdate(msg.Rest)
+							data.cb.Update(player.room.exits)
+						case strings.HasPrefix(msg.Rest, "quests="):
+							msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
+							Str_to_quests(msg.Rest, w)
 						}
-					}
-					parts := strings.SplitN(msg.Rest, " ", 4)
-					if len(parts) == 4 && parts[1] == "CHAT" {
-						chat.Receive(parts[0], parts[2], parts[3])
-					}
 
-				case "ERR":
-					popup(w, msg.Rest)
-				}
+					case "EVT":
+						m := strings.Split(msg.Raw, " ")
+						if len(m) >= 3 && m[1] == "GROUP" {
+							switch m[2] {
+							case "INVITE":
+								if len(m) >= 5 {
+									confirmGroup(w, []string{m[4], m[3]}, func() {
+										conn.Send("GROUP JOIN " + m[3])
+									})
+								}
+							case "JOIN", "LEAVE":
+								conn.Send("GROUP INFOS")
+							}
+						}
+						parts := strings.SplitN(msg.Rest, " ", 4)
+						if len(parts) == 4 && parts[1] == "CHAT" {
+							chat.Receive(parts[0], parts[2], parts[3])
+						}
+
+					case "ERR":
+						popup(w, msg.Rest)
+					}
+				})
+			}
+			newConn, newErr := dialWithRetry("localhost:8080")
+			if newErr != nil {
+				fyne.Do(func() {
+					logLabel.SetText(logLabel.Text + "-- lost connection --\n")
+					logView.ScrollToBottom()
+					a.Quit()
+				})
+				fmt.Fprintln(os.Stderr, "-- lost connection --")
+				return
+			}
+			conn.Close()
+			conn = newConn
+			data.conn = newConn
+			fmt.Println("New connection established")
+
+			fyne.Do(func() {
+				loggedIn = false
+				w.SetContent(loginView)
 			})
 		}
-
-		fyne.Do(func() {
-			logLabel.SetText(logLabel.Text + "-- lost connection --\n")
-			logView.ScrollToBottom()
-		})
-		fmt.Fprintln(os.Stderr, "-- lost connection --")
 	}()
-
 	w.ShowAndRun()
 	fmt.Println("Exited, end of TAP")
 }
