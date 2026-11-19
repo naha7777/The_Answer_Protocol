@@ -81,6 +81,7 @@ func Flee(client *Client) int {
 func DeadNPC(client *Client, initial_strengh int, npcs string, d *Dispatcher) {
 	client.status = "exploration"
 	client.Send(`OK attack=%s=dead, "status"="%s"`, npcs, client.status)
+	client.kills = append(client.kills, npcs)
 	room_npc := []string{}
 	for _, np := range client.room.NPCs {
 		if np != npcs {

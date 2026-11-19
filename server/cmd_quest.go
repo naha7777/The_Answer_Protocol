@@ -54,6 +54,11 @@ func (d *Dispatcher) handleQuests(client *Client, args []string) {
 						nb += 1
 					}
 				}
+				for _, kill := range client.kills {
+					if kill == obj {
+						nb += 1
+					}
+				}
 			}
 			res += `", "progress": "` + strconv.Itoa(nb) + "/"
 			res += strconv.Itoa(len(v.Objective))
@@ -93,8 +98,13 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 							nb += 1
 						}
 					}
+					for _, kill := range client.kills {
+						if kill == obj {
+							nb += 1
+						}
+					}
 				}
-				if nb == len(quest.Objective) {
+				if nb >= len(quest.Objective) {
 					completed = true
 				}
 				if completed {

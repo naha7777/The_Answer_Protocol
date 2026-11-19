@@ -25,6 +25,7 @@ type Client struct {
 	time_debuff		int
 	real_strengh	int
 	quit			bool
+	kills			[]string
 }
 
 func (c *Client) Send(format string, a ...any) {
@@ -44,7 +45,11 @@ func (client *Client) Death(d *Dispatcher) {
 
 	var final_quests []*game.Quest
 	for _, quest := range client.quests {
-		quest.Status = "available"
+		if quest.Status == "completed" {
+			final_quests = append(final_quests, quest)
+		} else {
+			quest.Status = "available"
+		}
 	}
 	client.quests = final_quests
 

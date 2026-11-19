@@ -86,7 +86,7 @@
     "npc.woman":            { "name": "Woman", "hp": 20, "max_hp": 20, "strengh": 50, "hostile": false, "dialogue": ["This is my favorite place."], "quests": ["flower_mission"] },
     "npc.fisherman":        { "name": "Fisherman", "hp": 50, "max_hp": 50, "strengh": 10, "hostile": false, "dialogue": ["There are no fish anymore because of the queen. My life is over..."], "quests": [] },
     "npc.royal_guard":      { "name": "Royal Guard", "hp": 120, "max_hp": 120, "strengh": 30, "hostile": false, "dialogue": ["The queen is busy."], "quests": ["poor_guard"] },
-    "npc.princess":         { "name": "Princess", "hp": 5, "max_hp": 5, "strengh": 12, "hostile": false, "dialogue": ["North is dangerous, take my sword..."], "quests": ["princess_necklace", "poor_princess"] },
+    "npc.princess":         { "name": "Princess", "hp": 5, "max_hp": 5, "strengh": 12, "hostile": false, "dialogue": ["North is dangerous, take my sword..."], "quests": ["princess_necklace", "sad_princess"] },
     "npc.pirate":           { "name": "Pirate", "hp": 100, "max_hp": 100, "strengh": 15, "hostile": true, "dialogue": ["Get out of my tavern!"], "quests": [] },
     "npc.captain":          { "name": "Captain", "hp": 150, "max_hp": 150, "strengh": 20, "hostile": true, "dialogue": ["GET OUT!"], "quests": [] },
     "npc.bartender":        { "name": "Bartender", "hp": 500, "max_hp": 500, "strengh": 50, "hostile": false, "dialogue": ["Cold beer, courtesy of the house!"], "quests": ["kill_pirate", "kill_captain"] },
