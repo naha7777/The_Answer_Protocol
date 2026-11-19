@@ -1,9 +1,9 @@
 package server
 
 import (
-	"strings"
 	"slices"
 	"strconv"
+	"strings"
 	"the_answer_protocol/game"
 )
 
@@ -13,8 +13,8 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 	defer d.mu.Unlock()
 	find := false
 	for _, npcs := range client.room.NPCs {
-		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(d.world.NPCs[npcs].Name){
-			for _, q := range(d.world.Quests) {
+		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(d.world.NPCs[npcs].Name) {
+			for _, q := range d.world.Quests {
 				for _, quest := range d.world.NPCs[npcs].Quest {
 					if q.Id == quest {
 						if q.Status == "available" && q.Description != "" {
@@ -64,7 +64,7 @@ func (d *Dispatcher) handleQuests(client *Client, args []string) {
 			res += strconv.Itoa(len(v.Objective))
 		}
 		res += `"`
-		if i != len(client.quests) - 1 {
+		if i != len(client.quests)-1 {
 			res += "},"
 		} else {
 			res += "}"
@@ -85,7 +85,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 	}
 	for _, quest := range client.quests {
 		if quest.Id == args[0] {
-			find =  true
+			find = true
 			if slices.Contains(client.room.NPCs, quest.NPC) {
 				if quest.Status != "active" {
 					client.Send("ERR 406 NO_QUEST_AVAILABLE")
@@ -125,7 +125,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 						}
 					}
 					client.inventory = final_inventory
-					client.Send("OK complete_quest=%s", quest.Id)
+					client.Send("OK complete_quest= %s: %s", quest.Id, quest.Status)
 					for _, item_id := range quest.Reward {
 						for _, real_item := range d.world.Items {
 							if item_id == real_item.Id {

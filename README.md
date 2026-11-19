@@ -38,9 +38,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none |
 | `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | none | done |
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
-| `INVENTORY` | `OK [item.a item.b]` | | |
-| `TALK <npc id or name>` | `OK <npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
-| `STATUS` | `OK {"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | | none |
+| `INVENTORY` | `OK inventory=[item.a item.b]` | | |
+| `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
+| `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | | none |
 | `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
@@ -54,10 +54,10 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN` to members |
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
-| `QUEST <npc name or npc id>` | `OK  quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
+| `QUEST <npc name or npc id>` | `OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | none |
 | `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
-| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=<quest_id>`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
-| `ABANDON_QUEST <quest_id>` | `OK abandon_quest=<quest_id>` | `406 NO_QUEST_AVAILABLE` | none |
+| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
+| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | none |
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` |
 | error CLI or GUI send | | `900 SEND_FAILED` |
