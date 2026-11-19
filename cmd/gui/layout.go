@@ -25,9 +25,16 @@ import (
 type Hud struct {
 }
 
-type Layout struct {
-	backgroundFile string
-	container      *fyne.Container
+// type Layout struct {
+// 	backgroundFile string
+// 	container      *fyne.Container
+// }
+
+type CardinalButtons struct {
+	North *widget.Button
+	South *widget.Button
+	East  *widget.Button
+	West  *widget.Button
 }
 
 // /===========================================\
@@ -116,8 +123,8 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 			if strings.HasPrefix(cmd, "MOVE") {
 				g.player.move = true
 			}
-			if err := conn.Send(cmd); err != nil {
-				fyne.Do(func() { popup(w, "901 SEND_FAILED") })
+			if err := d.conn.Send(cmd); err != nil {
+				fyne.Do(func() { popup(d.w, "901 SEND_FAILED") })
 			}
 		}
 	}
@@ -143,7 +150,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 				}
 				send("QUIT")()
 			},
-			w,
+			d.w,
 		)
 		d.SetConfirmText("YES")
 		d.SetDismissText("NO")
@@ -155,13 +162,13 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 
 	askAndSend := func(title, label, cmd string) func() {
 		return func() {
-			askText(w, title, label, func(text string) {
+			askText(d.w, title, label, func(text string) {
 				send(strings.TrimSpace(cmd + " " + text))()
 			})
 		}
 	}
 	butGroup = newBtn("GROUP", func() {
-		Option_popup(butGroup, w,
+		Option_popup(butGroup, d.w,
 			newBtn("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
 			newBtn("QUIT", func() { send("GROUP LEAVE")() }),
 			newBtn("INVIT", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
@@ -169,10 +176,10 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	})
 
 	// Cardinals Buttons
-	butNorth := newBtn("NORTH", send("MOVE NORTH"))
-	butSouth := newBtn("SOUTH", send("MOVE SOUTH"))
-	butEast := newBtn("EAST", send("MOVE EAST"))
-	butWest := newBtn("WEST", send("MOVE WEST"))
+	d.cb.North = newBtn("NORTH", send("MOVE NORTH"))
+	d.cb.South = newBtn("SOUTH", send("MOVE SOUTH"))
+	d.cb.East = newBtn("EAST", send("MOVE EAST"))
+	d.cb.West = newBtn("WEST", send("MOVE WEST"))
 
 	butsActions := container.NewGridWithColumns(3,
 		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
@@ -181,13 +188,12 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 		butStatus, butQuest, butQuests,
 		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 		butWho, butGroup, butQuit,
-		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 	)
 
 	butsCardinals := container.NewGridWithColumns(3,
-		widget.NewLabel(""), butNorth, widget.NewLabel(""),
-		butWest, butMap, butEast,
-		widget.NewLabel(""), butSouth, widget.NewLabel(""),
+		widget.NewLabel(""), d.cb.North, widget.NewLabel(""),
+		d.cb.West, butMap, d.cb.East,
+		widget.NewLabel(""), d.cb.South, widget.NewLabel(""),
 	)
 
 	btnsFrame := canvas.NewRectangle(color.NRGBA{R: 20, G: 20, B: 20, A: 200})
@@ -204,4 +210,26 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 		btnsFrame,
 		container.NewPadded(insideBtn),
 	)
+}
+
+// Method for showing/hiding buttons based on the “exits” map
+func (cb *CardinalButtons) Update(exits map[string]bool) {
+	if exits == nil {
+		exits = make(map[string]bool)
+	}
+	updateBtn := func(btn *widget.Button, isOpen bool) {
+		if btn == nil {
+			return
+		}
+		if isOpen {
+			btn.Enable()
+		} else {
+			btn.Disable()
+		}
+	}
+
+	updateBtn(cb.North, exits["north"])
+	updateBtn(cb.South, exits["south"])
+	updateBtn(cb.East, exits["east"])
+	updateBtn(cb.West, exits["west"])
 }

@@ -15,22 +15,22 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type GroupInfo struct {
-	id      string
-	leader  string
-	members []string
-	invited []string
+type Room struct {
+	name  string
+	exits map[string]bool
 }
 
-type groupInfosMsg struct {
-	Group GroupInfo `json:"group"`
+type Data struct {
+	w    fyne.Window
+	conn *client.Conn
+	cb   *CardinalButtons
 }
 
 type Player struct {
 	name   string
 	health int
 	group  GroupInfo
-	room   string
+	room   Room
 	move   bool
 }
 
@@ -84,7 +84,6 @@ var (
 // \===========================================/
 
 func main() {
-	player := Player{health: 100, move: false}
 
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
@@ -95,6 +94,11 @@ func main() {
 
 	a := app.New()
 	w := a.NewWindow("TAP")
+	data := Data{w: w, conn: conn, cb: &CardinalButtons{}}
+	initialRoom := Room{
+		name:  "square",
+		exits: map[string]bool{"north": true, "south": false, "east": true, "west": false}}
+	player := Player{health: 100, move: false, room: initialRoom}
 	w.Resize(fyne.NewSize(1920, 1080))
 
 	// Key hook for esc to close the app
@@ -117,19 +121,23 @@ func main() {
 	inv := NewInv(w, &player, conn)
 	game := GameState{inventory: inv, player: &player}
 
-	// Main View
-	btnContainer := newButtonContainer(w, conn, background, &game)
+	// ajouter conn en parametre de la fonction
+	btnContainer := newButtonContainer(background, &player, &data)
+	playerinfo := showPlayerInfo(&player)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
 		hudContent,
+		container.NewVBox(container.NewHBox(playerinfo.Content())),
 	)
 
 	loggedIn := false
-	loginView, onLoginMsg := LoginScreen(conn, func(name string) {
-		player.name = name
+	// playerinfo.Update()
+	loginView, onLoginMsg := LoginScreen(conn, &player, func(name string) {
 		loggedIn = true
+		playerinfo.Update()
+		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
 		conn.Send("INVENTORY")
 		conn.Send("LOOK")
@@ -151,11 +159,13 @@ func main() {
 					// MOVE
 					case strings.HasPrefix(msg.Rest, "room=") && player.move:
 						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
-						player.room = roomID
+						player.room.name = strings.ToUpper(roomID)
 						background.File = "./data/" + roomID + ".jpeg"
 						background.Refresh()
 						player.move = false
-						conn.Send("LOOK")
+						playerinfo.Update()
+						data.cb.Update(player.room.exits)
+						data.conn.Send("LOOK")
 
 					case msg.Rest == "bye":
 						a.Quit()
@@ -167,6 +177,7 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
 						popup(w, "You leave "+strings.ToUpper(player.group.id)+" group")
 						player.group = GroupInfo{}
+						playerinfo.Update()
 					case strings.HasPrefix(msg.Rest, "group_joined="):
 						popup(w, "You join the "+strings.ToUpper(player.group.id)+"group")
 						conn.Send("INFO_GROUP")
@@ -196,9 +207,10 @@ func main() {
 
 					// LOOK
 					case strings.HasPrefix(msg.Rest, "look="):
-						game.Update(msg.Rest)
-
-					// QUESTS
+						inv.Update(msg.Rest)
+						playerinfo.Update()
+						player.PlayerRoomUpdate(msg.Rest)
+						data.cb.Update(player.room.exits)
 					case strings.HasPrefix(msg.Rest, "quests="):
 						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
 						Str_to_quests(msg.Rest, w)
