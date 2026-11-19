@@ -95,10 +95,10 @@ func main() {
 
 	a := app.New()
 	w := a.NewWindow("TAP")
-	initialRoom := Room{
-		name:  "square",
-		exits: map[string]bool{"north": true, "south": false, "east": true, "west": false}}
-	player := Player{health: 100, move: false, room: initialRoom}
+	// initialRoom := Room{
+	// 	name:  "square",
+	// 	exits: map[string]bool{"north": true, "south": false, "east": true, "west": false}}
+	player := Player{health: 100, move: false}
 	w.Resize(fyne.NewSize(1920, 1080))
 
 	// Key hook for esc to close the app
@@ -211,6 +211,8 @@ func main() {
 						playerinfo.Update()
 						player.PlayerRoomUpdate(msg.Rest)
 						data.cb.Update(player.room.exits)
+
+					// QUESTS
 					case strings.HasPrefix(msg.Rest, "quests="):
 						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
 						Str_to_quests(msg.Rest, w)

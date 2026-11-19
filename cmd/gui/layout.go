@@ -129,12 +129,15 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	}
 
 	// Actions Buttons
-	butAttack := newBtn("ATTACK", send("ATTACK"))
-	butLook := newBtn("LOOK", send("LOOK"))
+	var butAttack *widget.Button
+	butAttack = newBtn("ATTACK", func() { d.g.popup = Option_popup(butAttack, d.w, Generate_option(d.g.npc, "ATTACK", d.conn)) })
 	var butTalk *widget.Button
 	butTalk = newBtn("TALK", func() { d.g.popup = Option_popup(butTalk, d.w, Generate_option(d.g.npc, "TALK", d.conn)) })
+	var butQuest *widget.Button
+	butQuest = newBtn("QUEST", func() { d.g.popup = Option_popup(butQuest, d.w, Generate_option(d.g.npc, "QUEST", d.conn)) })
+
+	butLook := newBtn("LOOK", send("LOOK"))
 	butStatus := newBtn("STATUS", send("STATUS"))
-	butQuest := newBtn("QUEST", send("QUEST"))
 	butQuests := newBtn("QUESTS", send("QUESTS"))
 	butWho := newBtn("WHO", send("WHO"))
 	butMap := newBtn("MAP", toggleMap)

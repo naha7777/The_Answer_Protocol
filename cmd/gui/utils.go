@@ -56,7 +56,7 @@ func Generate_option(options []string, action string, conn *client.Conn) *fyne.C
 	cont := container.NewVBox()
 	for _, option := range options {
 		var label string
-		if action == "TAKE" || action == "DROP" || action == "TALK" {
+		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" {
 			label = IDToName(option)
 		} else {
 			label = option

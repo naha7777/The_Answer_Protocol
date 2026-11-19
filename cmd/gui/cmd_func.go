@@ -27,10 +27,8 @@ func Str_to_quests(str string, w fyne.Window) {
 	height := w.Canvas().Size().Height
 
 	// parse
-	raw := `[{"quest_id": "fetch_herbs", "status": "active", "progress": "1/3"}, {"quest_id": "defeat_goblin", "status": "completed"}]`
-
 	var quests []map[string]string
-	if err := json.Unmarshal([]byte(raw), &quests); err != nil {
+	if err := json.Unmarshal([]byte(str), &quests); err != nil {
 		fmt.Println("erreur de parsing:", err)
 		return
 	}
