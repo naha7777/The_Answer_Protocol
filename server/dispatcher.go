@@ -80,7 +80,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 			return
 		}
 	} else {
-		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" || first == "STATUS" || first == "USE_ITEM" {
+		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" || first == "STATUS" || first == "USE_ITEM" || first == "INVENTORY" {
 			cmd = strings.ToUpper(parts[0])
 			args = parts[1:]
 		} else {

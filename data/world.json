@@ -63,7 +63,7 @@
       "name": "Tavern",
       "description": "A tavern with a lot of beers and pirates.",
       "exits": { "north": "loc.forest", "south": "loc.square", "east": "loc.meadow", "west": "loc.garden"},
-      "items": ["item.beer", "item.beer", "item.beer", "item.health_potion", "item.strengh_potion", "item.poison_potion", "item.sword"],
+      "items": ["item.beer", "item.beer", "item.beer"],
       "npcs": ["npc.pirate", "npc.bartender", "npc.captain"]
     }
   },
