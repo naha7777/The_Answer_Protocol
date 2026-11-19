@@ -53,8 +53,8 @@ func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
 
 	// Buttons
 	var take_but, drop_but *widget.Button
-	take_but = widget.NewButton("TAKE", func() { i.pop = Option_popup(take_but, w, generate_option(i.accessible, "TAKE", conn)) })
-	drop_but = widget.NewButton("DROP", func() { i.pop = Option_popup(drop_but, w, generate_option(i.objects, "DROP", conn)) })
+	take_but = widget.NewButton("TAKE", func() { i.pop = Option_popup(take_but, w, Generate_option(i.accessible, "TAKE", conn)) })
+	drop_but = widget.NewButton("DROP", func() { i.pop = Option_popup(drop_but, w, Generate_option(i.objects, "DROP", conn)) })
 
 	// Containers on top of each others
 	inv_title := container.NewCenter(widget.NewLabel("Inventory"))
@@ -108,7 +108,7 @@ func (i *Inventory) drop(item string) {
 	for n, obj := range i.items.Objects {
 		if cont, ok := obj.(*fyne.Container); ok {
 			text := cont.Objects[0].(*fyne.Container).Objects[0].(*widget.Label).Text
-			if text == itemIDToName(item) {
+			if text == IDToName(item) {
 				sep := i.items.Objects[n+1]
 				i.items.Remove(obj)
 				i.items.Remove(sep)
@@ -135,7 +135,7 @@ func (i *Inventory) take(item string) {
 	image.SetMinSize(fyne.NewSize(50, 50))
 
 	// cont
-	single_cont := container.NewBorder(nil, nil, image, nil, container.NewCenter(widget.NewLabel(itemIDToName(item))))
+	single_cont := container.NewBorder(nil, nil, image, nil, container.NewCenter(widget.NewLabel(IDToName(item))))
 	i.items.Add(single_cont)
 	i.items.Add(widget.NewSeparator())
 	i.objects = append(i.objects, item)
@@ -175,27 +175,4 @@ func (i *Inventory) Update(str string) {
 		}
 		i.accessible = itemsID
 	}
-}
-
-func itemIDToName(id string) string {
-	id = strings.TrimPrefix(id, "item.")
-
-	id = strings.ReplaceAll(id, "_", " ")
-	id = strings.Title(strings.ToLower(id))
-	return id
-}
-
-func generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
-	cont := container.NewVBox()
-	for _, option := range options {
-		var label string
-		if action == "TAKE" || action == "DROP" {
-			label = itemIDToName(option)
-		} else {
-			label = option
-		}
-		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
-		cont.Add(but)
-	}
-	return cont
 }

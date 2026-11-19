@@ -90,7 +90,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	objects[2].Move(fyne.NewPos(invX, invY))
 }
 
-func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image, p *Player) *fyne.Container {
+func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image, g *GameState) *fyne.Container {
 
 	mapImg := "./data/map.jpeg"
 	previous := background.File
@@ -114,7 +114,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	send := func(cmd string) func() {
 		return func() {
 			if strings.HasPrefix(cmd, "MOVE") {
-				p.move = true
+				g.player.move = true
 			}
 			if err := conn.Send(cmd); err != nil {
 				fyne.Do(func() { popup(w, "901 SEND_FAILED") })
@@ -125,10 +125,8 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
-	// butMove := newBtn("MOVE", send("MOVE") )
-	butTake := newBtn("TAKE", send("TAKE"))
-	// butDrop := newBtn("DROP", send("DROP") )
-	// butTalk := newBtn("TALK", send("TALK") )
+	var butTalk *widget.Button
+	butTalk = newBtn("TALK", func() { g.pop = Option_popup(butTalk, w, Generate_option(g.npc, "TALK", conn)) })
 	butStatus := newBtn("STATUS", send("STATUS"))
 	butQuest := newBtn("QUEST", send("QUEST"))
 	butQuests := newBtn("QUESTS", send("QUESTS"))
@@ -178,9 +176,8 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 
 	butsActions := container.NewGridWithColumns(3,
 		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
-		butLook, butTake, butAttack,
+		butLook, butTalk, butAttack,
 		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
-		// butDrop, butTalk, butMove,
 		butStatus, butQuest, butQuests,
 		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 		butWho, butGroup, butQuit,

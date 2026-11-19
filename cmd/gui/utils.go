@@ -5,9 +5,12 @@ package main
 // \===========================================/
 
 import (
+	"strings"
+	"the_answer_protocol/client"
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -37,14 +40,39 @@ func get_time() string {
 func Pop(name string, place []string) []string {
 	var new []string
 	find := false
-	for _, item := range place {
-		if item != name && !find {
-			new = append(new, item)
+	for _, index := range place {
+		if index != name && !find {
+			new = append(new, index)
 		} else if find {
-			new = append(new, item)
+			new = append(new, index)
 		} else {
 			find = true
 		}
 	}
 	return new
+}
+
+func Generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
+	cont := container.NewVBox()
+	for _, option := range options {
+		var label string
+		if action == "TAKE" || action == "DROP" || action == "TALK" {
+			label = IDToName(option)
+		} else {
+			label = option
+		}
+		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
+		cont.Add(but)
+	}
+	return cont
+}
+
+func IDToName(id string) string {
+
+	id = strings.TrimPrefix(id, "item.")
+	id = strings.TrimPrefix(id, "npc.")
+
+	id = strings.Title(strings.ToLower(id))
+	id = strings.ReplaceAll(id, "_", " ")
+	return id
 }

@@ -122,6 +122,8 @@ func (c *Chat) Receive(channel, author, text string) {
 		col = cyan
 	case "GROUP":
 		col = orange
+	case "NPC":
+		col = yellow
 	}
 	c.addLine(channel, author, text, col)
 }

@@ -34,6 +34,39 @@ type Player struct {
 	move   bool
 }
 
+type GameState struct {
+	inventory *Inventory
+	player    *Player
+	npc       []string
+	pop       *widget.PopUp
+}
+
+func (g *GameState) Update(str string) {
+	if strings.HasPrefix(str, "inventory=") {
+		g.inventory.Update(str)
+	} else if strings.HasPrefix(str, "look=") {
+		g.inventory.Update(str)
+		str = strings.TrimPrefix(str, "look=")
+		var data map[string]any
+		if err := json.Unmarshal([]byte(str), &data); err != nil {
+			fmt.Println("erreur de parsing:", err)
+			return
+		}
+		var NpcsID []string
+		if room, ok := data["room"].(map[string]any); ok {
+			if rawNpcs, ok := room["NPCs"].([]any); ok {
+				for _, npc := range rawNpcs {
+					if str, ok := npc.(string); ok {
+						NpcsID = append(NpcsID, str)
+					}
+				}
+			}
+		}
+		g.npc = NpcsID
+		// "NPCs":["npc.village_guard"]
+	}
+}
+
 // /===========================================\
 // |				 Var/Const				   |
 // \===========================================/
@@ -43,6 +76,7 @@ var (
 	lime   = color.RGBA{R: 33, G: 222, B: 20, A: 255}
 	cyan   = color.RGBA{R: 17, G: 233, B: 237, A: 255}
 	orange = color.RGBA{R: 237, G: 123, B: 17, A: 255}
+	yellow = color.RGBA{R: 245, G: 194, B: 12, A: 255}
 )
 
 // /===========================================\
@@ -78,12 +112,13 @@ func main() {
 	logLabel.Wrapping = fyne.TextWrapWord
 	logView := container.NewVScroll(logLabel)
 
-	// ajouter conn en parametre de la fonction
+	// Struct info
 	chat := NewChat(w, &player, conn)
 	inv := NewInv(w, &player, conn)
+	game := GameState{inventory: inv, player: &player}
 
-	// ajouter conn en parametre de la fonction
-	btnContainer := newButtonContainer(w, conn, background, &player)
+	// Main View
+	btnContainer := newButtonContainer(w, conn, background, &game)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
@@ -92,7 +127,6 @@ func main() {
 	)
 
 	loggedIn := false
-	// playerinfo :=
 	loginView, onLoginMsg := LoginScreen(conn, func(name string) {
 		player.name = name
 		loggedIn = true
@@ -113,6 +147,8 @@ func main() {
 				switch msg.Kind {
 				case "OK":
 					switch {
+
+					// MOVE
 					case strings.HasPrefix(msg.Rest, "room=") && player.move:
 						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
 						player.room = roomID
@@ -142,20 +178,35 @@ func main() {
 							break
 						}
 						player.group = infos.Group
+
+					// TAKE
 					case strings.HasPrefix(msg.Rest, "taken="):
 						item := strings.TrimPrefix(msg.Rest, "taken=")
-						inv.take(item)
+						game.inventory.take(item)
+
+					// DROP
 					case strings.HasPrefix(msg.Rest, "dropped="):
 						item := strings.TrimPrefix(msg.Rest, "dropped=")
-						inv.drop(item)
+						game.inventory.drop(item)
+
+					// INVENTORY
 					case strings.HasPrefix(msg.Rest, "inventory="):
 						inv.BuildInv(msg.Rest)
-						inv.Update(msg.Rest)
+						game.Update(msg.Rest)
+
+					// LOOK
 					case strings.HasPrefix(msg.Rest, "look="):
-						inv.Update(msg.Rest)
+						game.Update(msg.Rest)
+
+					// QUESTS
 					case strings.HasPrefix(msg.Rest, "quests="):
 						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
 						Str_to_quests(msg.Rest, w)
+
+					// TALK
+					case strings.HasPrefix(msg.Rest, "talk="):
+						msg.Rest = strings.TrimPrefix(msg.Rest, "talk=")
+						chat.Receive("NPC", "moi", msg.Rest)
 					}
 
 				case "EVT":
