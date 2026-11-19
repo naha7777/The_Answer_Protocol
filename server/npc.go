@@ -35,6 +35,14 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 		} else {
 			return Regen(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
 		}
+	case "USE_ITEM":
+		if rand.Float64() < 0.05 {
+			return Flee(client)
+		} else if rand.Float64() < 0.55 {
+			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
+		} else {
+			return Regen(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
+		}
 	}
 	strengh = initial_strengh
 	return 0

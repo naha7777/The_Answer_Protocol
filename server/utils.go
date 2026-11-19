@@ -3,6 +3,7 @@ package server
 import (
 	"strings"
 	"slices"
+	"the_answer_protocol/game"
 )
 
 func (d *Dispatcher) removeClient(client *Client) {
@@ -96,3 +97,15 @@ func Move(direction string, client *Client, d *Dispatcher) {
 	}
 }
 
+func RemoveItemInventory(client *Client, item_id string) {
+	final_inventory := []*game.Item{}
+	count := 0
+	for _, i := range client.inventory {
+		if i.Id == item_id && count == 0{
+			count += 1
+		} else {
+			final_inventory = append(final_inventory, i)
+		}
+	}
+	client.inventory = final_inventory
+}

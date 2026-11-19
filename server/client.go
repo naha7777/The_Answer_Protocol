@@ -8,17 +8,22 @@ import (
 )
 
 type Client struct {
-	conn      net.Conn
-	name      string
-	group     *Group
-	room      *game.Room
-	inventory []*game.Item
-	hp        int
-	hp_max    int
-	status    string
-	quests    []*game.Quest
-	strengh   int
-	target    string
+	conn      		net.Conn
+	name      		string
+	group     		*Group
+	room      		*game.Room
+	inventory 		[]*game.Item
+	hp        		int
+	hp_max    		int
+	status    		string
+	quests    		[]*game.Quest
+	strengh   		int
+	target    		string
+	buff    		string
+	time_buff		int
+	debuff			string
+	time_debuff		int
+	real_strengh	int
 }
 
 func (c *Client) Send(format string, a ...any) {
