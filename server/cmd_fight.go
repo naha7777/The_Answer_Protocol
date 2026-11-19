@@ -61,7 +61,7 @@ func (d *Dispatcher) handleStatus(client *Client, args []string) {
 	defer d.mu.Unlock()
 
 	client.status = "exploration"
-	client.Send(`OK {"hp": %d, "max_hp": %d, "status": "%s"}`, client.hp, client.hp_max, client.status)
+	client.Send(`OK status={"hp": %d, "max_hp": %d, "status": "%s"}`, client.hp, client.hp_max, client.status)
 }
 
 func (d *Dispatcher) handleFlee(client *Client, args []string) {

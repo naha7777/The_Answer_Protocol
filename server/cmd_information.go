@@ -22,7 +22,7 @@ func (d *Dispatcher) handleLook(client *Client, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: %s", err)
 		return
 	}
-	client.Send(`OK {"room": %s}`, jsonData)
+	client.Send(`OK look={"room": %s}`, jsonData)
 }
 
 func (d *Dispatcher) handleInventory(client *Client, args []string) {
@@ -33,5 +33,5 @@ func (d *Dispatcher) handleInventory(client *Client, args []string) {
 		item_lst = append(item_lst, v.Id)
 	}
 	lst := strings.Join(item_lst, " ")
-	client.Send("OK [%s]", lst)
+	client.Send("OK inventory=[%s]", lst)
 }
