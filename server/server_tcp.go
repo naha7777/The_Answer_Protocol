@@ -16,9 +16,13 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	client := &Client{conn: connection}
 	for _, room := range world.Rooms {
 		if room.Id == world.Start {
+			// item := &game.Item{Name: "Herbs", Description: "de l'herbe",
+			// 	Obtainable: true, Id: "item.herbs"}
+			// var inv []*game.Item
+			// inv = append(inv, item)
 			client = &Client{conn: connection, name: "", group: nil, room: room,
 				inventory: nil, hp: 100, hp_max: 100,
-				status: "very healthy", strengh: 10,}
+				status: "very healthy", strengh: 10}
 		}
 	}
 

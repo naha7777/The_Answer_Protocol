@@ -23,7 +23,7 @@ import (
 
 // QUESTS
 func Str_to_quests(str string, w fyne.Window) {
-	width := w.Canvas().Size().Width
+	// width := w.Canvas().Size().Width
 	height := w.Canvas().Size().Height
 
 	// parse
@@ -38,7 +38,8 @@ func Str_to_quests(str string, w fyne.Window) {
 	// cont
 	quests_cont := container.NewVBox()
 	quests_scroll := container.NewScroll(quests_cont)
-	q_cont := container.NewBorder(container.NewCenter(widget.NewLabel("Quests")), nil, nil, nil, quests_scroll)
+	title := container.NewVBox(container.NewCenter(widget.NewLabel("Quests")), widget.NewSeparator())
+	q_cont := container.NewBorder(title, nil, nil, nil, quests_scroll)
 
 	for _, q := range quests {
 
@@ -48,9 +49,9 @@ func Str_to_quests(str string, w fyne.Window) {
 		single_cont := container.NewBorder(nil, nil, widget.NewLabel(quest), nil, container.NewCenter(widget.NewLabel(q["progress"])))
 		// img
 		if q["status"] == "completed" {
-			image := canvas.NewImageFromFile("pictures/items/placeholder.png")
-			if _, err := os.Stat("pictures/icons/tick.png"); err == nil {
-				image = canvas.NewImageFromFile("pictures/icons/tick.png")
+			image := canvas.NewImageFromFile("data/icons/placeholder.png")
+			if _, err := os.Stat("data/icons/tick.png"); err == nil {
+				image = canvas.NewImageFromFile("data/icons/tick.png")
 			}
 			image.FillMode = canvas.ImageFillContain
 			image.SetMinSize(fyne.NewSize(30, 30))
@@ -66,14 +67,15 @@ func Str_to_quests(str string, w fyne.Window) {
 	q := container.NewStack(quests_frame, container.NewPadded(q_cont))
 
 	popup := widget.NewPopUp(q, w.Canvas())
-	popup.ShowAtPosition(fyne.Position{X: 7*(width/9) - quests_cont.MinSize().Width*2, Y: height - 50*4 - 15})
+	popup.ShowAtPosition(fyne.Position{X: 15, Y: height - 50*8 - 30})
 	popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width * 2, Height: 50 * 4})
 }
 
-func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) {
+func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
 	menu := container.NewVBox(
 		objects...,
 	)
 	pop := widget.NewPopUp(menu, w.Canvas())
 	pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), item)
+	return pop
 }

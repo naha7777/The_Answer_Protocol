@@ -153,23 +153,25 @@ func main() {
 						}
 						player.group = infos.Group
 					case strings.HasPrefix(msg.Rest, "taken="):
-						item := strings.TrimPrefix(msg.Rest, "taken=item.")
-						item = strings.Title(strings.ToLower(item))
-						item = strings.ReplaceAll(item, "_", " ")
+						item := strings.TrimPrefix(msg.Rest, "taken=")
 						inv.take(item)
 					case strings.HasPrefix(msg.Rest, "dropped="):
-						item := strings.TrimPrefix(msg.Rest, "dropped=item.")
-						item = strings.Title(strings.ToLower(item))
-						item = strings.ReplaceAll(item, "_", " ")
+						item := strings.TrimPrefix(msg.Rest, "dropped=")
 						inv.drop(item)
 					case strings.HasPrefix(msg.Rest, "inventory="):
 						inv.BuildInv(msg.Rest)
 						inv.Update(msg.Rest)
 					case strings.HasPrefix(msg.Rest, "look="):
 						inv.Update(msg.Rest)
+<<<<<<< HEAD
 						playerinfo.Update()
 						player.PlayerRoomUpdate(msg.Rest)
 						data.cb.Update(player.room.exits)
+=======
+					case strings.HasPrefix(msg.Rest, "quests="):
+						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
+						Str_to_quests(msg.Rest, w)
+>>>>>>> 78d392e218bb9600bb8791637d9f38cac2c9a844
 					}
 
 				case "EVT":
