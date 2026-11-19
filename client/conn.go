@@ -8,6 +8,8 @@ import (
 	"time"
 	"fmt"
 	"os"
+	"errors"
+	"sync/atomic"
 )
 
 type Message struct {
@@ -17,9 +19,12 @@ type Message struct {
 }
 
 type Conn struct {
-	conn		net.Conn
-	mu			sync.Mutex
-	messages	chan(Message)
+	conn      net.Conn
+	mu        sync.Mutex
+	messages  chan Message
+	done      chan struct{}
+	closeOnce sync.Once
+	closed    atomic.Bool
 }
 
 func Dial(addr string) (*Conn, error) {
@@ -28,11 +33,10 @@ func Dial(addr string) (*Conn, error) {
 		return nil, err
 	}
 
-	c := Conn{conn: conn, messages: make(chan Message, 64)}
+	c := &Conn{conn: conn, messages: make(chan Message, 64), done: make(chan struct{}),}
 
-	go scan(&c)
-
-	return &c, nil
+	go scan(c)
+	return c, nil
 }
 
 func scan(c *Conn) {
@@ -42,9 +46,14 @@ func scan(c *Conn) {
 		raw := scanner.Text()
 		kind, rest, _ := strings.Cut(raw, " ")
 		msg := Message{Kind: kind, Raw: raw, Rest: rest}
-		c.messages <- msg
+		select {
+		case c.messages <- msg:
+		case <-c.done:
+			return
+		}
 	}
-	if err := scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil &&
+		!c.closed.Load() && !errors.Is(err, net.ErrClosed) {
 		fmt.Fprintln(os.Stderr, err)
 	}
 }
@@ -64,6 +73,16 @@ func (c *Conn) Messages() <- chan Message{
 	return c.messages
 }
 
+func (c *Conn) Done() <-chan struct{} {
+	return c.done
+}
+
 func (c *Conn) Close() error {
-	return c.conn.Close()
+	var err error
+	c.closeOnce.Do(func() {
+		c.closed.Store(true)
+		close(c.done)
+		err = c.conn.Close()
+	})
+	return err
 }

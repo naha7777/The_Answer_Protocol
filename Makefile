@@ -1,11 +1,14 @@
 server:
-	go run ./cmd/server/
+	@trap 'true' INT; go run ./cmd/server/; exit 0
 
 gui:
-	go run ./cmd/gui/
+	go run ./cmd/gui
 
 cli:
-	go run ./cmd/cli/	
+	@trap 'true' INT; go run ./cmd/cli/; exit 0
+
+kill:
+	-fuser -k 8080/tcp
 
 # clean:
 
@@ -17,4 +20,4 @@ cli:
 # lint-strict:
 
 
-.PHONY: server gui cli
+.PHONY: server gui cli kill
