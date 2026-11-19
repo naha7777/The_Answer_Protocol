@@ -163,15 +163,12 @@ func main() {
 						inv.Update(msg.Rest)
 					case strings.HasPrefix(msg.Rest, "look="):
 						inv.Update(msg.Rest)
-<<<<<<< HEAD
 						playerinfo.Update()
 						player.PlayerRoomUpdate(msg.Rest)
 						data.cb.Update(player.room.exits)
-=======
 					case strings.HasPrefix(msg.Rest, "quests="):
 						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
 						Str_to_quests(msg.Rest, w)
->>>>>>> 78d392e218bb9600bb8791637d9f38cac2c9a844
 					}
 
 				case "EVT":
