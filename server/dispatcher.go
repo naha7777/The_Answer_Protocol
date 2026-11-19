@@ -50,6 +50,8 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["INFO_GROUP"] = d.handleInfoGroup
 	d.commands["ABANDON_QUEST"] = d.handleAbandonQuest
 	d.commands["FLEE"] = d.handleFlee
+	d.commands["DEFEND"] = d.handleDefend
+	d.commands["USE_ITEM"] = d.handleUseItem
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {
@@ -78,7 +80,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 			return
 		}
 	} else {
-		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" || first == "STATUS" {
+		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" || first == "STATUS" || first == "USE_ITEM" || first == "INVENTORY" {
 			cmd = strings.ToUpper(parts[0])
 			args = parts[1:]
 		} else {

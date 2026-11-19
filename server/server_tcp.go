@@ -2,7 +2,9 @@ package server
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"strings"
@@ -22,11 +24,16 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			// inv = append(inv, item)
 			client = &Client{conn: connection, name: "", group: nil, room: room,
 				inventory: nil, hp: 100, hp_max: 100,
-				status: "very healthy", strengh: 10}
+				status: "very healthy", strengh: 10, target: "",
+				real_strengh: 10, quit: false}
 		}
 	}
 
-	defer dispatcher.removeClient(client)
+	defer func() {
+		dispatcher.removeClient(client)
+		dispatcher.displayRoomStats()
+		dispatcher.displayStats()
+	}()
 	client.Send("OK hello proto=1")
 
 	scanner := bufio.NewScanner(connection)
@@ -41,8 +48,12 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		} else {
 			client.Send("ERR 02 YOU_MUST_BE_CONNECTED")
 		}
+		if client.quit {
+			break
+		}
 	}
-	if err := scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil && !errors.Is(err, net.ErrClosed) &&
+		!errors.Is(err, io.EOF) {
 		fmt.Fprintln(os.Stderr, scanner.Err())
 	}
 }
@@ -55,11 +66,26 @@ func Server(listener net.Listener) {
 		os.Exit(1)
 	}
 
+	for _, r := range world.Rooms {
+		if r.NPCs == nil {
+			r.NPCs = []string{}
+		}
+		if r.Items == nil {
+			r.Items = []string{}
+		}
+		if r.Players == nil {
+			r.Players = []string{}
+		}
+	}
+
 	dispatcher := NewDispatcher(world)
 
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return
+			}
 			fmt.Fprintln(os.Stderr, "Error accepting:", err)
 			continue
 		}

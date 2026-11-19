@@ -1,6 +1,6 @@
 {
-  "start": "loc.square",
-  "respawn": "loc.square",
+  "start": "loc.tavern",
+  "respawn": "loc.tavern",
   "rooms": {
     "loc.square": {
       "id": "loc.square",
@@ -15,16 +15,16 @@
       "name": "Haunted Forest",
       "description": "A scary forest.",
       "exits": { "north": "loc.castle", "south": "loc.tavern", "west": "loc.lake" },
-      "items": ["item.spirit"],
-      "npcs": ["npc.ghost"]
+      "items": ["item.spirit", "item.herbs", "item.herbs"],
+      "npcs": ["npc.ghost", "npc.witch"]
     },
     "loc.market": {
       "id": "loc.market",
       "name": "Market Place",
       "description": "A beautiful market.",
       "exits": { "north": "loc.meadow", "west": "loc.square" },
-      "items": ["item.necklace"],
-      "npcs": ["npc.merchant"]
+      "items": ["item.herbs", "item.herbs"],
+      "npcs": ["npc.jewelry_merchant", "npc.food_merchant", "npc.weapon_merchant"]
     },
     "loc.meadow": {
       "id": "loc.meadow",
@@ -39,7 +39,7 @@
       "name": "Lake",
       "description": "A huge lake.",
       "exits": { "east": "loc.forest", "south": "loc.garden" },
-      "items": ["item.fish"],
+      "items": ["item.fish", "item.fish", "item.fish", "item.herbs"],
       "npcs": ["npc.fisherman"]
     },
     "loc.castle": {
@@ -47,48 +47,64 @@
       "name": "Castle",
       "description": "A big castle.",
       "exits": { "south": "loc.forest" },
-      "items": ["item.potion"],
+      "items": ["item.flower", "item.flower"],
       "npcs": ["npc.royal_guard"]
     },
     "loc.garden": {
       "id": "loc.garden",
       "name": "Secret Garden",
-      "description": "A secret garden hiding something.",
+      "description": "A secret garden hiding something special.",
       "exits": { "north": "loc.lake", "east": "loc.tavern" },
-      "items": ["item.sword"],
+      "items": ["item.sword", "item.herbs", "item.flower"],
       "npcs": ["npc.princess"]
     },
     "loc.tavern": {
       "id": "loc.tavern",
-      "name": "Gold Tavern",
-      "description": "A tavern with a lot of gold.",
+      "name": "Tavern",
+      "description": "A tavern with a lot of beers and pirates.",
       "exits": { "north": "loc.forest", "south": "loc.square", "east": "loc.meadow", "west": "loc.garden"},
-      "items": ["item.gold"],
-      "npcs": ["npc.robber"]
+      "items": ["item.beer", "item.beer", "item.beer"],
+      "npcs": ["npc.pirate", "npc.bartender", "npc.captain"]
     }
   },
   "items": {
-    "item.herbs":    { "id": "item.herbs", "name": "Herbs", "description": "Medicinal herbs", "obtainable": true },
-    "item.spirit":   { "id": "item.spirit", "name": "Spirit", "description": "Useless spirit of a rich man", "obtainable": true },
-    "item.necklace": { "id": "item.necklace", "name": "Necklace", "description": "Gold necklace", "obtainable": true },
-    "item.flower":   { "id": "item.flower", "name": "Flower", "description": "Red flower", "obtainable": true },
-    "item.fish":     { "id": "item.fish", "name": "Fish", "description": "Very little fish", "obtainable": true },
-    "item.potion":   { "id": "item.potion", "name": "Unknown Potion", "description": "This green potion seems strange.", "obtainable": true },
-    "item.sword":    { "id": "item.sword", "name": "Sword", "description": "Long, sharp sword", "obtainable": true },
-    "item.gold":     { "id": "item.gold", "name": "Gold", "description": "You are rich!", "obtainable": true }
+    "item.herbs":            { "id": "item.herbs", "name": "Herbs", "description": "Medicinal herbs", "obtainable": true },
+    "item.spirit":           { "id": "item.spirit", "name": "Spirit", "description": "Useless spirit of a rich man", "obtainable": true },
+    "item.necklace":         { "id": "item.necklace", "name": "Necklace", "description": "Gold necklace", "obtainable": true },
+    "item.flower":           { "id": "item.flower", "name": "Flower", "description": "Red flower", "obtainable": true },
+    "item.fish":             { "id": "item.fish", "name": "Fish", "description": "Very little fish", "obtainable": true },
+    "item.strengh_potion":   { "id": "item.strengh_potion", "name": "Strengh Potion", "description": "This potion grants more attack strength to the person who drinks it.", "obtainable": true },
+    "item.health_potion":    { "id": "item.health_potion", "name": "Health Potion", "description": "This potion restores life to the one who drinks it.", "obtainable": true },
+    "item.poison_potion":    { "id": "item.poison_potion", "name": "Poison Potion", "description": "This potion poisons the player's target during combat.", "obtainable": true },
+    "item.sword":            { "id": "item.sword", "name": "Sword", "description": "Long, sharp sword", "obtainable": true },
+    "item.beer":             { "id": "item.beer", "name": "Beer", "description": "Yum", "obtainable": true },
+    "item.gold":             { "id": "item.gold", "name": "Gold", "description": "You are rich!", "obtainable": true }
   },
   "npcs": {
-    "npc.village_guard":  { "name": "Village Guard", "hp": 40, "max_hp": 40, "strengh": 20, "hostile": false, "dialogue": ["Stay safe, traveler."], "quests": [] },
-    "npc.ghost":          { "name": "Rich Ghost", "hp": 1000, "max_hp": 1000, "strengh": 0, "hostile": false, "dialogue": ["BOUH."], "quests": [] },
-    "npc.merchant":       { "name": "Merchant", "hp": 10, "max_hp": 10, "strengh": 5, "hostile": false, "dialogue": ["WHO WANTS MY NECKLACE? $100 FOR THIS BEAUTIFUL NECKLACE!"], "quests": [] },
-    "npc.woman":          { "name": "Woman", "hp": 20, "max_hp": 20, "strengh": 50, "hostile": false, "dialogue": ["This is my favorite place."], "quests": [] },
-    "npc.fisherman":      { "name": "Fisherman", "hp": 50, "max_hp": 50, "strengh": 10, "hostile": false, "dialogue": ["There are no fish anymore because of the queen. My life is over..."], "quests": [] },
-    "npc.royal_guard":    { "name": "Royal Guard", "hp": 120, "max_hp": 120, "strengh": 30, "hostile": false, "dialogue": ["The queen is busy."], "quests": [] },
-    "npc.princess":       { "name": "Princess", "hp": 5, "max_hp": 5, "strengh": 12, "hostile": false, "dialogue": ["North is dangerous, take my sword..."], "quests": ["princess_necklace", "poor_princess"] },
-    "npc.robber":         { "name": "Robber", "hp": 100, "max_hp": 100, "strengh": 8, "hostile": true, "dialogue": ["This gold is mine MOUAHAHAHA!"], "quests": [] }
+    "npc.village_guard":    { "name": "Village Guard", "hp": 40, "max_hp": 40, "strengh": 20, "hostile": false, "dialogue": ["Stay safe, traveler."], "quests": [] },
+    "npc.ghost":            { "name": "Rich Ghost", "hp": 1000, "max_hp": 1000, "strengh": 0, "hostile": false, "dialogue": ["BOUH."], "quests": [] },
+    "npc.woman":            { "name": "Woman", "hp": 20, "max_hp": 20, "strengh": 50, "hostile": false, "dialogue": ["This is my favorite place."], "quests": ["flower_mission"] },
+    "npc.fisherman":        { "name": "Fisherman", "hp": 50, "max_hp": 50, "strengh": 10, "hostile": false, "dialogue": ["There are no fish anymore because of the queen. My life is over..."], "quests": [] },
+    "npc.royal_guard":      { "name": "Royal Guard", "hp": 120, "max_hp": 120, "strengh": 30, "hostile": false, "dialogue": ["The queen is busy."], "quests": ["poor_guard"] },
+    "npc.princess":         { "name": "Princess", "hp": 5, "max_hp": 5, "strengh": 12, "hostile": false, "dialogue": ["North is dangerous, take my sword..."], "quests": ["princess_necklace", "sad_princess"] },
+    "npc.pirate":           { "name": "Pirate", "hp": 100, "max_hp": 100, "strengh": 15, "hostile": true, "dialogue": ["Get out of my tavern!"], "quests": [] },
+    "npc.captain":          { "name": "Captain", "hp": 150, "max_hp": 150, "strengh": 20, "hostile": true, "dialogue": ["GET OUT!"], "quests": [] },
+    "npc.bartender":        { "name": "Bartender", "hp": 500, "max_hp": 500, "strengh": 50, "hostile": false, "dialogue": ["Cold beer, courtesy of the house!"], "quests": ["kill_pirate", "kill_captain"] },
+    "npc.witch":            { "name": "Witch", "hp": 20, "max_hp": 20, "strengh": 40, "hostile": false, "dialogue": ["Come here kid..."], "quests": ["make_potion"] },
+    "npc.jewelry_merchant": { "name": "Jewelry Merchant", "hp": 10, "max_hp": 10, "strengh": 5, "hostile": false, "dialogue": ["WHO WANTS MY NECKLACE?"], "quests": ["get_necklace"] },
+    "npc.food_merchant":    { "name": "Food Merchant", "hp": 10, "max_hp": 10, "strengh": 5, "hostile": false, "dialogue": ["WHO WANTS MY FISH?"], "quests": ["get_fish"] },
+    "npc.weapon_merchant":  { "name": "Weapon Merchant", "hp": 10, "max_hp": 10, "strengh": 5, "hostile": false, "dialogue": ["WHO WANTS MY SWORD?"], "quests": ["get_sword"] }
   },
   "quests": {
-    "princess_necklace": {"quest_npc": "npc.princess", "quest_id": "princess_necklace", "description": "Bring me a necklace and some herbs.", "reward": ["item.potion"], "status": "available", "objective": ["item.necklace", "item.herbs"]},
-    "poor_princess": {"quest_npc": "npc.princess", "quest_id": "poor_princess", "description": "Bring me some Gold.", "reward": ["item.potion"], "status": "available", "objective": ["item.test"]}
+    "princess_necklace":    {"quest_npc": "npc.princess", "quest_id": "princess_necklace", "description": "Bring me a necklace and some herbs.", "reward": ["item.strengh_potion"], "status": "available", "objective": ["item.necklace", "item.herbs"]},
+    "sad_princess":         {"quest_npc": "npc.princess", "quest_id": "sad_princess", "description": "Bring me some beer.", "reward": ["item.health_potion"], "status": "available", "objective": ["item.beer"]},
+    "kill_pirate":          {"quest_npc": "npc.bartender", "quest_id": "kill_pirate", "description": "Kill the pirate please...", "reward": ["item.gold", "item.gold"], "status": "available", "objective": ["npc.pirate"]},
+    "kill_captain":         {"quest_npc": "npc.bartender", "quest_id": "kill_captain", "description": "Kill the captain please...", "reward": ["item.gold", "item.gold", "item.gold", "item.gold"], "status": "available", "objective": ["npc.captain"]},
+    "make_potion":          {"quest_npc": "npc.witch", "quest_id": "make_potion", "description": "Bring me some herbs and one fish.", "reward": ["item.poison_potion"], "status": "available", "objective": ["item.herbs", "item.fish"]},
+    "poor_guard":           {"quest_npc": "npc.royal_guard", "quest_id": "poor_guard", "description": "Bring me some gold.", "reward": ["item.strengh_potion"], "status": "available", "objective": ["item.gold"]},
+    "get_necklace":         {"quest_npc": "npc.jewelry_merchant", "quest_id": "get_necklace", "description": "Bring me some gold.", "reward": ["item.necklace"], "status": "available", "objective": ["item.gold"]},
+    "get_fish":             {"quest_npc": "npc.food_merchant", "quest_id": "get_fish", "description": "Bring me some gold.", "reward": ["item.fish"], "status": "available", "objective": ["item.gold"]},
+    "get_sword":            {"quest_npc": "npc.weapon_merchant", "quest_id": "get_sword", "description": "Bring me some gold.", "reward": ["item.sword"], "status": "available", "objective": ["item.gold"]},
+    "flower_mission":       {"quest_npc": "npc.woman", "quest_id": "flower_mission", "description": "Bring the most beautiful flower.", "reward": ["item.health_potion"], "status": "available", "objective": ["item.flower"]}
   }
 }

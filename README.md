@@ -30,7 +30,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 
 | Command | Success response | Error responses | Events pushed |
 |---|---|---|---|
-| *(on connect)* | `OK hello proto=1` | | |
+| *(on connect)* | `OK hello proto=1` | none | none |
 | any command before `CONNECT` | | `ERR 100 YOU_MUST_BE_CONNECTED` | |
 | `CONNECT <name>` | `OK connected` | `ERR 10 YOU_HAVE_A_NAME`, `ERR 09 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE` | none |
 | `QUIT` | `OK bye` | | none |
@@ -38,11 +38,13 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none |
 | `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | none | done |
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
-| `INVENTORY` | `OK inventory=[item.a item.b]` | | |
-| `TALK <npc id or name>` | `OK talk=<dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
-| `ATTACK <npc id or name>` | `OK attack={'player_hp': 92, 'player_max_hp': 100, 'NPC_hp': 80, 'NPC_max_hp': 100, 'damage': 10, 'status': combat}`, `OK attack=<ncp_id>=dead, "status"="healthy"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | none |
-| `STATUS` | `OK status={'hp': N, 'max_hp': N, 'status': S}` | | | none |
-| `FLEE` | `OK flee=succed, "status"="healthy"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | none |
+| `INVENTORY` | `OK [item.a item.b]` | | |
+| `TALK <npc id or name>` | `OK <npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
+| `STATUS` | `OK {"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | | none |
+| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strengh during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT STRENGH POTION : +5 player strengh during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
 | `WHO` | `OK players=<n>` | | |
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room |
@@ -91,14 +93,29 @@ section explaining your server design choices (dispatcher/router vs inline handl
 
 ### Events
 
-| Event | Format |
-|-------|--------|
-| Group invitation | `EVT GROUP INVITE <leader>` |
-| Group join | `EVT GROUP JOIN <username>` |
-| Group leave | `EVT GROUP LEAVE <username>` |
-| Chat | `EVT <SCOPE> CHAT <username> <message>` |
-| Room presence | `EVT ROOM PRESENCE ENTER/LEAVE <username>` |
-| Stats | `EVT STATS players= <nb_player>` |
+| Event | Format | Source |
+|-------|--------|--------|
+| Group invitation | `EVT GROUP INVITE <leader>` | RFC |
+| Group join | `EVT GROUP JOIN <username>` | RFC |
+| Group leave | `EVT GROUP LEAVE <username>` | RFC |
+| Chat | `EVT <SCOPE> CHAT <username> <message>` | RFC |
+| Room presence | `EVT ROOM PRESENCE ENTER/LEAVE <username>` | RFC |
+| Stats | `EVT STATS players= <nb_player>` | RFC |
+| NPC Death | `EVT NPC <npc_id> DEAD` | **custom (not in RFC)** |
+| NPC Flee | `EVT NPC FLEE, "status"="<npc_id>"` | **custom (not in RFC)** |
+| NPC Attack | `EVT NPC ATTACK` | **custom (not in RFC)** |
+| NPC Regeneration | `EVT NPC REGENERATION : +5 hp` | **custom (not in RFC)** |
+| I am dead | `EVT DEATH` | **custom (not in RFC)** |
+| A player is dead | `EVT dead=<player_name>` | **custom (not in RFC)** |
+| Use_item beer | `EVT BEER : -5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
+| Use_item sword | `EVT SWORD : +5 player strengh during <nb_turns> turns` | **custom (not in RFC)** |
+| Use_item poison potion | `EVT POISON POTION : -5 npc hp during <nb_turns> turns` | **custom (not in RFC)** |
+| Use_item strengh potion | `EVT STRENGH POTION : +5 player strengh during <nb_turns> turns` | **custom (not in RFC)** |
+| Use_item health potion | `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
+| Poison npc turns | `EVT POISON : -5 npc hp during <nb_turns> turns` | **custom (not in RFC)** |
+| Strengh turns | `EVT STRENGH : +5 player strengh during <nb_turns> turns` | **custom (not in RFC)** |
+| Health turns | `EVT HEALTH : +5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
+| Poison player turns | `EVT POISON : -5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
 
 ## Combat System
 section describing your turn-based combat mechanics, damage formulas, initiative order, and additional combat commands (DEFEND, FLEE, etc.).

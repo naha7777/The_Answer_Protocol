@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"strings"
 	"the_answer_protocol/client"
 )
@@ -14,6 +16,31 @@ var Green	= "\033[32m"
 var Cyan	= "\033[36m"
 var Italic	= "\033[3m"
 var Magenta	= "\033[35m"
+var Yellow  = "\033[33m"
+
+func display(msg client.Message) {
+	switch msg.Kind {
+	case "EVT":
+		if strings.HasPrefix(msg.Rest, "DEATH") || strings.HasPrefix(msg.Rest, "dead") {
+			fmt.Println(Italic + Red + msg.Raw + Reset)
+		} else if strings.HasPrefix(msg.Rest, "NPC") {
+			fmt.Println(Yellow + msg.Raw + Reset)
+		} else {
+			fmt.Println(Green + msg.Raw + Reset)
+		}
+	case "ERR":
+		fmt.Println(Red + msg.Raw + Reset)
+	case "OK":
+		if strings.HasPrefix(msg.Rest, "attack=") || strings.HasPrefix(msg.Rest, "flee=") ||
+			strings.HasPrefix(msg.Rest, "defend") {
+			fmt.Println(Italic + Magenta + msg.Raw + Reset)
+		} else {
+			fmt.Println(Cyan + msg.Raw + Reset)
+		}
+	default:
+		fmt.Println(msg.Raw)
+	}
+}
 
 func main() {
 	c, err := client.Dial("localhost:8080")
@@ -23,35 +50,37 @@ func main() {
 	}
 	defer c.Close()
 
+	done := make(chan struct{})
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		for msg := range c.Messages() {
-			switch msg.Kind {
-			case "EVT":
-				fmt.Println(Green + msg.Raw + Reset)
-			case "ERR":
-				fmt.Println(Red + msg.Raw + Reset)
-			case "OK":
-				if strings.HasPrefix(msg.Rest, "{'player_hp'") || strings.HasPrefix(msg.Rest, "fail_flee"){
-					fmt.Println(Italic + Magenta + msg.Raw + Reset)
-				} else {
-					fmt.Println(Cyan + msg.Raw + Reset)
-				}
-			default:
-				fmt.Println(msg.Raw)
-			}
-		}
-		fmt.Println("Server disconnected")
-		os.Exit(0)
+		<-sigChan
+		fmt.Println("\nSignal received, shutting down...")
+		c.Close()
 	}()
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		if err := c.Send(scanner.Text()); err != nil {
-			fmt.Fprintln(os.Stderr, "901 SEND_FAILED")
-			return
+	go func() {
+		defer close(done)
+		for msg := range c.Messages() {
+			display(msg)
 		}
-	}
-	if err := scanner.Err(); err != nil {
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			if err := c.Send(scanner.Text()); err != nil {
+				fmt.Fprintln(os.Stderr, "901 SEND_FAILED")
+				return
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			c.Close()
+		}
 		c.Close()
-	}
+	}()
+
+	<-done
+	fmt.Println("CLI disconnected")
 }

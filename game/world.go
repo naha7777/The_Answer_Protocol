@@ -7,6 +7,7 @@ import (
 
 type World struct {
 	Start	string
+	Respawn	string
 	Rooms	map[string]*Room
 	Items	map[string]*Item
 	NPCs	map[string]*NPC
@@ -99,7 +100,8 @@ func LoadWorld(path string) (*World, error) {
 		quest_lst[str] = q
 	}
 
-	real_w := World{Start: w.Start, Rooms: room_lst, Items: item_lst,
+	real_w := World{Start: w.Start, Respawn: w.Respawn,
+					Rooms: room_lst, Items: item_lst,
 					NPCs: npc_lst, Quests: quest_lst,}
 	return &real_w, nil
 }
