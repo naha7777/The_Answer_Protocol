@@ -20,11 +20,16 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		if room.Id == world.Start {
 			client = &Client{conn: connection, name: "", group: nil, room: room,
 				inventory: nil, hp: 100, hp_max: 100,
-				status: "very healthy", strengh: 10, target: "", real_strengh: 10,}
+				status: "very healthy", strengh: 10, target: "",
+				real_strengh: 10, quit: false}
 		}
 	}
 
-	defer dispatcher.removeClient(client)
+	defer func() {
+		dispatcher.removeClient(client)
+		dispatcher.displayRoomStats()
+		dispatcher.displayStats()
+	}()
 	client.Send("OK hello proto=1")
 
 	scanner := bufio.NewScanner(connection)
@@ -38,6 +43,9 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			dispatcher.Dispatch(client, scanner.Text())
 		} else {
 			client.Send("ERR 02 YOU_MUST_BE_CONNECTED")
+		}
+		if client.quit {
+			break
 		}
 	}
 	if err := scanner.Err(); err != nil && !errors.Is(err, net.ErrClosed) &&

@@ -37,7 +37,6 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleQuit(client *Client, args []string) {
-	d.removeClient(client)
-	defer d.displayRoomStats()
-	defer d.displayStats()
+	client.Send("OK bye")
+	client.quit = true
 }

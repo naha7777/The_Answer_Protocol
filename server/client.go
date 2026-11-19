@@ -24,6 +24,7 @@ type Client struct {
 	debuff			string
 	time_debuff		int
 	real_strengh	int
+	quit			bool
 }
 
 func (c *Client) Send(format string, a ...any) {

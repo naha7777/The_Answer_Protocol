@@ -28,7 +28,6 @@ func (d *Dispatcher) removeClient(client *Client) {
 	}
 	delete(d.clients, client.name)
 	client.name = ""
-	client.Send("OK bye")
 	client.conn.Close()
 }
 
