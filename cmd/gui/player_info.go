@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"image/color"
 	"strings"
@@ -10,6 +11,20 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
+
+type ServerResponse struct {
+	RawRoom	ServerData	`json:"room"`
+}
+
+type ServerData struct {
+	Id			string	`json:"Id"`
+	Name		string	`json:"Name"`
+	Description	string	`json:"Description"`
+	Exits		map[string]string	`json:"Exits"`
+	Players		[]string	`json:"Players"`
+	Items		[]string	`json:"Items"`
+	NPCs		[]string	`json:"NPCs"`
+}
 
 type InfoBox struct {
 	player	*Player
@@ -60,4 +75,26 @@ func (b *InfoBox) Update() {
 	}
 	b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.id, p.group.leader))
 	b.members.SetText("Members: " + strings.Join(p.group.members, ", "))
+}
+
+func (player *Player) PlayerRoomUpdate(msg string) {
+	rawJSON := strings.TrimPrefix(msg, "look=")
+	rawJSON = strings.TrimSpace(rawJSON)
+	if rawJSON == "" {
+		return
+	}
+	var resp ServerResponse
+	if err := json.Unmarshal([]byte(rawJSON), &resp); err != nil {
+		fmt.Println("Update playerinfo error")
+		return
+	}
+	if resp.RawRoom.Name != "" {
+		player.room.name = strings.ToUpper(resp.RawRoom.Name)
+	}
+	player.room.exits = map[string]bool {
+		"north": resp.RawRoom.Exits["north"] != "",
+		"south": resp.RawRoom.Exits["south"] != "",
+		"east": resp.RawRoom.Exits["east"] != "",
+		"west": resp.RawRoom.Exits["west"] != "",
+	}
 }

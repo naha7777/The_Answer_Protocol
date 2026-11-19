@@ -20,11 +20,11 @@ func popup(w fyne.Window, txt string) {
 	height := w.Canvas().Size().Height
 
 	popup := widget.NewPopUp(widget.NewLabel(txt), w.Canvas())
-	popup.ShowAtPosition(fyne.Position{X: width/2, Y: 3*(height/4)})
+	popup.ShowAtPosition(fyne.Position{X: width / 2, Y: 3 * (height / 4)})
 
 	time.AfterFunc(3*time.Second, func() {
-			fyne.Do(func() {
-				popup.Hide()
+		fyne.Do(func() {
+			popup.Hide()
 		})
 	})
 }
@@ -32,4 +32,19 @@ func popup(w fyne.Window, txt string) {
 func get_time() string {
 	formatted := time.Now().Format("15:04")
 	return formatted
+}
+
+func Pop(name string, place []string) []string {
+	var new []string
+	find := false
+	for _, item := range place {
+		if item != name && !find {
+			new = append(new, item)
+		} else if find {
+			new = append(new, item)
+		} else {
+			find = true
+		}
+	}
+	return new
 }

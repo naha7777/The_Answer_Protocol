@@ -5,6 +5,8 @@ package main
 // \===========================================/
 
 import (
+	"encoding/json"
+	"fmt"
 	"image/color"
 	"os"
 	"strings"
@@ -21,7 +23,9 @@ import (
 // \===========================================/
 
 type Inventory struct {
-	window fyne.Window
+	objects    []string
+	accessible []string
+	window     fyne.Window
 
 	items  *fyne.Container
 	scroll *container.Scroll
@@ -47,8 +51,9 @@ func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
 	invFrame.StrokeWidth = 2
 
 	// Buttons
-	take_but := widget.NewButton("TAKE", func() { conn.Send("TAKE Herbs") })
-	drop_but := widget.NewButton("DROP", func() { conn.Send("DROP Herbs") })
+	var take_but, drop_but *widget.Button
+	take_but = widget.NewButton("TAKE", func() { Option_popup(take_but, w, generate_option(i.accessible, "TAKE", conn)) })
+	drop_but = widget.NewButton("DROP", func() { Option_popup(drop_but, w, generate_option(i.objects, "DROP", conn)) })
 
 	// Containers on top of each others
 	inv_title := container.NewCenter(widget.NewLabel("Inventory"))
@@ -70,7 +75,11 @@ func (i *Inventory) Content() fyne.CanvasObject {
 
 func (i *Inventory) BuildInv(str string) {
 	// parse
+	str = strings.TrimPrefix(str, "inventory=")
 	str = strings.Trim(str, "[]")
+	if str == "" {
+		return
+	}
 	items := strings.Split(str, ", ")
 
 	for _, item := range items {
@@ -102,6 +111,8 @@ func (i *Inventory) drop(item string) {
 				sep := i.items.Objects[n+1]
 				i.items.Remove(obj)
 				i.items.Remove(sep)
+				i.objects = Pop(item, i.objects)
+				i.accessible = append(i.accessible, item)
 				return
 			}
 		}
@@ -124,4 +135,65 @@ func (i *Inventory) take(item string) {
 	single_cont := container.NewBorder(nil, nil, image, nil, container.NewCenter(widget.NewLabel(item)))
 	i.items.Add(single_cont)
 	i.items.Add(widget.NewSeparator())
+	i.objects = append(i.objects, item)
+	i.accessible = Pop(item, i.accessible)
+}
+
+type Response struct {
+	Items []string `json:"items"`
+}
+
+func (i *Inventory) Update(str string) {
+	if strings.HasPrefix(str, "inventory=") {
+		str = strings.TrimPrefix(str, "inventory=")
+		str = strings.Trim(str, "[]")
+		items := strings.Split(str, ", ")
+
+		for _, item := range items {
+			if item != "" {
+				item = itemIDToName(item)
+				i.objects = append(i.objects, item)
+			}
+		}
+	} else if strings.HasPrefix(str, "look=") {
+		str = strings.TrimPrefix(str, "look=")
+		var data map[string]any
+		if err := json.Unmarshal([]byte(str), &data); err != nil {
+			fmt.Println("erreur de parsing:", err)
+			return
+		}
+		var itemsID []string
+		if room, ok := data["room"].(map[string]any); ok {
+			if rawItems, ok := room["Items"].([]any); ok {
+				for _, item := range rawItems {
+					if str, ok := item.(string); ok {
+						itemsID = append(itemsID, str)
+					}
+				}
+			}
+		}
+		var items []string
+		for _, item := range itemsID {
+			item = itemIDToName(item)
+			items = append(items, item)
+		}
+		i.accessible = items
+	}
+}
+
+func itemIDToName(id string) string {
+	id = strings.TrimPrefix(id, "item.")
+
+	id = strings.ReplaceAll(id, "_", " ")
+	id = strings.Title(strings.ToLower(id))
+	return id
+}
+
+func generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
+	cont := container.NewVBox()
+	for _, option := range options {
+		but := widget.NewButton(option, func() { conn.Send(action + " " + option) })
+		cont.Add(but)
+	}
+	return cont
 }

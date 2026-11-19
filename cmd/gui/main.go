@@ -19,6 +19,13 @@ type Room struct {
 	name	string
 	exits	map[string]bool
 }
+
+type Data struct {
+	w		fyne.Window
+	conn	*client.Conn
+	cb		*CardinalButtons
+}
+
 type Player struct {
 	name	string
 	health	int
@@ -43,17 +50,21 @@ var (
 // \===========================================/
 
 func main() {
-	player := Player{health: 100, move: false,}
-
+	
 	conn, err := client.Dial("localhost:8080")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
 		os.Exit(1)
 	}
 	defer conn.Close()
-
+	
 	a := app.New()
 	w := a.NewWindow("TAP")
+	data := Data{w: w, conn: conn, cb: &CardinalButtons{}}
+	initialRoom := Room{
+		name: "square",
+		exits: map[string]bool{"north": true, "south": false, "east": true, "west": false}}
+	player := Player{health: 100, move: false, room: initialRoom}
 	w.Resize(fyne.NewSize(1920, 1080))
 
 	// Key hook for esc to close the app
@@ -73,11 +84,12 @@ func main() {
 
 	// ajouter conn en parametre de la fonction
 	chat := NewChat(w, &player, conn)
+	inv := NewInv(w, &player, conn)
 
 	// ajouter conn en parametre de la fonction
-	btnContainer := newButtonContainer(w, conn, background, &player)
-	hudContent := container.New(&Hud{}, btnContainer, chat.Content())
+	btnContainer := newButtonContainer(background, &player, &data)
 	playerinfo := showPlayerInfo(&player)
+	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
@@ -90,7 +102,10 @@ func main() {
 	loginView, onLoginMsg := LoginScreen(conn , &player, func(name string) {
 		loggedIn = true
 		playerinfo.Update()
+		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
+		conn.Send("INVENTORY")
+		conn.Send("LOOK")
 	})
 
 	w.SetContent(loginView)
@@ -112,20 +127,22 @@ func main() {
 						background.Refresh()
 						player.move = false
 						playerinfo.Update()
+						data.cb.Update(player.room.exits)
+						data.conn.Send("LOOK")
 
 					case msg.Rest == "bye":
 						a.Quit()
 
 					// GROUP
 					case strings.HasPrefix(msg.Rest, "group_created="):
-						popup(w, strings.ToUpper(player.group.id) + " group was created")
+						popup(w, strings.ToUpper(player.group.id)+" group was created")
 						conn.Send("INFO_GROUP")
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
-						popup(w, "You leave " + strings.ToUpper(player.group.id) + " group")
+						popup(w, "You leave "+strings.ToUpper(player.group.id)+" group")
 						player.group = GroupInfo{}
 						playerinfo.Update()
 					case strings.HasPrefix(msg.Rest, "group_joined="):
-						popup(w, "You join the " + strings.ToUpper(player.group.id) + "group")
+						popup(w, "You join the "+strings.ToUpper(player.group.id)+"group")
 						conn.Send("INFO_GROUP")
 					case strings.HasPrefix(msg.Rest, "group_infos="):
 						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
@@ -135,6 +152,24 @@ func main() {
 							break
 						}
 						player.group = infos.Group
+					case strings.HasPrefix(msg.Rest, "taken="):
+						item := strings.TrimPrefix(msg.Rest, "taken=item.")
+						item = strings.Title(strings.ToLower(item))
+						item = strings.ReplaceAll(item, "_", " ")
+						inv.take(item)
+					case strings.HasPrefix(msg.Rest, "dropped="):
+						item := strings.TrimPrefix(msg.Rest, "dropped=item.")
+						item = strings.Title(strings.ToLower(item))
+						item = strings.ReplaceAll(item, "_", " ")
+						inv.drop(item)
+					case strings.HasPrefix(msg.Rest, "inventory="):
+						inv.BuildInv(msg.Rest)
+						inv.Update(msg.Rest)
+					case strings.HasPrefix(msg.Rest, "look="):
+						inv.Update(msg.Rest)
+						playerinfo.Update()
+						player.PlayerRoomUpdate(msg.Rest)
+						data.cb.Update(player.room.exits)
 					}
 
 				case "EVT":

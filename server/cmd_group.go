@@ -3,7 +3,17 @@ package server
 import (
 	"strings"
 	"strconv"
+	"maps"
+	"encoding/json"
+	"slices"
 )
+
+type groupInfo struct {
+	Id		string		`json:"Id"`
+	Leader	string		`json:"Leader"`
+	Members	[]string	`json:"Members"`
+	Invited	[]string	`json:"Invited"`
+}
 
 type Group struct {
 	id      string
@@ -42,7 +52,7 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 
 func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 401 NOT_IN_GROUP")
+		client.Send("ERR 03 CANT_FIND_LEADER")
 		return
 	}
 	d.mu.Lock()
@@ -105,7 +115,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 
 func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	if len(args) == 0 {
-		client.Send("ERR 401 NOT_IN_GROUP")
+		client.Send("ERR 03 CANT_FIND_USER")
 		return
 	}
 	d.mu.Lock()
@@ -133,4 +143,27 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 			c.Send("EVT GROUP INVITE %s %s", client.name, client.group.id)
 		}
 	}
+}
+
+func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if client.group == nil {
+		client.Send("ERR 401 NOT_IN_GROUP")
+		return
+	}
+	g := client.group
+	b, err := json.Marshal(map[string]groupInfo{
+		"group": {
+			Id:			g.id,
+			Leader:		g.leader,
+			Members:	slices.Sorted(maps.Keys(g.members)),
+			Invited:	slices.Sorted(maps.Keys(g.invited)),
+		},
+	})
+	if err != nil {
+		client.Send("ERR 500 INTERNAL")
+		return
+	}
+	client.Send("Ok group_infos=%s", b)
 }

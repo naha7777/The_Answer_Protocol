@@ -1,18 +1,9 @@
 package server
 
 import (
-	"encoding/json"
 	"strings"
 	"slices"
-	"maps"
 )
-
-type groupInfo struct {
-	Id		string		`json:"Id"`
-	Leader	string		`json:"Leader"`
-	Members	[]string	`json:"Members"`
-	Invited	[]string	`json:"Invited"`
-}
 
 func (d *Dispatcher) removeClient(client *Client) {
 	d.mu.Lock()
@@ -105,25 +96,3 @@ func Move(direction string, client *Client, d *Dispatcher) {
 	}
 }
 
-func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	if client.group == nil {
-		client.Send("ERR 401 NOT_IN_GROUP")
-		return
-	}
-	g := client.group
-	b, err := json.Marshal(map[string]groupInfo{
-		"group": {
-			Id:			g.id,
-			Leader:		g.leader,
-			Members:	slices.Sorted(maps.Keys(g.members)),
-			Invited:	slices.Sorted(maps.Keys(g.invited)),
-		},
-	})
-	if err != nil {
-		client.Send("ERR 500 INTERNAL")
-		return
-	}
-	client.Send("Ok group_infos=%s", b)
-}

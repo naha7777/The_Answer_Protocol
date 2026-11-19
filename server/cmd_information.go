@@ -33,5 +33,5 @@ func (d *Dispatcher) handleInventory(client *Client, args []string) {
 		item_lst = append(item_lst, v.Id)
 	}
 	lst := strings.Join(item_lst, " ")
-	client.Send("OK [%s]", lst)
+	client.Send("OK inventory=[%s]", lst)
 }

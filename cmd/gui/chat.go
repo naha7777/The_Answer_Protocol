@@ -20,17 +20,17 @@ import (
 // \===========================================/
 
 type Chat struct {
-	window		fyne.Window
-	scope		string
-	txtColor	color.Color
-	inGroup		bool
+	window   fyne.Window
+	scope    string
+	txtColor color.Color
+	inGroup  bool
 
-	messages	*fyne.Container
-	scroll		*container.Scroll
-	entry		*widget.Entry
-	root		fyne.CanvasObject
-	player		*Player
-	conn		*client.Conn
+	messages *fyne.Container
+	scroll   *container.Scroll
+	entry    *widget.Entry
+	root     fyne.CanvasObject
+	player   *Player
+	conn     *client.Conn
 }
 
 // /===========================================\
@@ -39,23 +39,23 @@ type Chat struct {
 
 func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	c := &Chat{
-		window:		w,
-		scope:		"GLOBAL",
-		txtColor:	lime,
-		player:		p,
-		conn:		conn,
+		window:   w,
+		scope:    "GLOBAL",
+		txtColor: lime,
+		player:   p,
+		conn:     conn,
 	}
-	
+
 	c.messages = container.NewVBox()
-	c.scroll = container.NewScroll(c.messages)
+	c.scroll = container.NewVScroll(c.messages)
 	c.entry = widget.NewEntry()
 	c.entry.SetPlaceHolder("Global chat...")
 	// Send with enter key
-	c.entry.OnSubmitted = func(string) {c.send()}
+	c.entry.OnSubmitted = func(string) { c.send() }
 
 	// Chat Buttons
-	cbut_glob := widget.NewButton("Global", func() {c.setChannel("GLOBAL", lime)})
-	cbut_room := widget.NewButton("Room", func() {c.setChannel("ROOM", cyan)})
+	cbut_glob := widget.NewButton("Global", func() { c.setChannel("GLOBAL", lime) })
+	cbut_room := widget.NewButton("Room", func() { c.setChannel("ROOM", cyan) })
 	cbut_grp := widget.NewButton("Group", func() {
 		if c.player.group.id != "" {
 			c.setChannel("GROUP", orange)
@@ -88,7 +88,7 @@ func (c *Chat) Content() fyne.CanvasObject {
 }
 
 func (c *Chat) addLine(channel, author, text string, col color.Color) {
-	c.messages.Add(canvas.NewText("[" + channel + "] " + get_time() + " [" + strings.ToUpper(author) +"]: " + text, col))
+	c.messages.Add(canvas.NewText("["+channel+"] "+get_time()+" ["+strings.ToUpper(author)+"]: "+text, col))
 	c.scroll.ScrollToBottom()
 }
 

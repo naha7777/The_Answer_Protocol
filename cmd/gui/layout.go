@@ -7,7 +7,6 @@ package main
 import (
 	"image/color"
 	"strings"
-	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -23,21 +22,20 @@ import (
 // struct for the HUD needed to implement the fyne layout Interface
 // /!\ Need at least 4 widget
 type Hud struct {
-
 }
 
-type Layout struct {
-	backgroundFile	string
-	container	*fyne.Container
+// type Layout struct {
+// 	backgroundFile string
+// 	container      *fyne.Container
+// }
+
+type CardinalButtons struct {
+    North *widget.Button
+    South *widget.Button
+    East  *widget.Button
+    West  *widget.Button
 }
 
-type ButtonManager struct {
-	Container	*fyne.Container
-	north		*widget.Button
-	south		*widget.Button
-	east		*widget.Button
-	west		*widget.Button
-}
 
 // /===========================================\
 // |				 Function				   |
@@ -60,19 +58,21 @@ func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 }
 
 func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
-		if len(objects) < 2 {
+	if len(objects) < 3 {
 		return
 	}
 	w, h := containerSize.Width, containerSize.Height
 
 	margin := float32(10)
 
+	// Buttons
 	btnSize := objects[0].MinSize()
 	btnX := margin
-	btnY := h - btnSize.Height - margin
+	Y := h - btnSize.Height - margin
 	objects[0].Resize(btnSize)
-	objects[0].Move(fyne.NewPos(btnX, btnY))
+	objects[0].Move(fyne.NewPos(btnX, Y))
 
+	// Chat
 	chatX := btnX + btnSize.Width + margin
 	chatWidth := (w - chatX - margin) / 2
 	if chatWidth < 50 {
@@ -80,13 +80,24 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	}
 
 	chatHeight := btnSize.Height
-	chatY := btnY
 
 	objects[1].Resize(fyne.NewSize(chatWidth, chatHeight))
-	objects[1].Move(fyne.NewPos(chatX, chatY))
+	objects[1].Move(fyne.NewPos(chatX, Y))
+
+	// Inventory
+	invX := chatX + chatWidth + margin
+	invY := Y - 50
+	invWidth := (w - invX - margin) / 3
+	if invWidth < 50 {
+		invWidth = 50
+	}
+
+	invHeight := h - invY - margin
+	objects[2].Resize(fyne.NewSize(invWidth, invHeight))
+	objects[2].Move(fyne.NewPos(invX, invY))
 }
 
-func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image, p *Player) *fyne.Container {
+func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Container {
 
 	mapImg := "./data/map.jpeg"
 	previous := background.File
@@ -96,7 +107,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 			background.File = previous
 		} else {
 			previous = background.File
-			 background.File = mapImg
+			background.File = mapImg
 		}
 		background.Refresh()
 	}
@@ -108,15 +119,15 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	}
 
 	send := func(cmd string) func() {
-		return func () {
+		return func() {
 			if strings.HasPrefix(cmd, "MOVE") {
 				p.move = true
 			}
-			if err := conn.Send(cmd); err != nil {
-					fyne.Do(func() { popup(w, "901 SEND_FAILED") })
-				}
+			if err := d.conn.Send(cmd); err != nil {
+				fyne.Do(func() { popup(d.w, "901 SEND_FAILED") })
 			}
 		}
+	}
 
 	// Actions Buttons
 	butAttack := newBtn("ATTACK", send("ATTACK"))
@@ -130,7 +141,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	butWho := newBtn("WHO", send("WHO") )
 	butMap := newBtn("MAP", toggleMap)
 
-	butQuit := widget.NewButton("QUIT", func () { 
+	butQuit := widget.NewButton("QUIT", func() {
 		d := dialog.NewConfirm(
 			"QUIT",
 			"YOU REALLY WANT TO QUIT ?",
@@ -140,7 +151,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 				}
 				send("QUIT")()
 			},
-			w,
+			d.w,
 		)
 		d.SetConfirmText("YES")
 		d.SetDismissText("NO")
@@ -152,26 +163,24 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 
 	askAndSend := func(title, label, cmd string) func() {
 		return func() {
-			askText(w, title, label, func(text string) {
+			askText(d.w, title, label, func(text string) {
 				send(strings.TrimSpace(cmd + " " + text))()
 			})
 		}
 	}
 	butGroup = newBtn("GROUP", func() {
-		menu := fyne.NewMenu("",
-			fyne.NewMenuItem("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
-			fyne.NewMenuItem("LEAVE", func() { send("GROUP LEAVE")() }),
-			fyne.NewMenuItem("INVIT", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
+		Option_popup(butGroup, d.w,
+			newBtn("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
+			newBtn("QUIT", func() { send("GROUP LEAVE")() }),
+			newBtn("INVIT", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
 		)
-		pop := widget.NewPopUpMenu(menu, w.Canvas())
-		pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), butGroup)
 	})
 
 	// Cardinals Buttons
-	butNorth := newBtn("NORTH", send("MOVE NORTH") )
-	butSouth := newBtn("SOUTH", send("MOVE SOUTH") )
-	butEast := newBtn("EAST", send("MOVE EAST") )
-	butWest := newBtn("WEST", send("MOVE WEST") )
+	d.cb.North = newBtn("NORTH", send("MOVE NORTH"))
+	d.cb.South = newBtn("SOUTH", send("MOVE SOUTH"))
+	d.cb.East = newBtn("EAST", send("MOVE EAST"))
+	d.cb.West = newBtn("WEST", send("MOVE WEST"))
 
 	butsActions := container.NewGridWithColumns(3,
 		butLook, butTalk, butAttack,
@@ -182,9 +191,9 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	)
 
 	butsCardinals := container.NewGridWithColumns(3,
-		widget.NewLabel(""), butNorth, widget.NewLabel(""),
-		butWest, butMap, butEast,
-		widget.NewLabel(""), butSouth, widget.NewLabel(""),
+		widget.NewLabel(""), d.cb.North, widget.NewLabel(""),
+		d.cb.West, butMap, d.cb.East,
+		widget.NewLabel(""), d.cb.South, widget.NewLabel(""),
 	)
 
 	btnsFrame := canvas.NewRectangle(color.NRGBA{R: 20, G: 20, B: 20, A: 200})
@@ -197,21 +206,30 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 		butsCardinals,
 	)
 
-	mainContainer := container.NewStack(
+	return container.NewStack(
 		btnsFrame,
 		container.NewPadded(insideBtn),
 	)
-
-	bm := &ButtonManager{
-		Container:	mainContainer,
-		north:		butNorth,
-		south:		butSouth,
-		east:		butEast,
-		west:		butWest,
-	}
-
-	bm.Update(p)
-	return bm
 }
 
-func (bm *)
+// Method for showing/hiding buttons based on the “exits” map
+func (cb *CardinalButtons) Update(exits map[string]bool) {
+    if exits == nil {
+        exits = make(map[string]bool)
+    }
+	updateBtn := func(btn *widget.Button, isOpen bool) {
+        if btn == nil {
+			return
+		}
+		if isOpen {
+            btn.Enable()
+        } else {
+            btn.Disable()
+        }
+    }
+
+    updateBtn(cb.North, exits["north"])
+    updateBtn(cb.South, exits["south"])
+    updateBtn(cb.East,  exits["east"])
+    updateBtn(cb.West,  exits["west"])
+}

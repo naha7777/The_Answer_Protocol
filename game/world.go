@@ -10,6 +10,7 @@ type World struct {
 	Rooms	map[string]*Room
 	Items	map[string]*Item
 	NPCs	map[string]*NPC
+	Quests	map[string]*Quest
 }
 
 type Room struct {
@@ -32,8 +33,20 @@ type Item struct {
 type NPC struct {
 	Name		string
 	Hp			int
+	Max_hp		int
+	Strengh		int
 	Hostile		bool
 	Dialogue	[]string
+	Quest		[]string
+}
+
+type Quest struct {
+	NPC			string
+	Id			string
+	Description	string
+	Reward		[]string
+	Status		string
+	Objective	[]string
 }
 
 func LoadWorld(path string) (*World, error) {
@@ -70,12 +83,23 @@ func LoadWorld(path string) (*World, error) {
 
 	npc_lst := make(map[string]*NPC, len(w.NPCs))
 	for str, npc := range w.NPCs {
-		n := &NPC{Name: npc.Name, Hp: npc.HP, Hostile: npc.Hostile,
-				  Dialogue: npc.Dialogue,}
+		n := &NPC{Name: npc.Name, Hp: npc.HP, Max_hp: npc.Max_hp,
+				  Strengh: npc.Strengh,
+				  Hostile: npc.Hostile, Dialogue: npc.Dialogue,
+				  Quest: npc.Quest}
 		npc_lst[str] = n
 	}
 
+	quest_lst := make(map[string]*Quest, len(w.Quests))
+	for str, quest := range w.Quests {
+		q := &Quest{NPC: quest.NPC, Id: quest.Id,
+					Description: quest.Description,
+					Reward: quest.Reward, Status: quest.Status,
+					Objective: quest.Objective,}
+		quest_lst[str] = q
+	}
+
 	real_w := World{Start: w.Start, Rooms: room_lst, Items: item_lst,
-					NPCs: npc_lst}
+					NPCs: npc_lst, Quests: quest_lst,}
 	return &real_w, nil
 }
