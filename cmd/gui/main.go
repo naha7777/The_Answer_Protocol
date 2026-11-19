@@ -24,6 +24,7 @@ type Data struct {
 	w    fyne.Window
 	conn *client.Conn
 	cb   *CardinalButtons
+	g    *GameState
 }
 
 type Player struct {
@@ -38,7 +39,7 @@ type GameState struct {
 	inventory *Inventory
 	player    *Player
 	npc       []string
-	pop       *widget.PopUp
+	popup     *widget.PopUp
 }
 
 func (g *GameState) Update(str string) {
@@ -76,7 +77,7 @@ var (
 	lime   = color.RGBA{R: 33, G: 222, B: 20, A: 255}
 	cyan   = color.RGBA{R: 17, G: 233, B: 237, A: 255}
 	orange = color.RGBA{R: 237, G: 123, B: 17, A: 255}
-	yellow = color.RGBA{R: 245, G: 194, B: 12, A: 255}
+	yellow = color.RGBA{R: 255, G: 213, B: 28, A: 255}
 )
 
 // /===========================================\
@@ -94,7 +95,6 @@ func main() {
 
 	a := app.New()
 	w := a.NewWindow("TAP")
-	data := Data{w: w, conn: conn, cb: &CardinalButtons{}}
 	initialRoom := Room{
 		name:  "square",
 		exits: map[string]bool{"north": true, "south": false, "east": true, "west": false}}
@@ -109,17 +109,17 @@ func main() {
 	})
 
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
-	background := canvas.NewImageFromFile("./data/square.jpeg")
+	// Struct info
+	chat := NewChat(w, &player, conn)
+	inv := NewInv(w, &player, conn)
+	game := GameState{inventory: inv, player: &player}
+	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game}
+	background := canvas.NewImageFromFile("./data/tavern.jpeg")
 	background.FillMode = canvas.ImageFillStretch
 
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
 	logView := container.NewVScroll(logLabel)
-
-	// Struct info
-	chat := NewChat(w, &player, conn)
-	inv := NewInv(w, &player, conn)
-	game := GameState{inventory: inv, player: &player}
 
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(background, &player, &data)
@@ -202,12 +202,12 @@ func main() {
 
 					// INVENTORY
 					case strings.HasPrefix(msg.Rest, "inventory="):
-						inv.BuildInv(msg.Rest)
+						game.inventory.BuildInv(msg.Rest)
 						game.Update(msg.Rest)
 
 					// LOOK
 					case strings.HasPrefix(msg.Rest, "look="):
-						inv.Update(msg.Rest)
+						game.Update(msg.Rest)
 						playerinfo.Update()
 						player.PlayerRoomUpdate(msg.Rest)
 						data.cb.Update(player.room.exits)
@@ -218,7 +218,9 @@ func main() {
 					// TALK
 					case strings.HasPrefix(msg.Rest, "talk="):
 						msg.Rest = strings.TrimPrefix(msg.Rest, "talk=")
-						chat.Receive("NPC", "moi", msg.Rest)
+						author, message, _ := strings.Cut(msg.Rest, ": ")
+						author = IDToName(author)
+						chat.Receive("NPC", author, message)
 					}
 
 				case "EVT":

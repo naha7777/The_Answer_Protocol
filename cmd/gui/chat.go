@@ -88,7 +88,7 @@ func (c *Chat) Content() fyne.CanvasObject {
 }
 
 func (c *Chat) addLine(channel, author, text string, col color.Color) {
-	c.messages.Add(canvas.NewText("["+channel+"] "+get_time()+" ["+strings.ToUpper(author)+"]: "+text, col))
+	c.messages.Add(canvas.NewText("["+channel+"] "+get_time()+" | "+author+": "+text, col))
 	c.scroll.ScrollToBottom()
 }
 

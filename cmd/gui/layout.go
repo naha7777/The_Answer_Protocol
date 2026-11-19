@@ -7,7 +7,6 @@ package main
 import (
 	"image/color"
 	"strings"
-	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -97,7 +96,7 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	objects[2].Move(fyne.NewPos(invX, invY))
 }
 
-func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Image, g *GameState) *fyne.Container {
+func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Container {
 
 	mapImg := "./data/map.jpeg"
 	previous := background.File
@@ -121,7 +120,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	send := func(cmd string) func() {
 		return func() {
 			if strings.HasPrefix(cmd, "MOVE") {
-				g.player.move = true
+				p.move = true
 			}
 			if err := d.conn.Send(cmd); err != nil {
 				fyne.Do(func() { popup(d.w, "901 SEND_FAILED") })
@@ -133,7 +132,7 @@ func newButtonContainer(w fyne.Window, conn *client.Conn, background *canvas.Ima
 	butAttack := newBtn("ATTACK", send("ATTACK"))
 	butLook := newBtn("LOOK", send("LOOK"))
 	var butTalk *widget.Button
-	butTalk = newBtn("TALK", func() { g.pop = Option_popup(butTalk, w, Generate_option(g.npc, "TALK", conn)) })
+	butTalk = newBtn("TALK", func() { d.g.popup = Option_popup(butTalk, d.w, Generate_option(d.g.npc, "TALK", d.conn)) })
 	butStatus := newBtn("STATUS", send("STATUS"))
 	butQuest := newBtn("QUEST", send("QUEST"))
 	butQuests := newBtn("QUESTS", send("QUESTS"))
