@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"io"
 	"strings"
 	"the_answer_protocol/game"
 )
@@ -39,7 +40,8 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			client.Send("ERR 02 YOU_MUST_BE_CONNECTED")
 		}
 	}
-	if err := scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil && !errors.Is(err, net.ErrClosed) &&
+    !errors.Is(err, io.EOF) {
 		fmt.Fprintln(os.Stderr, scanner.Err())
 	}
 }

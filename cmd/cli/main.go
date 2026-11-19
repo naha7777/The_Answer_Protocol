@@ -47,7 +47,7 @@ func main() {
 				fmt.Println(msg.Raw)
 			}
 		}
-		fmt.Println("Server disconnected")
+		fmt.Println("CLI disconnected")
 		os.Exit(0)
 	}()
 
