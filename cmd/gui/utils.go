@@ -11,6 +11,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -76,3 +77,14 @@ func IDToName(id string) string {
 	id = strings.ReplaceAll(id, "_", " ")
 	return id
 }
+
+func confirmAction(w fyne.Window, title, message string, onYes func()) {
+		d := dialog.NewConfirm(title, message, func(confirmed bool) {
+			if confirmed {
+				onYes()
+			}
+		}, w)
+		d.SetConfirmText("YES")
+		d.SetDismissText("NO")
+		d.Show()
+	}

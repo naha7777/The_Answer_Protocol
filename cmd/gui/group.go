@@ -10,10 +10,10 @@ import (
 
 )
 type GroupInfo struct {
-	id		string
-	leader	string
-	members	[]string
-	invited	[]string
+	Id		string		`json:"Id"`
+	Leader	string		`json:"Leader"`
+	Members	[]string	`json:"Members"`
+	Invited	[]string	`json:"Invited"`
 }
 
 type groupInfosMsg struct {

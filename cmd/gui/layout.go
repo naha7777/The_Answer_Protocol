@@ -11,7 +11,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -143,21 +142,9 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	butMap := newBtn("MAP", toggleMap)
 
 	butQuit := widget.NewButton("QUIT", func() {
-		d := dialog.NewConfirm(
-			"QUIT",
-			"YOU REALLY WANT TO QUIT ?",
-			func(confirmed bool) {
-				if !confirmed {
-					return
-				}
-				send("QUIT")()
-			},
-			d.w,
-		)
-		d.SetConfirmText("YES")
-		d.SetDismissText("NO")
-		d.Show()
+		confirmAction(d.w, "QUIT", "YOU REALLY WANT TO QUIT ?", send("QUIT"))
 	})
+
 	butQuit.Importance = widget.LowImportance
 
 	var butGroup *widget.Button
@@ -172,7 +159,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	butGroup = newBtn("GROUP", func() {
 		Option_popup(butGroup, d.w,
 			newBtn("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
-			newBtn("QUIT", func() { send("GROUP LEAVE")() }),
+			newBtn("LEAVE", func() { confirmAction(d.w, "LEAVE", "YOU REALLY WANT TO LEAVE YOUR GROUP ?", send("GROUP LEAVE")) }),
 			newBtn("INVIT", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
 		)
 	})
@@ -184,7 +171,6 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	d.cb.West = newBtn("WEST", send("MOVE WEST"))
 
 	butsActions := container.NewGridWithColumns(3,
-		// widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 		butLook, butTalk, butAttack,
 		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
 		butStatus, butQuest, butQuests,

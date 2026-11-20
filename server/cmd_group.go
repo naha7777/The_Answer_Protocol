@@ -165,5 +165,5 @@ func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
 		client.Send("ERR 500 INTERNAL")
 		return
 	}
-	client.Send("Ok group_infos=%s", b)
+	client.Send("OK group_infos=%s", b)
 }

@@ -172,15 +172,15 @@ func main() {
 
 					// GROUP
 					case strings.HasPrefix(msg.Rest, "group_created="):
-						popup(w, strings.ToUpper(player.group.id)+" group was created")
 						conn.Send("INFO_GROUP")
+						popup(w, strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_created="))+" group was created")
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
-						popup(w, "You leave "+strings.ToUpper(player.group.id)+" group")
+						popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
 						player.group = GroupInfo{}
 						playerinfo.Update()
 					case strings.HasPrefix(msg.Rest, "group_joined="):
-						popup(w, "You join the "+strings.ToUpper(player.group.id)+"group")
 						conn.Send("INFO_GROUP")
+						popup(w, "You join the "+strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_joined="))+"group")
 					case strings.HasPrefix(msg.Rest, "group_infos="):
 						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
 						var infos groupInfosMsg
@@ -189,6 +189,7 @@ func main() {
 							break
 						}
 						player.group = infos.Group
+						playerinfo.Update()
 
 					// TAKE
 					case strings.HasPrefix(msg.Rest, "taken="):
@@ -208,8 +209,8 @@ func main() {
 					// LOOK
 					case strings.HasPrefix(msg.Rest, "look="):
 						game.Update(msg.Rest)
-						playerinfo.Update()
 						player.PlayerRoomUpdate(msg.Rest)
+						playerinfo.Update()
 						data.cb.Update(player.room.exits)
 
 					// QUESTS
@@ -236,7 +237,7 @@ func main() {
 								})
 							}
 						case "JOIN", "LEAVE":
-							conn.Send("GROUP INFOS")
+							conn.Send("INFO_GROUP")
 						}
 					}
 					parts := strings.SplitN(msg.Rest, " ", 4)

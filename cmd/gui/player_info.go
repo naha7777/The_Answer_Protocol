@@ -68,13 +68,13 @@ func (b *InfoBox) Update() {
 	p := b.player
 	b.name.SetText("Name: " + p.name)
 	b.room.SetText("Room: " + p.room.name)
-	if p.group.id == "" {
+	if p.group.Id == "" {
 		b.group.SetText("Group: -")
 		b.members.SetText("")
 		return
 	}
-	b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.id, p.group.leader))
-	b.members.SetText("Members: " + strings.Join(p.group.members, ", "))
+	b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.Id, p.group.Leader))
+	b.members.SetText("Members: " + strings.Join(p.group.Members, ", "))
 }
 
 func (player *Player) PlayerRoomUpdate(msg string) {
