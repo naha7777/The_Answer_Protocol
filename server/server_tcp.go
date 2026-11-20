@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"strings"
@@ -36,25 +35,37 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	}()
 	client.Send("OK hello proto=1")
 
-	scanner := bufio.NewScanner(connection)
-	for scanner.Scan() {
-		line := strings.ToUpper(scanner.Text())
-		if client.name == "" && strings.HasPrefix(line, "CONNECT") {
-			dispatcher.Dispatch(client, scanner.Text())
+	reader := bufio.NewReaderSize(connection, 1024)
+	for {
+		line, isPrefix, err := reader.ReadLine()
+		if err != nil {
+			break
+		}
+		if isPrefix {
+			for isPrefix && err == nil {
+				_, isPrefix, err = reader.ReadLine()
+			}
+			if err != nil {
+				break
+			}
+			client.Send("ERR 16 LINE_TOO_LONG")
+			continue
+		}
+
+		text := string(line)
+		upper := strings.ToUpper(text)
+		if client.name == "" && strings.HasPrefix(upper, "CONNECT") {
+			dispatcher.Dispatch(client, text)
 			dispatcher.displayStats()
 			dispatcher.displayRoomStats()
 		} else if client.name != "" {
-			dispatcher.Dispatch(client, scanner.Text())
+			dispatcher.Dispatch(client, text)
 		} else {
 			client.Send("ERR 02 YOU_MUST_BE_CONNECTED")
 		}
 		if client.quit {
 			break
 		}
-	}
-	if err := scanner.Err(); err != nil && !errors.Is(err, net.ErrClosed) &&
-		!errors.Is(err, io.EOF) {
-		fmt.Fprintln(os.Stderr, scanner.Err())
 	}
 }
 

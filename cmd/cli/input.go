@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"unicode/utf8"
 )
 
 type Input struct {
@@ -83,8 +84,10 @@ func (in *Input) ReadLine(r *bufio.Reader) (string, error) {
 				in.redraw()
 			}
 		case ch >= 32:
-			in.buf = append(in.buf, ch)
-			in.redraw()
+			if len(string(in.buf))+utf8.RuneLen(ch) < 1000 {
+				in.buf = append(in.buf, ch)
+				in.redraw()
+			}
 		}
 		in.mu.Unlock()
 	}

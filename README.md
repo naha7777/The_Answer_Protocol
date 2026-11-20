@@ -92,6 +92,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 13 | NOT_IN_FIGHT | **custom (not in RFC)** |
 | 14 | NPC_IN_FIGHT | **custom (not in RFC)** |
 | 15 | NO_QUEST_AVAILABLE | **custom (not in RFC)** |
+| 16 | LINE_TOO_LONG | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
