@@ -39,6 +39,7 @@ type NPC struct {
 	Hostile		bool
 	Dialogue	[]string
 	Quest		[]string
+	Fighter		string
 }
 
 type Quest struct {
@@ -87,7 +88,7 @@ func LoadWorld(path string) (*World, error) {
 		n := &NPC{Name: npc.Name, Hp: npc.HP, Max_hp: npc.Max_hp,
 				  Strengh: npc.Strengh,
 				  Hostile: npc.Hostile, Dialogue: npc.Dialogue,
-				  Quest: npc.Quest}
+				  Quest: npc.Quest, Fighter: "",}
 		npc_lst[str] = n
 	}
 

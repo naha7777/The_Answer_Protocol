@@ -14,7 +14,7 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 	switch player_action {
 	case "ATTACK":
 		if rand.Float64() < 0.1 {
-			return Flee(client)
+			return Flee(client, d)
 		} else if rand.Float64() < 0.8 {
 			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
 		} else {
@@ -28,7 +28,7 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 		}
 	case "DEFEND":
 		if rand.Float64() < 0.05 {
-			return Flee(client)
+			return Flee(client, d)
 		} else if rand.Float64() < 0.75 {
 			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
 		} else {
@@ -36,7 +36,7 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 		}
 	case "USE_ITEM":
 		if rand.Float64() < 0.05 {
-			return Flee(client)
+			return Flee(client, d)
 		} else if rand.Float64() < 0.55 {
 			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
 		} else {
@@ -70,9 +70,10 @@ func Regen(client *Client, strengh int, d *Dispatcher, npc_name string, npc_hp i
 	return 5
 }
 
-func Flee(client *Client) int {
+func Flee(client *Client, d *Dispatcher) int {
 	client.status = "exploration"
 	client.Send(`EVT NPC FLEE, "status"="%s"`, client.status)
+	d.world.NPCs[client.target].Fighter = ""
 	client.target = ""
 	return 0
 }

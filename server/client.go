@@ -41,6 +41,7 @@ func (client *Client) Death(d *Dispatcher) {
 
 	client.Send(`EVT DEATH`)
 	client.status = "exploration"
+	d.world.NPCs[client.target].Fighter = ""
 	client.target = ""
 	SendAll(d, client, `EVT dead=%s`, client.name)
 
