@@ -14,38 +14,19 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 	defer d.mu.Unlock()
 	switch receiver := strings.ToUpper(args[0]); receiver {
 	case "GLOBAL":
-		for _, c := range d.clients {
-			if client == c {
-				c.Send("OK")
-			} else {
-				c.Send("EVT GLOBAL CHAT %s %s", client.name, message)
-			}
-		}
+		client.Send("OK")
+		SendAll(d, client, "EVT GLOBAL CHAT %s %s", client.name, message)
 	case "GROUP":
 		if client.group != nil {
-			for _, c := range client.group.members {
-				if client == c {
-					c.Send("OK")
-				} else {
-					c.Send("EVT GROUP CHAT %s %s", client.name, message)
-				}
-			}
+			client.Send("OK")
+			SendGroup(client, client.group, "EVT GROUP CHAT %s %s", client.name, message)
 		} else {
 			client.Send("ERR 401 NOT_IN_GROUP")
 		}
 	case "ROOM":
 		if client.room != nil {
-			for _, p := range client.room.Players {
-				if client.name == p {
-					client.Send("OK")
-				} else {
-					for _, c := range d.clients {
-						if c.name == p {
-							c.Send("EVT ROOM CHAT %s %s", client.name, message)
-						}
-					}
-				}
-			}
+			client.Send("OK")
+			SendRoom(d, client, "EVT ROOM CHAT %s %s", client.name, message)
 		} else {
 			client.Send("ERR 401 NOT_IN_GROUP")
 		}

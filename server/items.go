@@ -1,6 +1,6 @@
 package server
 
-func UseBeer(client *Client, time int) int {
+func UseBeer(client *Client, time int, d *Dispatcher) int {
 	found := false
 	for _, i := range client.inventory {
 		if i.Id == "item.beer"{
@@ -9,7 +9,7 @@ func UseBeer(client *Client, time int) int {
 	}
 	if found {
 		client.Send(`OK use=item.beer`)
-		RemoveItemInventory(client, "item.beer")
+		RemoveItemInventory(client, "item.beer", d, false)
 	}
 	client.debuff = "poison"
 	client.time_debuff = time - 1
@@ -17,26 +17,26 @@ func UseBeer(client *Client, time int) int {
 	return 5
 }
 
-func UseSword(client *Client, time int) int {
-	UseBuff(client, "item.sword", "strengh", time)
+func UseSword(client *Client, time int, d *Dispatcher) int {
+	UseBuff(client, "item.sword", "strengh", time, d)
 	client.Send(`EVT SWORD : +5 player strengh during %d turns`, client.time_buff)
 	return 5
 }
 
-func UsePoisonPotion(client *Client, time int) int {
-	UseBuff(client, "item.poison_potion", "poison", time)
+func UsePoisonPotion(client *Client, time int, d *Dispatcher) int {
+	UseBuff(client, "item.poison_potion", "poison", time, d)
 	client.Send(`EVT POISON POTION : -5 npc hp during %d turns`, client.time_buff)
 	return 5
 }
 
-func UseStrenghPotion(client *Client, time int) int {
-	UseBuff(client, "item.strengh_potion", "strengh", time)
+func UseStrenghPotion(client *Client, time int, d *Dispatcher) int {
+	UseBuff(client, "item.strengh_potion", "strengh", time, d)
 	client.Send(`EVT STRENGH POTION : +5 player strengh during %d turns`, client.time_buff)
 	return 5
 }
 
-func UseHealthPotion(client *Client, time int) int {
-	UseBuff(client, "item.health_potion", "health", time)
+func UseHealthPotion(client *Client, time int, d *Dispatcher) int {
+	UseBuff(client, "item.health_potion", "health", time, d)
 	client.Send(`EVT HEALTH POTION : +5 player hp during %d turns`, client.time_buff)
 	return 5
 }
