@@ -29,6 +29,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 		client.room.Items = slices.Delete(client.room.Items, i, i+1)
 		client.inventory = append(client.inventory, item)
 		client.Send("OK taken=%s", id)
+		SendRoom(d, client, "EVT PLAYER TOOK %s", id)
 		return
 	}
 	client.Send("ERR 404 ITEM_NOT_FOUND")
@@ -43,16 +44,7 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	for i, item := range client.inventory {
-		if !strings.EqualFold(item.Id, query) && !strings.EqualFold(item.Name, query) {
-			continue
-		}
-		client.room.Items = append(client.room.Items, item.Id)
-		client.inventory = slices.Delete(client.inventory, i, i+1)
-		client.Send("OK dropped=%s", item.Id)
-		return
-	}
-	client.Send("ERR 404 ITEM_NOT_IN_INVENTORY")
+	RemoveItemInventory(client, query, d, true)
 }
 
 func (d *Dispatcher) handleMove(client *Client, args []string) {

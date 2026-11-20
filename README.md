@@ -36,8 +36,8 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `QUIT` | `OK bye` | | none |
 | `LOOK` | `OK look={"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | |
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none |
-| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | none | done |
-| `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | none |
+| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | `"EVT PLAYER TOOK <item_id>` |
+| `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | `"EVT PLAYER DROPPED <item_id>` |
 | `INVENTORY` | `OK inventory=[item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
 | `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | | none |

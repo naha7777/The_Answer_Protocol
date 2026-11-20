@@ -1,6 +1,6 @@
 package server
 
-func UseBuff(client *Client, item string, buff string, time_buff int) {
+func UseBuff(client *Client, item string, buff string, time_buff int, d *Dispatcher) {
 	found := false
 	for _, i := range client.inventory {
 		if i.Id == item {
@@ -9,7 +9,7 @@ func UseBuff(client *Client, item string, buff string, time_buff int) {
 	}
 	if found {
 		client.Send(`OK use=%s`, item)
-		RemoveItemInventory(client, item)
+		RemoveItemInventory(client, item, d, false)
 	}
 	client.buff = buff
 	client.time_buff = time_buff

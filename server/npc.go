@@ -2,7 +2,6 @@ package server
 
 import (
 	"math/rand/v2"
-	"slices"
 )
 
 func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, NPC_max_hp int, npc_name string, d *Dispatcher) int {
@@ -91,11 +90,5 @@ func DeadNPC(client *Client, initial_strengh int, npcs string, d *Dispatcher) {
 	client.room.NPCs = room_npc
 	client.target = ""
 	client.strengh = initial_strengh
-	for _, c := range d.clients {
-		if slices.Contains(client.room.Players, c.name) {
-			if c.name != client.name {
-				c.Send("EVT NPC %s DEAD", npcs)
-			}
-		}
-	}
+	SendRoom(d, client, "EVT NPC %s DEAD", npcs)
 }

@@ -122,27 +122,27 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 			}
 			switch query {
 			case "BEER":
-				client.hp -= UseBeer(client, 3)
+				client.hp -= UseBeer(client, 3, d)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "SWORD":
-				client.strengh += UseSword(client, 10)
+				client.strengh += UseSword(client, 10, d)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "POISON POTION":
-				d.world.NPCs[client.target].Hp -= UsePoisonPotion(client, 5)
+				d.world.NPCs[client.target].Hp -= UsePoisonPotion(client, 5, d)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "HEALTH POTION":
-				client.hp += UseHealthPotion(client, 4)
+				client.hp += UseHealthPotion(client, 4, d)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "STRENGH POTION":
-				client.strengh += UseStrenghPotion(client, 4)
+				client.strengh += UseStrenghPotion(client, 4, d)
 				npc := d.world.NPCs[client.target]
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
