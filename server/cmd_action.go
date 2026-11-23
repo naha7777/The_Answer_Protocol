@@ -44,7 +44,7 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 		client.Send("ERR 404 ITEM_NOT_IN_INVENTORY")
 		return
 	}
-	query := strings.ToUpper(strings.Join(args, " "))
+	query := strings.ToLower(strings.Join(args, " "))
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
