@@ -91,5 +91,5 @@ func DeadNPC(client *Client, initial_strengh int, npcs string, d *Dispatcher) {
 	client.room.NPCs = room_npc
 	client.target = ""
 	client.strengh = initial_strengh
-	SendRoom(d, client, "EVT NPC %s DEAD", npcs)
+	SendRoom(d, client, "EVT NPC DEAD %s", npcs)
 }

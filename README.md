@@ -105,7 +105,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | Chat | `EVT <SCOPE> CHAT <username> <message>` | RFC |
 | Room presence | `EVT ROOM PRESENCE ENTER/LEAVE <username>` | RFC |
 | Stats | `EVT STATS players= <nb_player>` | RFC |
-| NPC Death | `EVT NPC <npc_id> DEAD` | **custom (not in RFC)** |
+| NPC Death | `EVT NPC DEAD <npc_id>` | **custom (not in RFC)** |
 | NPC Flee | `EVT NPC FLEE, "status"="<npc_id>"` | **custom (not in RFC)** |
 | NPC Attack | `EVT NPC ATTACK` | **custom (not in RFC)** |
 | NPC Regeneration | `EVT NPC REGENERATION : +5 hp` | **custom (not in RFC)** |

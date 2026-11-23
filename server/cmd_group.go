@@ -79,7 +79,8 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 		client.Send("ERR 05 REQUIRE_INVITATION")
 		return
 	}
-	SendGroup(client, l_group, "EVT GROUP JOIN %s", client.name)
+	// SendGroup(client, l_group, "EVT GROUP JOIN %s", client.name)
+	SendGroup(client, l_group, "EVT group_join=%s", client.name)
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
 	client.group = l_group
@@ -98,7 +99,8 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	delete(current_group.members, client.name)
 	client.group = nil
 	client.Send("OK group_leaved=%s", current_group.id)
-	SendGroup(client, current_group, "EVT GROUP LEAVE %s", client.name)
+	// SendGroup(client, current_group, "EVT GROUP LEAVE %s", client.name)
+	SendGroup(client, current_group, "EVT group_leave=%s", client.name)
 	if len(current_group.members) > 0 {
 		for _, m := range current_group.members {
 			current_group.leader = m.name
@@ -136,7 +138,8 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	client.Send("OK group_invited=%s", username)
 	for _, c := range d.clients {
 		if c.name == username {
-			c.Send("EVT GROUP INVITE %s %s", client.name, client.group.id)
+			// c.Send("EVT GROUP INVITE %s %s", client.name, client.group.id)
+			c.Send("EVT group_invite=%s %s", client.name, client.group.id)
 		}
 	}
 }

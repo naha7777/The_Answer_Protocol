@@ -22,6 +22,7 @@ type Room struct {
 	exits		map[string]bool
 	npc			[]string
 	players		[]string
+	nb_players	int
 	items		[]string
 }
 
@@ -234,25 +235,72 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "attack="):
 						background.File = "./data/arena.jpeg"
 						background.Refresh()
+						fmt.Println(background.File)
 					}
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
-					if len(m) >= 3 && m[1] == "GROUP" {
-						switch m[2] {
-						case "INVITE":
-							if len(m) >= 5 {
-								confirmGroup(w, []string{m[4], m[3]}, func() {
-									conn.Send("GROUP JOIN " + m[3])
-								})
+					if len(m) >= 3 {
+						switch m[1] {
+						case "GROUP":
+							switch m[2] {
+							case "INVITE":
+								if len(m) >= 5 {
+									confirmGroup(w, []string{m[4], m[3]}, func() {
+										conn.Send("GROUP JOIN " + m[3])
+									})
+								}
+							case "JOIN", "LEAVE":
+								conn.Send("INFO_GROUP")
 							}
-						case "JOIN", "LEAVE":
-							conn.Send("INFO_GROUP")
+						case "ROOM":
+							switch m[2] {
+							case "ENTER":
+								player.room.nb_players += 1
+							case "LEAVE":
+								player.room.nb_players -= 1
+							}
+
+						case "CHAT":
+							parts := strings.SplitN(msg.Rest, " ", 4)
+							scope, username, message := parts[0], parts[2], parts[3]
+							chat.Receive(scope, username, message)
+
+						case "NPC":
+							switch m[2] {
+							case "DEAD":
+								// npc dead
+							case "FLEE":
+								// npc flee
+							case "ATTACK":
+								// npc attack
+							case "REGENERATION":
+								// npc + 5hp
+							}
+						case "BEER":
+							// -5hp pour le player juste pendant le combat ?
+						case "SWORD":
+							// +5 de point de force ou attack pour le joueur
+						case "POISON":
+							if m[3] == "POTION" {
+								// -5 npc hp
+							} else {
+								// -5 player hp
+							}
+						case "STRENGHT":
+							if m[3] == "POTION" {
+								//  +5 de point de force ou attack pour le joueur
+							} else {
+								// +5 de point de force ou attack pour le npc
+							}
+						case "HEALTH":
+							if m[3] == "POTION" {
+								// +5 hp pour le player
+							} else {
+								// +5 hp pour le npc
+							}
+						
 						}
-					}
-					parts := strings.SplitN(msg.Rest, " ", 4)
-					if len(parts) == 4 && parts[1] == "CHAT" {
-						chat.Receive(parts[0], parts[2], parts[3])
 					}
 
 				case "ERR":
@@ -264,6 +312,7 @@ func main() {
 		fyne.Do(func() {
 			logLabel.SetText(logLabel.Text + "-- lost connection --\n")
 			logView.ScrollToBottom()
+			a.Quit()
 		})
 		fmt.Fprintln(os.Stderr, "-- lost connection --")
 	}()
