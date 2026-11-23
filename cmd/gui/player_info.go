@@ -13,41 +13,41 @@ import (
 )
 
 type ServerResponse struct {
-	RawRoom	ServerData	`json:"room"`
+	RawRoom ServerData `json:"room"`
 }
 
 type ServerData struct {
-	Id			string	`json:"Id"`
-	Name		string	`json:"Name"`
-	Description	string	`json:"Description"`
-	Exits		map[string]string	`json:"Exits"`
-	Players		[]string	`json:"Players"`
-	Items		[]string	`json:"Items"`
-	NPCs		[]string	`json:"NPCs"`
+	Id          string            `json:"Id"`
+	Name        string            `json:"Name"`
+	Description string            `json:"Description"`
+	Exits       map[string]string `json:"Exits"`
+	Players     []string          `json:"Players"`
+	Items       []string          `json:"Items"`
+	NPCs        []string          `json:"NPCs"`
 }
 
 type InfoBox struct {
-	player	*Player
-	name	*widget.Label
-	room	*widget.Label
-	group	*widget.Label
-	members	*widget.Label
-	npc		*widget.Label
-	items	*widget.Label
-	content	fyne.CanvasObject
+	player  *Player
+	name    *widget.Label
+	room    *widget.Label
+	group   *widget.Label
+	members *widget.Label
+	npc     *widget.Label
+	items   *widget.Label
+	content fyne.CanvasObject
 }
 
 func showPlayerInfo(p *Player) *InfoBox {
 
 	b := &InfoBox{
-		player:		p,
-		name:		widget.NewLabel(""),
-		room:		widget.NewLabel(""),
-		group:		widget.NewLabel(""),
-		members:	widget.NewLabel(""),
-		npc:		widget.NewLabel(""),
-		items:		widget.NewLabel(""),
-		content:	widget.NewLabel(""),
+		player:  p,
+		name:    widget.NewLabel(""),
+		room:    widget.NewLabel(""),
+		group:   widget.NewLabel(""),
+		members: widget.NewLabel(""),
+		npc:     widget.NewLabel(""),
+		items:   widget.NewLabel(""),
+		content: widget.NewLabel(""),
 	}
 	b.members.Wrapping = fyne.TextWrapWord
 
@@ -67,7 +67,7 @@ func showPlayerInfo(p *Player) *InfoBox {
 	return b
 }
 
-func (b *InfoBox) Content() fyne.CanvasObject {return b.content}
+func (b *InfoBox) Content() fyne.CanvasObject { return b.content }
 
 func (b *InfoBox) Update() {
 	p := b.player
@@ -101,20 +101,20 @@ func (player *Player) PlayerRoomUpdate(msg string) {
 		exits[dir] = target != ""
 	}
 	npcs := make([]string, 0, len(r.NPCs))
-	for _, id :=  range r.NPCs {
+	for _, id := range r.NPCs {
 		npcs = append(npcs, strings.TrimPrefix(id, "npc."))
 	}
 	items := make([]string, 0, len(r.Items))
-	for _, id :=  range r.Items {
+	for _, id := range r.Items {
 		items = append(items, strings.TrimPrefix(id, "item."))
 	}
-	player.room = Room {
-		id:				r.Id,
-		name:			strings.ToUpper(r.Name),
-		description:	r.Description,
-		exits:			exits,
-		npc:			npcs,
-		players:		r.Players,
-		items:			items,
+	player.room = Room{
+		id:          r.Id,
+		name:        strings.ToUpper(r.Name),
+		description: r.Description,
+		exits:       exits,
+		npc:         npcs,
+		players:     r.Players,
+		items:       items,
 	}
 }

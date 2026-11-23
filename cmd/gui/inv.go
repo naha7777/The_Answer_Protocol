@@ -155,7 +155,9 @@ func (i *Inventory) Update(str string) {
 		str = strings.Trim(str, "[]")
 		items := strings.Split(str, ", ")
 
-		i.objects = items
+		if items[0] != "" {
+			i.objects = items
+		}
 	} else if strings.HasPrefix(str, "look=") {
 		str = strings.TrimPrefix(str, "look=")
 		var data map[string]any
@@ -175,4 +177,6 @@ func (i *Inventory) Update(str string) {
 		}
 		i.accessible = itemsID
 	}
+	// fmt.Println(i.objects)
+	// fmt.Println(i.items)
 }
