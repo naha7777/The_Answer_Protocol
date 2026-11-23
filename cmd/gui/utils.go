@@ -72,6 +72,7 @@ func IDToName(id string) string {
 
 	id = strings.TrimPrefix(id, "item.")
 	id = strings.TrimPrefix(id, "npc.")
+	id = strings.TrimPrefix(id, "loc.")
 
 	id = strings.Title(strings.ToLower(id))
 	id = strings.ReplaceAll(id, "_", " ")

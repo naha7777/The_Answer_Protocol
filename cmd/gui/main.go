@@ -176,7 +176,7 @@ func main() {
 					// GROUP
 					case strings.HasPrefix(msg.Rest, "group_created="):
 						conn.Send("INFO_GROUP")
-						popup(w, strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_created="))+" group was created")
+						popup(w, strings.TrimPrefix(msg.Rest, "group_created=")+" group was created")
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
 						popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
 						player.group = GroupInfo{}

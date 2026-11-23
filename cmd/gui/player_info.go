@@ -102,15 +102,15 @@ func (player *Player) PlayerRoomUpdate(msg string) {
 	}
 	npcs := make([]string, 0, len(r.NPCs))
 	for _, id := range r.NPCs {
-		npcs = append(npcs, strings.TrimPrefix(id, "npc."))
+		npcs = append(npcs, IDToName(id))
 	}
 	items := make([]string, 0, len(r.Items))
 	for _, id := range r.Items {
-		items = append(items, strings.TrimPrefix(id, "item."))
+		items = append(items, IDToName(id))
 	}
 	player.room = Room{
 		id:          r.Id,
-		name:        strings.ToUpper(r.Name),
+		name:        IDToName(r.Name),
 		description: r.Description,
 		exits:       exits,
 		npc:         npcs,
