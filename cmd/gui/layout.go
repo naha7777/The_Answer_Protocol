@@ -64,14 +64,11 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	margin := float32(10)
 
 	btnSize := objects[0].MinSize()
-	extraHeight := float32(120)
-	Y := h - btnSize.Height - margin - extraHeight
+	Y := h - btnSize.Height - margin
 	hudHeight := h - Y - margin
 
 	// Buttons
 	btnX := margin
-	// Y := h - btnSize.Height - margin
-	// objects[0].Resize(btnSize)
 	objects[0].Resize(fyne.NewSize(btnSize.Width, hudHeight))
 	objects[0].Move(fyne.NewPos(btnX, Y))
 
@@ -82,24 +79,19 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 		chatWidth = 50
 	}
 
-	chatHeight := btnSize.Height
-
-	// objects[1].Resize(fyne.NewSize(chatWidth, chatHeight))
 	objects[1].Resize(fyne.NewSize(chatWidth, hudHeight))
 	objects[1].Move(fyne.NewPos(chatX, Y))
 
 	// Inventory
 	invX := chatX + chatWidth + margin
-	invY := Y - 50
+	// invY := Y - 50
 	invWidth := (w - invX - margin) / 3
 	if invWidth < 50 {
 		invWidth = 50
 	}
 
-	invHeight := h - invY - margin
-	// objects[2].Resize(fyne.NewSize(invWidth, invHeight))
 	objects[2].Resize(fyne.NewSize(invWidth, hudHeight))
-	objects[2].Move(fyne.NewPos(invX, invY))
+	objects[2].Move(fyne.NewPos(invX, Y))
 }
 
 func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Container {
