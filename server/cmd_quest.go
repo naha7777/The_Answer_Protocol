@@ -23,6 +23,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 							// give the quest to the player
 							client.quests = append(client.quests, q)
 							client.Send(`OK quest={"quest_id": "%s", "description": "%s", "reward": "%s", "status": "%s"}`, q.Id, q.Description, q.Reward, q.Status)
+							SendAll(`EVT PLAYER_QUEST %s take=%s`, client.name, q.id)
 							q.Status = "active"
 							find = true
 							return
