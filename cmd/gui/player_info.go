@@ -32,6 +32,8 @@ type InfoBox struct {
 	room	*widget.Label
 	group	*widget.Label
 	members	*widget.Label
+	npc		*widget.Label
+	items	*widget.Label
 	content	fyne.CanvasObject
 }
 
@@ -43,6 +45,9 @@ func showPlayerInfo(p *Player) *InfoBox {
 		room:		widget.NewLabel(""),
 		group:		widget.NewLabel(""),
 		members:	widget.NewLabel(""),
+		npc:		widget.NewLabel(""),
+		items:		widget.NewLabel(""),
+		content:	widget.NewLabel(""),
 	}
 	b.members.Wrapping = fyne.TextWrapWord
 
@@ -55,7 +60,7 @@ func showPlayerInfo(p *Player) *InfoBox {
 		container.NewPadded(container.NewVBox(
 			widget.NewLabelWithStyle("PLAYER INFO", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 			widget.NewSeparator(),
-			b.name, b.room, b.group, b.members,
+			b.name, b.room, b.group, b.members, b.npc, b.items,
 		)),
 	)
 	b.Update()
@@ -71,10 +76,12 @@ func (b *InfoBox) Update() {
 	if p.group.Id == "" {
 		b.group.SetText("Group: -")
 		b.members.SetText("")
-		return
+		// return
 	}
 	b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.Id, p.group.Leader))
 	b.members.SetText("Members: " + strings.Join(p.group.Members, ", "))
+	b.npc.SetText("NPC: " + strings.Join(p.room.npc, ", "))
+	b.items.SetText("Items: " + strings.Join(p.room.items, ", "))
 }
 
 func (player *Player) PlayerRoomUpdate(msg string) {
@@ -88,13 +95,26 @@ func (player *Player) PlayerRoomUpdate(msg string) {
 		fmt.Println("Update playerinfo error")
 		return
 	}
-	if resp.RawRoom.Name != "" {
-		player.room.name = strings.ToUpper(resp.RawRoom.Name)
+	r := resp.RawRoom
+	exits := make(map[string]bool, len(r.Exits))
+	for dir, target := range r.Exits {
+		exits[dir] = target != ""
 	}
-	player.room.exits = map[string]bool {
-		"north": resp.RawRoom.Exits["north"] != "",
-		"south": resp.RawRoom.Exits["south"] != "",
-		"east": resp.RawRoom.Exits["east"] != "",
-		"west": resp.RawRoom.Exits["west"] != "",
+	npcs := make([]string, 0, len(r.NPCs))
+	for _, id :=  range r.NPCs {
+		npcs = append(npcs, strings.TrimPrefix(id, "npc."))
+	}
+	items := make([]string, 0, len(r.Items))
+	for _, id :=  range r.Items {
+		items = append(items, strings.TrimPrefix(id, "item."))
+	}
+	player.room = Room {
+		id:				r.Id,
+		name:			strings.ToUpper(r.Name),
+		description:	r.Description,
+		exits:			exits,
+		npc:			npcs,
+		players:		r.Players,
+		items:			items,
 	}
 }

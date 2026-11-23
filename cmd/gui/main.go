@@ -16,8 +16,13 @@ import (
 )
 
 type Room struct {
-	name  string
-	exits map[string]bool
+	id			string
+	name		string
+	description	string
+	exits		map[string]bool
+	npc			[]string
+	players		[]string
+	items		[]string
 }
 
 type Data struct {
@@ -95,9 +100,6 @@ func main() {
 
 	a := app.New()
 	w := a.NewWindow("TAP")
-	// initialRoom := Room{
-	// 	name:  "square",
-	// 	exits: map[string]bool{"north": true, "south": false, "east": true, "west": false}}
 	player := Player{health: 100, move: false}
 	w.Resize(fyne.NewSize(1920, 1080))
 
@@ -195,11 +197,13 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "taken="):
 						item := strings.TrimPrefix(msg.Rest, "taken=")
 						game.inventory.take(item)
+						conn.Send("LOOK")
 
 					// DROP
 					case strings.HasPrefix(msg.Rest, "dropped="):
 						item := strings.TrimPrefix(msg.Rest, "dropped=")
 						game.inventory.drop(item)
+						conn.Send("LOOK")
 
 					// INVENTORY
 					case strings.HasPrefix(msg.Rest, "inventory="):
