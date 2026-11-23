@@ -266,6 +266,9 @@ func main() {
 			logView.ScrollToBottom()
 		})
 		fmt.Fprintln(os.Stderr, "-- lost connection --")
+		fyne.Do(func() {
+			a.Quit()
+		})
 	}()
 
 	w.ShowAndRun()
