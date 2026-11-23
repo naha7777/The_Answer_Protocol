@@ -13,13 +13,13 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 		if rand.Float64() < 0.1 {
 			return Flee(client, d)
 		} else if rand.Float64() < 0.8 {
-			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
+			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, "normal")
 		} else {
 			return Regen(client, strengh, d, npc_name, npc_hp, NPC_max_hp)
 		}
 	case "FLEE":
 		 if rand.Float64() < 0.95 {
-			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
+			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, "normal")
 		} else {
 			return Regen(client, strengh, d, npc_name, npc_hp, NPC_max_hp)
 		}
@@ -27,7 +27,7 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 		if rand.Float64() < 0.05 {
 			return Flee(client, d)
 		} else if rand.Float64() < 0.75 {
-			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
+			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, "normal")
 		} else {
 			return Regen(client, strengh, d, npc_name, npc_hp, NPC_max_hp)
 		}
@@ -35,7 +35,7 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 		if rand.Float64() < 0.05 {
 			return Flee(client, d)
 		} else if rand.Float64() < 0.55 {
-			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, damage_type)
+			return Attack(client, strengh, d, npc_name, npc_hp, NPC_max_hp, "normal")
 		} else {
 			return Regen(client, strengh, d, npc_name, npc_hp, NPC_max_hp)
 		}
@@ -46,7 +46,6 @@ func NPCsAction(player_action string, client *Client, strengh int, npc_hp int, N
 
 func Attack(client *Client, strengh int, d *Dispatcher, npc_name string, npc_hp int, NPC_max_hp int, damage_type string) int {
 	// percentage chance of landing a critical hit
-	damage_type := "normal"
 	if rand.Float64() < 0.1 {
 		strengh += (strengh*40/100)
 		damage_type = "critical"
