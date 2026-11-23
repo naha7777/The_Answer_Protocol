@@ -7,17 +7,17 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-
 )
+
 type GroupInfo struct {
-	Id		string		`json:"Id"`
-	Leader	string		`json:"Leader"`
-	Members	[]string	`json:"Members"`
-	Invited	[]string	`json:"Invited"`
+	Id      string   `json:"Id"`
+	Leader  string   `json:"Leader"`
+	Members []string `json:"Members"`
+	Invited []string `json:"Invited"`
 }
 
 type groupInfosMsg struct {
-	Group	GroupInfo	`json:"group"`
+	Group GroupInfo `json:"group"`
 }
 
 func confirmGroup(w fyne.Window, group []string, onYes func()) {
@@ -44,11 +44,11 @@ func askText(w fyne.Window, title, label string, onSubmit func(text string)) {
 	entry := widget.NewEntry()
 	d := dialog.NewForm(title, "OK", "CANCEL",
 		[]*widget.FormItem{widget.NewFormItem(label, entry)},
-	func(ok bool) {
-		if ok {
-			onSubmit(strings.TrimSpace(entry.Text))
-		}
-	}, w)
+		func(ok bool) {
+			if ok {
+				onSubmit(strings.TrimSpace(entry.Text))
+			}
+		}, w)
 	d.Resize(fyne.NewSize(400, d.MinSize().Height))
 	d.Show()
 	w.Canvas().Focus(entry)

@@ -34,7 +34,7 @@ func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string))
 		if err := conn.Send("CONNECT " + name); err != nil {
 			errorLabel.SetText("901 SEND_FAILED")
 		}
-		pendingName = strings.ToUpper(name)
+		pendingName = name
 	}
 	nameEntry.OnSubmitted = func(string) { connect() } // touche entree
 	butConnect := widget.NewButton("CONNECT", connect)

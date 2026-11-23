@@ -49,7 +49,7 @@ func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	c.messages = container.NewVBox()
 	c.scroll = container.NewVScroll(c.messages)
 	c.entry = widget.NewEntry()
-	c.entry.SetPlaceHolder("Global chat...")
+	c.entry.SetPlaceHolder("GLOBAL chat...")
 	// Send with enter key
 	c.entry.OnSubmitted = func(string) { c.send() }
 
@@ -105,7 +105,9 @@ func (c *Chat) send() {
 		popup(c.window, "901 SEND_FAILED")
 		return
 	}
-	c.addLine(c.scope, c.player.name, text, c.txtColor)
+	if c.scope != "GROUP" {
+		c.addLine(c.scope, c.player.name, text, c.txtColor)
+	}
 	c.entry.SetText("")
 }
 

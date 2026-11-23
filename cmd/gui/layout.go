@@ -159,7 +159,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 		Option_popup(butGroup, d.w,
 			newBtn("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
 			newBtn("LEAVE", func() { confirmAction(d.w, "LEAVE", "YOU REALLY WANT TO LEAVE YOUR GROUP ?", send("GROUP LEAVE")) }),
-			newBtn("INVIT", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
+			newBtn("INVITE", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
 		)
 	})
 

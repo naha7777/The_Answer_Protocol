@@ -72,6 +72,7 @@ func IDToName(id string) string {
 
 	id = strings.TrimPrefix(id, "item.")
 	id = strings.TrimPrefix(id, "npc.")
+	id = strings.TrimPrefix(id, "loc.")
 
 	id = strings.Title(strings.ToLower(id))
 	id = strings.ReplaceAll(id, "_", " ")
@@ -79,12 +80,12 @@ func IDToName(id string) string {
 }
 
 func confirmAction(w fyne.Window, title, message string, onYes func()) {
-		d := dialog.NewConfirm(title, message, func(confirmed bool) {
-			if confirmed {
-				onYes()
-			}
-		}, w)
-		d.SetConfirmText("YES")
-		d.SetDismissText("NO")
-		d.Show()
-	}
+	d := dialog.NewConfirm(title, message, func(confirmed bool) {
+		if confirmed {
+			onYes()
+		}
+	}, w)
+	d.SetConfirmText("YES")
+	d.SetDismissText("NO")
+	d.Show()
+}

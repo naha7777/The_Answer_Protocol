@@ -157,7 +157,7 @@ func main() {
 				}
 				switch msg.Kind {
 				case "OK":
-					fmt.Println(msg.Rest)
+					// fmt.Println(msg.Rest)
 					switch {
 
 					// MOVE
@@ -177,7 +177,7 @@ func main() {
 					// GROUP
 					case strings.HasPrefix(msg.Rest, "group_created="):
 						conn.Send("INFO_GROUP")
-						popup(w, strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_created="))+" group was created")
+						popup(w, strings.TrimPrefix(msg.Rest, "group_created=")+" group was created")
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
 						popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
 						player.group = GroupInfo{}
@@ -230,7 +230,7 @@ func main() {
 						author, message, _ := strings.Cut(msg.Rest, ": ")
 						author = IDToName(author)
 						chat.Receive("NPC", author, message)
-					
+
 					// ATTACK
 					case strings.HasPrefix(msg.Rest, "attack="):
 						background.File = "./data/arena.jpeg"
@@ -315,6 +315,9 @@ func main() {
 			a.Quit()
 		})
 		fmt.Fprintln(os.Stderr, "-- lost connection --")
+		fyne.Do(func() {
+			a.Quit()
+		})
 	}()
 
 	w.ShowAndRun()
