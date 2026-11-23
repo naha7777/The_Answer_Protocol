@@ -11,9 +11,10 @@ import (
 )
 
 func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
-	world *game.World) {
+					  world *game.World) {
 
 	defer connection.Close()
+	// client creation
 	client := &Client{conn: connection}
 	for _, room := range world.Rooms {
 		if room.Id == world.Start {
@@ -36,6 +37,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	client.Send("OK hello proto=1")
 
 	reader := bufio.NewReaderSize(connection, 1024)
+	// read input
 	for {
 		line, isPrefix, err := reader.ReadLine()
 		if err != nil {
@@ -54,10 +56,14 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 
 		text := string(line)
 		upper := strings.ToUpper(text)
+		// the first command must be CONNECT with a valid name
 		if client.name == "" && strings.HasPrefix(upper, "CONNECT") {
 			dispatcher.Dispatch(client, text)
-			dispatcher.displayStats()
-			dispatcher.displayRoomStats()
+			if client.name != "" {
+				dispatcher.displayStats()
+				dispatcher.displayRoomStats()
+			}
+		// then, all commands are available
 		} else if client.name != "" {
 			dispatcher.Dispatch(client, text)
 		} else {
@@ -70,7 +76,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 }
 
 func Server(listener net.Listener) {
-
+	// world generation
 	world, err := game.LoadWorld("data/world.json")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "fatal:", err)
@@ -89,6 +95,7 @@ func Server(listener net.Listener) {
 		}
 	}
 
+	// dispatcher creation
 	dispatcher := NewDispatcher(world)
 
 	for {
@@ -102,6 +109,7 @@ func Server(listener net.Listener) {
 			fmt.Fprintln(os.Stderr, "Error accepting:", err)
 			continue
 		}
+		// one goroutine for one connection
 		go HandleConnection(connection, dispatcher, world)
 	}
 }

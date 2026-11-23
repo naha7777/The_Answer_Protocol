@@ -6,6 +6,7 @@ import (
 )
 
 func (d *Dispatcher) handleTake(client *Client, args []string) {
+	// check if the item is not an empty string
 	if len(args) == 0 {
 		client.Send("ERR 404 ITEM_NOT_FOUND")
 		return
@@ -16,6 +17,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 
 	for i, id := range client.room.Items {
 		item, ok := d.world.Items[id]
+		// check if the item exists, is obtainable and if it is in the room
 		if !ok {
 			continue
 		}
@@ -26,6 +28,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 			client.Send("ERR 07 ITEM_NOT_OBTAINABLE")
 			return
 		}
+		// put the item in the client inventory and send msg
 		client.room.Items = slices.Delete(client.room.Items, i, i+1)
 		client.inventory = append(client.inventory, item)
 		client.Send("OK taken=%s", id)
@@ -36,6 +39,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleDrop(client *Client, args []string) {
+	// check if the item is not an empty string
 	if len(args) == 0 {
 		client.Send("ERR 404 ITEM_NOT_IN_INVENTORY")
 		return
@@ -44,16 +48,19 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
+	// drop it in the actual room
 	RemoveItemInventory(client, query, d, true)
 }
 
 func (d *Dispatcher) handleMove(client *Client, args []string) {
+	// check if the direction is not an empty string
 	if len(args) == 0 {
 		client.Send("ERR 301 NO_EXIT")
 		return
 	}
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	// move into the direction
 	switch direction := strings.ToUpper(args[0]); direction {
 	case "NORTH":
 		Move("NORTH", client, d)

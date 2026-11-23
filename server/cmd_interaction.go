@@ -5,6 +5,7 @@ import (
 )
 
 func (d *Dispatcher) handleChat(client *Client, args []string) {
+	// Send a global message, a group message or a room message
 	if len(args) <= 1 {
 		client.Send("ERR 08 MISSING_MESSAGE")
 		return
@@ -37,6 +38,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleTalk(client *Client, args []string) {
+	// Display the NPC dialogue if he is in the actual room
 	npc := strings.ToUpper(strings.Join(args, " "))
 	for _, npcs := range client.room.NPCs {
 		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(d.world.NPCs[npcs].Name) {

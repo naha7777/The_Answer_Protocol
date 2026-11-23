@@ -31,11 +31,8 @@ func (c *Client) Send(format string, a ...any) {
 	fmt.Fprintf(c.conn, format+"\n", a...)
 }
 
-func (c *Client) Name() string {
-	return c.name
-}
-
 func (client *Client) Death(d *Dispatcher) {
+	// handle client death : reset his status, inventory, quests, target
 	RemoveItemInventory(client, "false_item", d, false)
 	RemoveQuest(client)
 
@@ -43,8 +40,10 @@ func (client *Client) Death(d *Dispatcher) {
 	client.status = "exploration"
 	d.world.NPCs[client.target].Fighter = ""
 	client.target = ""
+	// Send an EVT to the players
 	SendAll(d, client, `EVT dead=%s`, client.name)
 
+	// handle respawn
 	for _, val := range d.world.Rooms {
 		if d.world.Respawn == val.Id {
 			SendRoom(d, client, `EVT ROOM PRESENCE LEAVE %s`, client.name)
@@ -55,5 +54,6 @@ func (client *Client) Death(d *Dispatcher) {
 			SendRoom(d, client, `EVT ROOM PRESENCE ENTER %s`, client.name)
 		}
 	}
+	// reset client HP
 	client.hp = client.hp_max
 }

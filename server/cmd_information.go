@@ -17,6 +17,7 @@ type NPCQuest struct {
 }
 
 func (d *Dispatcher) handleWho(client *Client, args []string) {
+	// Display the number of connected players
 	d.mu.Lock()
 	nb := len(d.clients)
 	d.mu.Unlock()
@@ -24,6 +25,7 @@ func (d *Dispatcher) handleWho(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleLook(client *Client, args []string) {
+	// Display all informations about the actual room
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	jsonData, err := json.Marshal(client.room)
@@ -35,6 +37,7 @@ func (d *Dispatcher) handleLook(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleInventory(client *Client, args []string) {
+	// Display the player's inventory
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	var item_lst []string
@@ -46,6 +49,7 @@ func (d *Dispatcher) handleInventory(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleFindQuests(client *Client, args []string) {
+	// Display available quests in the actual room
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	lst := []*NPCQuest{}

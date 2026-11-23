@@ -64,6 +64,8 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var cmd string
 	var args []string
 	first := strings.ToUpper(parts[0])
+	// call appropriate function
+	// block some commands during a fight
 	if client.status != "combat" {
 		if first == "GROUP" {
 			if len(parts) >= 2 {

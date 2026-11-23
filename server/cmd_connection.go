@@ -7,6 +7,7 @@ import (
 func (d *Dispatcher) handleConnect(client *Client, args []string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	// return an error for invalid names
 	if client.name != "" {
 		client.Send("ERR 10 YOU_HAVE_A_NAME")
 		return
@@ -23,13 +24,13 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 			return
 		}
 	}
-
+	// put the actual room on the client struct
 	for _, room := range d.world.Rooms {
 		if room.Id == d.world.Start {
 			client.room = room
 		}
 	}
-
+	// save the client everywhere : dispatcher, room... and Send a success msg
 	client.name = username
 	client.room.Players = append(client.room.Players, client.name)
 	d.clients[client.name] = client
@@ -37,6 +38,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleQuit(client *Client, args []string) {
+	// Send a success msg and save that the client quit
 	client.Send("OK bye")
 	client.quit = true
 }
