@@ -156,6 +156,7 @@ func main() {
 				}
 				switch msg.Kind {
 				case "OK":
+					fmt.Println(msg.Rest)
 					switch {
 
 					// MOVE
@@ -228,6 +229,11 @@ func main() {
 						author, message, _ := strings.Cut(msg.Rest, ": ")
 						author = IDToName(author)
 						chat.Receive("NPC", author, message)
+					
+					// ATTACK
+					case strings.HasPrefix(msg.Rest, "attack="):
+						background.File = "./data/arena.jpeg"
+						background.Refresh()
 					}
 
 				case "EVT":
