@@ -46,9 +46,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strengh during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT STRENGH POTION : +5 player strengh during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
 | `WHO` | `OK players=<n>` | | |
-| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
-| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room |
-| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GROUP CHAT <username> <message>` to group members |
+| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
+| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
+| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
 | `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
 | `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE <leadername>` to the invited user |
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
@@ -94,6 +94,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 15 | NO_QUEST_AVAILABLE | **custom (not in RFC)** |
 | 16 | LINE_TOO_LONG | **custom (not in RFC)** |
 | 17 | FULL_INVENTORY | **custom (not in RFC)** |
+| 18 | SPAM | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
