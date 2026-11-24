@@ -224,7 +224,7 @@ func main() {
 					// QUESTS
 					case strings.HasPrefix(msg.Rest, "quests="):
 						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
-						Str_to_quests(msg.Rest, w)
+						Str_to_quests(msg.Rest, data)
 
 					// TALK
 					case strings.HasPrefix(msg.Rest, "talk="):
@@ -269,9 +269,10 @@ func main() {
 							chat.Receive(scope, username, message)
 
 						case "NPC":
+							fmt.Println(m)
 							switch m[2] {
 							case "DEAD":
-								// npc dead
+								conn.Send("LOOK")
 							case "FLEE":
 								// npc flee
 							case "ATTACK":
@@ -313,10 +314,10 @@ func main() {
 									fmt.Println("Failed to get number of players in room")
 								}
 							}
+						case "PLAYER":
+							conn.Send("LOOK")
 						}
-
 					}
-
 				case "ERR":
 					popup(w, msg.Rest)
 				}

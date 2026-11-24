@@ -22,9 +22,9 @@ import (
 // \===========================================/
 
 // QUESTS
-func Str_to_quests(str string, w fyne.Window) {
+func Str_to_quests(str string, d Data) {
 	// width := w.Canvas().Size().Width
-	height := w.Canvas().Size().Height
+	height := d.w.Canvas().Size().Height
 
 	// parse
 	var quests []map[string]string
@@ -44,7 +44,9 @@ func Str_to_quests(str string, w fyne.Window) {
 		quest := q["quest_id"]
 		quest = strings.ReplaceAll(quest, "_", " ")
 		quest = strings.Title(strings.ToLower(quest))
-		single_cont := container.NewBorder(nil, nil, widget.NewLabel(quest), nil, container.NewCenter(widget.NewLabel(q["progress"])))
+		completeBut := widget.NewButton("Complete", func() { d.conn.Send("COMPLETE_QUEST " + q["quest_id"]) })
+		label_cont := container.NewHBox(widget.NewLabel(quest), widget.NewLabel(IDToName(q["quest_npc"])))
+		single_cont := container.NewBorder(nil, nil, label_cont, nil, container.NewHBox(container.NewCenter(widget.NewLabel(q["progress"])), completeBut))
 		// img
 		if q["status"] == "completed" {
 			image := canvas.NewImageFromFile("data/icons/placeholder.png")
@@ -53,7 +55,7 @@ func Str_to_quests(str string, w fyne.Window) {
 			}
 			image.FillMode = canvas.ImageFillContain
 			image.SetMinSize(fyne.NewSize(30, 30))
-			single_cont = container.NewBorder(nil, nil, container.NewCenter(widget.NewLabel(quest)), nil, image)
+			single_cont = container.NewBorder(nil, nil, label_cont, nil, image)
 		}
 		quests_cont.Add(single_cont)
 		quests_cont.Add(widget.NewSeparator())
@@ -64,9 +66,9 @@ func Str_to_quests(str string, w fyne.Window) {
 	quests_frame.StrokeWidth = 2
 	q := container.NewStack(quests_frame, container.NewPadded(q_cont))
 
-	popup := widget.NewPopUp(q, w.Canvas())
+	popup := widget.NewPopUp(q, d.w.Canvas())
 	popup.ShowAtPosition(fyne.Position{X: 15, Y: height - 50*8 - 30})
-	popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width * 2, Height: 50 * 4})
+	popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width + 30, Height: 50 * 4})
 }
 
 func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"slices"
 	"strings"
 	"the_answer_protocol/client"
 
@@ -124,6 +125,7 @@ func (i *Inventory) drop(item string) {
 }
 
 func (i *Inventory) take(item string) {
+	fmt.Println(item)
 	// img
 	item_file := strings.TrimPrefix(item, "item.")
 	image := canvas.NewImageFromFile("data/icons/placeholder.png")
@@ -139,9 +141,13 @@ func (i *Inventory) take(item string) {
 	i.items.Add(single_cont)
 	i.items.Add(widget.NewSeparator())
 	i.objects = append(i.objects, item)
-	i.accessible = Pop(item, i.accessible)
+	if slices.Contains(i.accessible, item) {
+		i.accessible = Pop(item, i.accessible)
+	}
 	fyne.Do(func() {
-		i.pop.Hide()
+		if i.pop != nil {
+			i.pop.Hide()
+		}
 	})
 }
 
