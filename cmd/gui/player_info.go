@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image/color"
+	"strconv"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -27,27 +28,31 @@ type ServerData struct {
 }
 
 type InfoBox struct {
-	player  *Player
-	name    *widget.Label
-	room    *widget.Label
-	group   *widget.Label
-	members *widget.Label
-	npc     *widget.Label
-	items   *widget.Label
-	content fyne.CanvasObject
+	player       *Player
+	name         *widget.Label
+	room         *widget.Label
+	playerOnline *widget.Label
+	playerInRoom *widget.Label
+	group        *widget.Label
+	members      *widget.Label
+	npc          *widget.Label
+	items        *widget.Label
+	content      fyne.CanvasObject
 }
 
-func showPlayerInfo(p *Player) *InfoBox {
+func showPlayerInfo(p *Player, data Data) *InfoBox {
 
 	b := &InfoBox{
-		player:  p,
-		name:    widget.NewLabel(""),
-		room:    widget.NewLabel(""),
-		group:   widget.NewLabel(""),
-		members: widget.NewLabel(""),
-		npc:     widget.NewLabel(""),
-		items:   widget.NewLabel(""),
-		content: widget.NewLabel(""),
+		player:       p,
+		name:         widget.NewLabel(""),
+		room:         widget.NewLabel(""),
+		playerOnline: widget.NewLabel(""),
+		playerInRoom: widget.NewLabel(""),
+		group:        widget.NewLabel(""),
+		members:      widget.NewLabel(""),
+		npc:          widget.NewLabel(""),
+		items:        widget.NewLabel(""),
+		content:      widget.NewLabel(""),
 	}
 	b.members.Wrapping = fyne.TextWrapWord
 
@@ -60,16 +65,16 @@ func showPlayerInfo(p *Player) *InfoBox {
 		container.NewPadded(container.NewVBox(
 			widget.NewLabelWithStyle("PLAYER INFO", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 			widget.NewSeparator(),
-			b.name, b.room, b.group, b.members, b.npc, b.items,
+			b.name, b.room, b.playerOnline, b.playerInRoom, b.group, b.members, b.npc, b.items,
 		)),
 	)
-	b.Update()
+	b.Update(data)
 	return b
 }
 
 func (b *InfoBox) Content() fyne.CanvasObject { return b.content }
 
-func (b *InfoBox) Update() {
+func (b *InfoBox) Update(d Data) {
 	p := b.player
 	b.name.SetText("Name: " + p.name)
 	b.room.SetText("Room: " + p.room.name)
@@ -78,6 +83,8 @@ func (b *InfoBox) Update() {
 		b.members.SetText("")
 		// return
 	}
+	b.playerOnline.SetText("Players online: " + strconv.Itoa(d.nb_players))
+	b.playerInRoom.SetText("Players in room: " + strconv.Itoa(b.player.room.nb_players))
 	b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.Id, p.group.Leader))
 	b.members.SetText("Members: " + strings.Join(p.group.Members, ", "))
 	b.npc.SetText("NPC: " + strings.Join(p.room.npc, ", "))
@@ -116,5 +123,6 @@ func (player *Player) PlayerRoomUpdate(msg string) {
 		npc:         npcs,
 		players:     r.Players,
 		items:       items,
+		nb_players:  len(r.Players),
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"strconv"
 	"strings"
 	"the_answer_protocol/client"
 
@@ -16,21 +17,22 @@ import (
 )
 
 type Room struct {
-	id			string
-	name		string
-	description	string
-	exits		map[string]bool
-	npc			[]string
-	players		[]string
-	nb_players	int
-	items		[]string
+	id          string
+	name        string
+	description string
+	exits       map[string]bool
+	npc         []string
+	players     []string
+	nb_players  int
+	items       []string
 }
 
 type Data struct {
-	w    fyne.Window
-	conn *client.Conn
-	cb   *CardinalButtons
-	g    *GameState
+	w          fyne.Window
+	conn       *client.Conn
+	cb         *CardinalButtons
+	g          *GameState
+	nb_players int
 }
 
 type Player struct {
@@ -126,7 +128,7 @@ func main() {
 
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(background, &player, &data)
-	playerinfo := showPlayerInfo(&player)
+	playerinfo := showPlayerInfo(&player, data)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
@@ -139,7 +141,7 @@ func main() {
 	// playerinfo.Update()
 	loginView, onLoginMsg := LoginScreen(conn, &player, func(name string) {
 		loggedIn = true
-		playerinfo.Update()
+		playerinfo.Update(data)
 		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
 		conn.Send("INVENTORY")
@@ -167,7 +169,7 @@ func main() {
 						background.File = "./data/" + roomID + ".jpeg"
 						background.Refresh()
 						player.move = false
-						playerinfo.Update()
+						playerinfo.Update(data)
 						data.cb.Update(player.room.exits)
 						data.conn.Send("LOOK")
 
@@ -181,7 +183,7 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
 						popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
 						player.group = GroupInfo{}
-						playerinfo.Update()
+						playerinfo.Update(data)
 					case strings.HasPrefix(msg.Rest, "group_joined="):
 						conn.Send("INFO_GROUP")
 						popup(w, "You join the "+strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_joined="))+"group")
@@ -193,7 +195,7 @@ func main() {
 							break
 						}
 						player.group = infos.Group
-						playerinfo.Update()
+						playerinfo.Update(data)
 
 					// TAKE
 					case strings.HasPrefix(msg.Rest, "taken="):
@@ -216,7 +218,7 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "look="):
 						game.Update(msg.Rest)
 						player.PlayerRoomUpdate(msg.Rest)
-						playerinfo.Update()
+						playerinfo.Update(data)
 						data.cb.Update(player.room.exits)
 
 					// QUESTS
@@ -299,8 +301,20 @@ func main() {
 							} else {
 								// +5 hp pour le npc
 							}
-						
+						case "STATS":
+							if strings.HasPrefix(m[2], "players=") {
+								data.nb_players, err = strconv.Atoi(strings.TrimPrefix(m[2], "players="))
+								if err != nil {
+									fmt.Println("Failed to get number of players online")
+								}
+							} else if strings.HasPrefix(m[2], "players_in_room=") {
+								data.g.player.room.nb_players, err = strconv.Atoi(strings.TrimPrefix(m[2], "players_in_room="))
+								if err != nil {
+									fmt.Println("Failed to get number of players in room")
+								}
+							}
 						}
+
 					}
 
 				case "ERR":
