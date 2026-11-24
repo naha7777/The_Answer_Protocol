@@ -50,8 +50,19 @@ func CheckObjective(quest *game.Quest, client *Client) (bool, int) {
 	}
 }
 
-func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) {
+func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) bool {
 	quest.Status = "completed"
+
+	var obj_it []string
+	for _, obj := range quest.Objective {
+		if strings.HasPrefix(obj, "item") {
+			obj_it = append(obj_it, obj)
+		}
+	}
+	if len(client.inventory) - len(obj_it) + len(quest.Reward) > 100 {
+		client.Send("ERR 17 FULL_INVENTORY")
+		return false
+	}
 
 	for _, obj := range quest.Objective {
 		find := false
@@ -67,6 +78,7 @@ func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) {
 	client.Send("OK complete_quest=%s: %s", quest.Id, quest.Status)
 
 	// Add the rewards on the player's inventory
+
 	for _, item_id := range quest.Reward {
 		for _, real_item := range d.world.Items {
 			if item_id == real_item.Id {
@@ -75,4 +87,5 @@ func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) {
 			}
 		}
 	}
+	return true
 }

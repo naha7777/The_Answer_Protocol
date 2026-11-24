@@ -11,6 +11,10 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 		client.Send("ERR 404 ITEM_NOT_FOUND")
 		return
 	}
+	if len(client.inventory) > 100 {
+		client.Send("ERR 17 FULL_INVENTORY")
+		return
+	}
 	query := strings.ToUpper(strings.Join(args, " "))
 	d.mu.Lock()
 	defer d.mu.Unlock()
