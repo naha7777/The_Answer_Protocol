@@ -52,19 +52,7 @@ func (d *Dispatcher) handleQuests(client *Client, args []string) {
 		res += `", "status": "`
 		res += v.Status
 		if v.Status != "completed" {
-			nb := 0
-			for _, obj := range v.Objective {
-				for _, v := range client.inventory {
-					if v.Id == obj {
-						nb += 1
-					}
-				}
-				for _, kill := range client.kills {
-					if kill == obj {
-						nb += 1
-					}
-				}
-			}
+			_, nb := CheckObjective(v, client)
 			res += `", "progress": "` + strconv.Itoa(nb) + "/"
 			res += strconv.Itoa(len(v.Objective))
 		}
@@ -101,7 +89,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 					return
 				}
 				// check if the quest's objectives are done
-				completed = CheckObjective(completed, quest, client)
+				completed, _ = CheckObjective(quest, client)
 				if completed {
 					// Complete the quest
 					CompleteObjective(quest, client, d)

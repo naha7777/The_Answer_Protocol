@@ -2,30 +2,43 @@ package server
 
 import (
 	"strings"
+	"slices"
 	"the_answer_protocol/game"
 )
 
-func CheckObjective(completed bool, quest *game.Quest, client *Client) bool {
+func CheckObjective(quest *game.Quest, client *Client) (bool, int) {
 	nb := 0
-	for _, obj := range quest.Objective {
-		// check if the items required are in the player's inventory
-		for _, it := range client.inventory {
-			if it.Id == obj {
+	for {
+		clone_obj := slices.Clone(quest.Objective)
+		clone_it := slices.Clone(client.inventory)
+		var new_obj []string
+		var new_it []*game.Item
+
+		for _, obj := range clone_obj {
+			find := false
+			for _, it := range clone_it {
+				if it.Id != obj {
+					new_it = append(new_it, it)
+				} else {
+					find = true
+				}
+			}
+			if !find {
+				new_obj = append(new_obj, obj)
+			} else {
 				nb += 1
 			}
 		}
-		// check if the NPC required are in the player's kill list
-		for _, kill := range client.kills {
-			if kill == obj {
-				nb += 1
-			}
+
+		clone_obj = new_obj
+		clone_it = new_it
+
+		if len(clone_obj) <= 0 {
+			return true, nb
+		} else {
+			return false, nb
 		}
 	}
-	// check if the player has completed the objective
-	if nb >= len(quest.Objective) {
-		completed = true
-	}
-	return completed
 }
 
 func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) {
