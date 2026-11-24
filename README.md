@@ -58,11 +58,12 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
 | `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
 | `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
-| `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` |
-| UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
-| error CLI or GUI connection | | `900 CONNECTION_FAILED` |
-| error CLI or GUI send | | `900 SEND_FAILED` |
-| when someone CONNECT himself or QUIT | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` | |
+| `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` | none |
+| UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`| none |
+| error CLI or GUI connection | | `900 CONNECTION_FAILED` | none |
+| error CLI or GUI send | | `900 SEND_FAILED` | none |
+| error server full | | `ERR 19 SERVER_FULL` | none |
+| when someone CONNECT himself or QUIT | | | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` |
 
 
 ### Error codes
@@ -95,6 +96,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 16 | LINE_TOO_LONG | **custom (not in RFC)** |
 | 17 | FULL_INVENTORY | **custom (not in RFC)** |
 | 18 | SPAM | **custom (not in RFC)** |
+| 19 | SERVER_FULL | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
