@@ -1,6 +1,7 @@
 package server
 
 func (d *Dispatcher) displayStats() {
+	// Send an EVT with the number of players connected to the server
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	for _, c := range d.clients {
@@ -9,6 +10,7 @@ func (d *Dispatcher) displayStats() {
 }
 
 func (d *Dispatcher) displayRoomStats() {
+	// // Send an EVT with the number of players in the client room
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	for _, c := range d.clients {

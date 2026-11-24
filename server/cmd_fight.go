@@ -18,11 +18,15 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 		damage_type = "critical"
 	}
 
+	// a player can't fight a NPC in another room
 	for _, npcs := range client.room.NPCs {
 		if strings.ToUpper(npcs) == target || target == strings.ToUpper(d.world.NPCs[npcs].Name) {
 			if d.world.NPCs[npcs].Hp > 0 {
+				// a player can't fight a NPC if he is not hostile
 				if d.world.NPCs[npcs].Hostile {
+					// another player can't attack a NPC if he is in a fight
 					if d.world.NPCs[npcs].Fighter == "" || d.world.NPCs[npcs].Fighter == client.name {
+						// a player can't fight two NPC at the same time
 						if npcs == client.target || client.target == "" {
 							// Hit the NPC
 							client.status = "combat"
@@ -70,6 +74,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleStatus(client *Client, args []string) {
+	// displqy client HP, client max HP and client status
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -78,6 +83,7 @@ func (d *Dispatcher) handleStatus(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleFlee(client *Client, args []string) {
+	// a player has 40% to success his flee during a fight
 	if client.status == "combat" {
 		if rand.Float64() < 0.4 {
 			client.status = "exploration"
@@ -89,6 +95,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 			npc := d.world.NPCs[client.target]
 			client.Send(`OK flee=fail, "status"="combat"`)
 			CheckBuffDebuff(client, d)
+			// if the player fail his flee, the NPC has an action
 			npc.Hp += NPCsAction("FLEE", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 			return
 		}
@@ -99,6 +106,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleDefend(client *Client, args []string) {
+	// during a fight, the player can reduce the NPC damages by using Defend command
 	if client.status == "combat" {
 		client.Send(`OK defend, "status"="combat"`)
 		CheckBuffDebuff(client, d)
@@ -113,6 +121,7 @@ func (d *Dispatcher) handleDefend(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleUseItem(client *Client, args []string) {
+	// during a fight, the player can use items
 	if client.status == "combat" {
 		if len(args) == 0 {
 			client.Send("ERR 404 ITEM_NOT_FOUND ")
@@ -122,10 +131,12 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 		d.mu.Lock()
 		defer d.mu.Unlock()
 
+		// check if the item is on his inventory
 		for _, item := range client.inventory {
 			if !strings.EqualFold(item.Id, query) && !strings.EqualFold(item.Name, query) {
 				continue
 			}
+			// call the item function, then the NPC has an action
 			switch query {
 			case "BEER":
 				client.hp -= UseBeer(client, 3, d)

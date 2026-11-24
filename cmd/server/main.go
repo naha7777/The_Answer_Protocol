@@ -13,12 +13,14 @@ import (
 )
 
 func main() {
+	// the server listens on port 8080
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error listening : %s", err)
 		os.Exit(1)
 	}
 
+	// handle listener error
 	var once sync.Once
 	shutdown := func() {
 		once.Do(func() {
@@ -28,6 +30,7 @@ func main() {
 		})
 	}
 
+	// handle forcing closure (CRTL+C for example)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -36,6 +39,7 @@ func main() {
 		shutdown()
 	}()
 
+	// handle closure with 'quit', 'exit' or 'stop'
 	go func() {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {

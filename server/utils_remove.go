@@ -6,6 +6,7 @@ import (
 )
 
 func (d *Dispatcher) removeClient(client *Client) {
+	// Delete a client because of deconnection or problem
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if client.name == "" {
@@ -24,6 +25,7 @@ func (d *Dispatcher) removeClient(client *Client) {
 	}
 	delete(d.clients, client.name)
 	client.name = ""
+	client.quit = true
 	client.conn.Close()
 }
 
@@ -31,6 +33,7 @@ func RemoveItemInventory(client *Client, item_id string, d *Dispatcher, verbose 
 	final_inventory := []*game.Item{}
 	found := false
 	count := 0
+	// drop all items from inventory to the room
 	if item_id == "false_item" {
 		for _, i := range client.inventory {
 			client.room.Items = append(client.room.Items, i.Id)
@@ -38,6 +41,8 @@ func RemoveItemInventory(client *Client, item_id string, d *Dispatcher, verbose 
 		client.inventory = final_inventory
 		return
 	}
+
+	// drop one item from player's inventory to the room
 	for _, i := range client.inventory {
 		if strings.EqualFold(i.Id, item_id) && count == 0 || strings.EqualFold(i.Name, item_id) && count == 0{
 			found = true
@@ -59,6 +64,7 @@ func RemoveItemInventory(client *Client, item_id string, d *Dispatcher, verbose 
 
 func RemoveQuest(client *Client) {
 	var final_quests []*game.Quest
+	// remove quests from player's quests only if they are not completed
 	for _, quest := range client.quests {
 		if quest.Status == "completed" {
 			final_quests = append(final_quests, quest)
@@ -70,6 +76,7 @@ func RemoveQuest(client *Client) {
 }
 
 func Remove(name string, place []string) []string {
+	// remove a string from a slice of strings
 	var new []string
 	for _, item := range place {
 		if item != name {
