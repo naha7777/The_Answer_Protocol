@@ -68,7 +68,11 @@ func Str_to_quests(str string, d Data) {
 
 	popup := widget.NewPopUp(q, d.w.Canvas())
 	popup.ShowAtPosition(fyne.Position{X: 15, Y: height - 50*8 - 30})
-	popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width + 30, Height: 50 * 4})
+	if quests_cont.MinSize().Width < 200 {
+		popup.Resize(fyne.Size{Width: 200, Height: 50 * 4})
+	} else {
+		popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width + 30, Height: 50 * 4})
+	}
 }
 
 func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
