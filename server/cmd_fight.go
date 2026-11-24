@@ -37,7 +37,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 								if d.world.NPCs[npcs].Hp < 0 {
 									d.world.NPCs[npcs].Hp = 0
 								}
-								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, d.world.NPCs[npcs].Name, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, client.strengh, damage_type, client.status)
+								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, d.world.NPCs[npcs].Name, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, client.strengh, damage_type, client.status)
 								CheckBuffDebuff(client, d)
 								// if the hit kill the NPC
 								if d.world.NPCs[npcs].Hp <= 0 {

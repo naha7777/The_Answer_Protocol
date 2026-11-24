@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	// "image/color"
-	// "os"
 	"strings"
-	// "the_answer_protocol/client"
+
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -32,6 +30,7 @@ type BattleUI struct {
 	player			*Player
 	playerImg		*canvas.Image
 	npcImg			*canvas.Image
+	playerNameLabel	*widget.Label
 	npcNameLabel	*widget.Label
 	battleLog		*widget.Label
 	content			fyne.CanvasObject
@@ -83,7 +82,7 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	b.playerHealth.Min = 0
 	b.playerHealth.Max = 100
 	b.npcHealth.Min = 0
-	b.npcHealth.Min = 100
+	b.npcHealth.Max = 100
 
 	attackBtn := widget.NewButton("ATTACK", func() {b.data.conn.Send("ATTACK")})
 	fleeBtn := widget.NewButton("FLEE", func() {b.data.conn.Send("FLEE")})
@@ -110,19 +109,6 @@ func (b *BattleUI) Content() fyne.CanvasObject {
 	return b.content
 }
 
-// func (b *BattleUI) StartFight(atk AttackData) {
-// 	cleanID := strings.TrimPrefix(npcID, "npc.")
-// 	b.npcNameLabel.SetText(IDToName(npcID))
-
-// 	b.npcImg.File = "./data/npc/" + cleanID + ".png"
-// 	b.npcImg.Refresh()
-
-// 	b.npcHealth.Max = npcMaxHP
-// 	b.npcHealth.SetValue(npcMaxHP)
-// 	b.playerHealth.SetValue(float64(b.player.health))
-// 	b.battleLog.SetText("Battle is starting !!!")
-// }
-
 func (b *BattleUI) Update(atk AttackData) {
 	b.player.health = atk.PlayerHP
 
@@ -140,11 +126,12 @@ func (b *BattleUI) InitFight(atk AttackData) {
 	b.playerImg.File = "./data/npc/" + b.player.gender + "attack.png"
 	b.playerImg.Refresh()
 
-	npcFile := strings.ToLower(strings.ReplaceAll(atk.NPCName, " ", "_"))
-	b.npcImg.File = "./data/npc/" + npcFile + "attack.png"
+	npcFile := strings.ToLower(atk.NPCName)
+	b.npcImg.File = "./data/npc/" + npcFile + ".png"
 	b.npcImg.Refresh()
 
 	b.npcNameLabel.SetText(atk.NPCName)
+	b.playerNameLabel.SetText(b.player.name)
 	b.Update(atk)
 }
 
@@ -152,14 +139,11 @@ func (b *BattleUI) EndFight() {
 	b.inFight = false
 }
 
-func (*AttackData) atkData(msg string) {
+func (a *AttackData) parse(msg string) error {
 	rawJSON := strings.TrimSpace(msg)
-	if rawJSON == "" {
-		return
-	}
-	var data AttackData
-	if err := json.Unmarshal([]byte(rawJSON), &data); err != nil {
+	if err := json.Unmarshal([]byte(rawJSON), a); err != nil {
 		fmt.Println("Parsing attack data error")
-		return
+		return err
 	}
+	return nil
 }

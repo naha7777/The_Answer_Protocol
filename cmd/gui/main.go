@@ -246,6 +246,7 @@ func main() {
 
 					// ATTACK
 					case strings.HasPrefix(msg.Rest, "attack="):
+						fmt.Println("Case OK ATTACK\n", msg.Rest)
 						if strings.Contains(msg.Rest, "=dead") {
 							battleUI.EndFight()
 							playerinfo.Update()
@@ -254,7 +255,9 @@ func main() {
 							break
 						}
 						var atk AttackData
-						atk.atkData(strings.TrimPrefix(msg.Rest, "attack="))
+						if err := atk.parse(strings.TrimPrefix(msg.Rest, "attack=")); err != nil {
+							break
+						}
 						if !battleUI.inFight {
 							battleUI.InitFight(atk)
 							w.SetContent(battleContent)
@@ -294,9 +297,9 @@ func main() {
 						case "NPC":
 							switch m[2] {
 							case "DEAD", "FLEE":
-								// npc dead
+								battleUI.EndFight()
 								playerinfo.Update()
-								w.SetContent(battleContent)
+								w.SetContent(gameContent)
 								conn.Send("LOOK")
 							case "ATTACK":
 								// npc attack
