@@ -36,7 +36,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `QUIT` | `OK bye` | | none |
 | `LOOK` | `OK look={"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | |
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none |
-| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND` | `"EVT PLAYER TOOK <item_id>` |
+| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `"EVT PLAYER TOOK <item_id>` |
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | `"EVT PLAYER DROPPED <item_id>` |
 | `INVENTORY` | `OK inventory=[item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
@@ -46,23 +46,24 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strengh during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT STRENGH POTION : +5 player strengh during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
 | `WHO` | `OK players=<n>` | | |
-| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GLOBAL CHAT <username> <message>` to others |
-| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT ROOM CHAT <username> <message>` to others in room |
-| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE` | `EVT GROUP CHAT <username> <message>` to group members |
+| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
+| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
+| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
 | `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
 | `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE <leadername>` to the invited user |
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE <username>` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
-| `QUEST <npc name or npc id>` | `OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT PLAYER_QUEST <player_id> take=<quest_id>` |
-| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
-| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND` | none |
-| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | none |
-| `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` |
-| UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`|
-| error CLI or GUI connection | | `900 CONNECTION_FAILED` |
-| error CLI or GUI send | | `900 SEND_FAILED` |
-| when someone CONNECT himself or QUIT | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` | |
+| `QUEST <npc name or npc id>` | `OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
+| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_npc": "princess", "quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
+| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
+| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
+| `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` | none |
+| UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`| none |
+| error CLI or GUI connection | | `900 CONNECTION_FAILED` | none |
+| error CLI or GUI send | | `900 SEND_FAILED` | none |
+| error server full | | `ERR 19 SERVER_FULL` | none |
+| when someone CONNECT himself or QUIT | | | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` |
 
 
 ### Error codes
@@ -93,6 +94,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | 14 | NPC_IN_FIGHT | **custom (not in RFC)** |
 | 15 | NO_QUEST_AVAILABLE | **custom (not in RFC)** |
 | 16 | LINE_TOO_LONG | **custom (not in RFC)** |
+| 17 | FULL_INVENTORY | **custom (not in RFC)** |
+| 18 | SPAM | **custom (not in RFC)** |
+| 19 | SERVER_FULL | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
@@ -120,6 +124,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | Strengh turns | `EVT STRENGH : +5 player strengh during <nb_turns> turns` | **custom (not in RFC)** |
 | Health turns | `EVT HEALTH : +5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
 | Poison player turns | `EVT POISON : -5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
+| A player abandon a quest | `EVT QUEST abandoned=<quest_id>` | **custom (not in RFC)** |
+| A player complete a quest | `EVT QUEST completed=<quest_id>` | **custom (not in RFC)** |
+| A player take a quest | `EVT QUEST took=<quest_id>` | **custom (not in RFC)** |
 
 ## Combat System
 section describing your turn-based combat mechanics, damage formulas, initiative order, and additional combat commands (DEFEND, FLEE, etc.).

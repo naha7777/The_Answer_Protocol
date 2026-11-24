@@ -11,6 +11,10 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 		client.Send("ERR 404 ITEM_NOT_FOUND")
 		return
 	}
+	if len(client.inventory) > 100 {
+		client.Send("ERR 17 FULL_INVENTORY")
+		return
+	}
 	query := strings.ToUpper(strings.Join(args, " "))
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -49,7 +53,7 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 	defer d.mu.Unlock()
 
 	// drop it in the actual room
-	RemoveItemInventory(client, query, d, true)
+	RemoveItemInventory(client, query, d, true, "drop")
 }
 
 func (d *Dispatcher) handleMove(client *Client, args []string) {

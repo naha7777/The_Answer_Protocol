@@ -23,7 +23,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 							// give the quest to the player
 							client.quests = append(client.quests, q)
 							client.Send(`OK quest={"quest_id": "%s", "description": "%s", "reward": "%s", "status": "%s"}`, q.Id, q.Description, q.Reward, q.Status)
-							SendAll(d, client, `EVT PLAYER_QUEST %s take=%s`, client.name, q.Id)
+							SendAll(d, client, `EVT QUEST took=%s`, q.Id)
 							q.Status = "active"
 							find = true
 							return
@@ -47,24 +47,14 @@ func (d *Dispatcher) handleQuests(client *Client, args []string) {
 	defer d.mu.Unlock()
 	for i, v := range client.quests {
 		res += "{"
-		res += `"quest_id": "`
+		res += `"quest_npc": "`
+		res += v.NPC
+		res += `", "quest_id": "`
 		res += v.Id
 		res += `", "status": "`
 		res += v.Status
 		if v.Status != "completed" {
-			nb := 0
-			for _, obj := range v.Objective {
-				for _, v := range client.inventory {
-					if v.Id == obj {
-						nb += 1
-					}
-				}
-				for _, kill := range client.kills {
-					if kill == obj {
-						nb += 1
-					}
-				}
-			}
+			_, nb := CheckObjective(v, client)
 			res += `", "progress": "` + strconv.Itoa(nb) + "/"
 			res += strconv.Itoa(len(v.Objective))
 		}
@@ -101,10 +91,13 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 					return
 				}
 				// check if the quest's objectives are done
-				completed = CheckObjective(completed, quest, client)
+				completed, _ = CheckObjective(quest, client)
 				if completed {
 					// Complete the quest
-					CompleteObjective(quest, client, d)
+					success := CompleteObjective(quest, client, d)
+					if success {
+						SendAll(d, client, `EVT QUEST completed=%s`, quest.Id)
+					}
 					return
 				} else {
 					client.Send("ERR 11 INCOMPLETE_QUEST_REQUIREMENTS")
@@ -136,6 +129,7 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 	for _, quest := range client.quests {
 		if quest.Id == args[0] {
 			client.Send("OK abandon_quest=%s", quest.Id)
+			SendAll(d, client, `EVT QUEST abandoned=%s`, quest.Id)
 			quest.Status = "available"
 		} else {
 			final_quests = append(final_quests, quest)

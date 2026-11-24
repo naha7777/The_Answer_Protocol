@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net"
+	"time"
 	"the_answer_protocol/game"
 )
 
@@ -25,6 +26,7 @@ type Client struct {
 	real_strengh	int
 	quit			bool
 	kills			[]string
+	lastChat		time.Time
 }
 
 func (c *Client) Send(format string, a ...any) {
@@ -33,8 +35,7 @@ func (c *Client) Send(format string, a ...any) {
 
 func (client *Client) Death(d *Dispatcher) {
 	// handle client death : reset his status, inventory, quests, target
-	RemoveItemInventory(client, "false_item", d, false)
-	RemoveQuest(client)
+	RemoveItemInventory(client, "false_item", d, false, "drop")
 
 	client.Send(`EVT DEATH`)
 	client.status = "exploration"

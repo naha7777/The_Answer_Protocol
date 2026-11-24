@@ -10,7 +10,7 @@ func UseBeer(client *Client, time int, d *Dispatcher) int {
 	}
 	if found {
 		client.Send(`OK use=item.beer`)
-		RemoveItemInventory(client, "item.beer", d, false)
+		RemoveItemInventory(client, "item.beer", d, false, "fight")
 	}
 	client.debuff = "poison"
 	client.time_debuff = time - 1

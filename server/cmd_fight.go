@@ -141,6 +141,10 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 			case "BEER":
 				client.hp -= UseBeer(client, 3, d)
 				npc := d.world.NPCs[client.target]
+				if client.hp <= 0 {
+					client.Death(d)
+					return
+				}
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "SWORD":
@@ -149,8 +153,12 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "POISON POTION":
-				d.world.NPCs[client.target].Hp -= UsePoisonPotion(client, 5, d)
 				npc := d.world.NPCs[client.target]
+				npc.Hp -= UsePoisonPotion(client, 5, d)
+				if npc.Hp <= 0 {
+					DeadNPC(client, client.real_strengh, npc.Name, d)
+					return
+				}
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "HEALTH POTION":
