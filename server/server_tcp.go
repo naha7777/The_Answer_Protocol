@@ -10,9 +10,11 @@ import (
 	"the_answer_protocol/game"
 )
 
+var conn_nb int
+const connection_limit = 30
+
 func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 					  world *game.World) {
-
 	defer connection.Close()
 	// client creation
 	client := &Client{conn: connection}
@@ -29,10 +31,19 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		}
 	}
 
+	// limit the number of connections
+	if conn_nb > connection_limit {
+		client.Send(`ERR 19 SERVER_FULL`)
+		dispatcher.removeClient(client)
+		conn_nb -= 1
+		return
+	}
+
 	defer func() {
 		dispatcher.removeClient(client)
 		dispatcher.displayRoomStats()
 		dispatcher.displayStats()
+		conn_nb -= 1
 	}()
 	client.Send("OK hello proto=1")
 
@@ -110,6 +121,7 @@ func Server(listener net.Listener) {
 			continue
 		}
 		// one goroutine for one connection
+		conn_nb += 1
 		go HandleConnection(connection, dispatcher, world)
 	}
 }
