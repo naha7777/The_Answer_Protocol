@@ -46,7 +46,7 @@ type BattleUI struct {
 // NewBattleUI builds and initializes the arena combat layout with player and
 // NPC displays, custom health bars, and combat action controls.
 func NewBattleUI(player *Player, data *Data) *BattleUI {
-	playerImg := canvas.NewImageFromFile(player.battleAvatar)
+	playerImg := canvas.NewImageFromFile("./data/npc/" + player.gender + "attack.png")
 	playerImg.FillMode = canvas.ImageFillContain
 	playerImg.SetMinSize(fyne.NewSize(300, 400))
 
