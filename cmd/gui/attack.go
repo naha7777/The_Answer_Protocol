@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"image/color"
 	"strings"
-
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -49,18 +49,19 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	npcImg.SetMinSize(fyne.NewSize(300, 400))
 
 	b := &BattleUI{
-		playerImg:		playerImg,
-		npcImg:			npcImg,
-		playerHealth:	widget.NewProgressBar(),
-		npcHealth:		widget.NewProgressBar(),
-		npcNameLabel:	widget.NewLabel("enemy"),
-		battleLog:		widget.NewLabel(""),
-		player:			player,
-		data:			data,
+		playerImg:			playerImg,
+		npcImg:				npcImg,
+		playerHealth:		widget.NewProgressBar(),
+		npcHealth:			widget.NewProgressBar(),
+		playerNameLabel:	widget.NewLabel(player.name),
+		npcNameLabel:		widget.NewLabel("enemy"),
+		battleLog:			widget.NewLabel(""),
+		player:				player,
+		data:				data,
 	}
 
 	playerSide := container.NewVBox(
-		widget.NewLabel(player.name),
+		b.playerNameLabel,
 		b.playerHealth,
 		b.playerImg,
 	)
@@ -92,16 +93,14 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 		container.NewCenter(container.NewHBox(attackBtn, fleeBtn)),
 	)
 
-	// actions := container.NewHBox(attackBtn, fleeBtn)
-	// bars := container.NewVBox(
-	// 	widget.NewLabel(player.name),
-	// 	b.playerHealth,
-	// 	b.npcNameLabel,
-	// 	b.npcHealth,
-	// )
+	topOffset := canvas.NewRectangle(color.Transparent)
+	topOffset.SetMinSize(fyne.NewSize(0, 200))
 
-	// b.content = container.NewBorder(bars, actions, nil, nil ,b.battleLog)
-	b.content = container.NewBorder(nil, bottomBar, nil, nil, container.NewCenter(fighters))
+	fightersArea := container.NewVBox(
+		topOffset,
+		fighters,
+	)
+	b.content = container.NewBorder(nil, bottomBar, nil, nil, container.NewCenter(fightersArea))
 	return b
 }
 
