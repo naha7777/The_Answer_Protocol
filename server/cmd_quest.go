@@ -47,7 +47,9 @@ func (d *Dispatcher) handleQuests(client *Client, args []string) {
 	defer d.mu.Unlock()
 	for i, v := range client.quests {
 		res += "{"
-		res += `"quest_id": "`
+		res += `"quest_npc": "`
+		res += v.NPC
+		res += `", "quest_id": "`
 		res += v.Id
 		res += `", "status": "`
 		res += v.Status

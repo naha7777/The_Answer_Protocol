@@ -55,7 +55,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE <username>` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
 | `QUEST <npc name or npc id>` | `OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
-| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
+| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_npc": "princess", "quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
 | `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
 | `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
 | `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` | none |

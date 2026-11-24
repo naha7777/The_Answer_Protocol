@@ -64,19 +64,6 @@ func RemoveItemInventory(client *Client, item_id string, d *Dispatcher, verbose 
 	}
 }
 
-func RemoveQuest(client *Client) {
-	var final_quests []*game.Quest
-	// remove quests from player's quests only if they are not completed
-	for _, quest := range client.quests {
-		if quest.Status == "completed" {
-			final_quests = append(final_quests, quest)
-		} else {
-			quest.Status = "available"
-		}
-	}
-	client.quests = final_quests
-}
-
 func Remove(name string, place []string) []string {
 	// remove a string from a slice of strings
 	var new []string

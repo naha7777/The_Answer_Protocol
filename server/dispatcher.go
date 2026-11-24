@@ -66,7 +66,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var args []string
 	first := strings.ToUpper(parts[0])
 
-
+	// spam protection
 	if first == "CHAT" {
 		now := time.Now()
 		if !client.lastChat.IsZero() && now.Sub(client.lastChat) < time.Second*2 {
