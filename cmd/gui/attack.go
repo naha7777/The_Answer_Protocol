@@ -13,6 +13,9 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// AttackData holds the parsed JSON payload returned by the server during a
+// combat turn, including current and maximum health points, damage dealt,
+// damage type, and combat status.
 type AttackData struct {
 	PlayerHP		int		`json:"player_hp"`
 	PlayerMax_HP	int		`json:"player_max_hp"`
@@ -24,6 +27,8 @@ type AttackData struct {
 	Status			string	`json:"status"`
 }
 
+// BattleUI manages the arena combat interface, including fighter avatars,
+// health bars, action buttons, and the combat log.
 type BattleUI struct {
 	inFight			bool
 	data			*Data
@@ -34,11 +39,12 @@ type BattleUI struct {
 	npcNameLabel	*widget.Label
 	battleLog		*widget.Label
 	content			fyne.CanvasObject
-	npcHealth		*widget.ProgressBar
-	playerHealth	*widget.ProgressBar
+	npcHealth		*HealthBar
+	playerHealth	*HealthBar
 }
 
-
+// NewBattleUI builds and initializes the arena combat layout with player and
+// NPC displays, custom health bars, and combat action controls.
 func NewBattleUI(player *Player, data *Data) *BattleUI {
 	playerImg := canvas.NewImageFromFile(player.battleAvatar)
 	playerImg.FillMode = canvas.ImageFillContain
@@ -51,8 +57,8 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	b := &BattleUI{
 		playerImg:			playerImg,
 		npcImg:				npcImg,
-		playerHealth:		widget.NewProgressBar(),
-		npcHealth:			widget.NewProgressBar(),
+		playerHealth:		NewHealthBar(100),
+		npcHealth:			NewHealthBar(100),
 		playerNameLabel:	widget.NewLabel(player.name),
 		npcNameLabel:		widget.NewLabel("enemy"),
 		battleLog:			widget.NewLabel(""),
@@ -62,13 +68,13 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 
 	playerSide := container.NewVBox(
 		b.playerNameLabel,
-		b.playerHealth,
+		b.playerHealth.Content(),
 		b.playerImg,
 	)
 
 	npcSide := container.NewVBox(
 		b.npcNameLabel,
-		b.npcHealth,
+		b.npcHealth.Content(),
 		b.npcImg,
 	)
 
@@ -79,11 +85,6 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 		npcSide,
 		layout.NewSpacer(),
 	)
-
-	b.playerHealth.Min = 0
-	b.playerHealth.Max = 100
-	b.npcHealth.Min = 0
-	b.npcHealth.Max = 100
 
 	attackBtn := widget.NewButton("ATTACK", func() {b.data.conn.Send("ATTACK")})
 	fleeBtn := widget.NewButton("FLEE", func() {b.data.conn.Send("FLEE")})
@@ -104,21 +105,26 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	return b
 }
 
+// Content returns the root CanvasObject of the battle screen.
 func (b *BattleUI) Content() fyne.CanvasObject {
 	return b.content
 }
 
+// Update refreshes the player and NPC health bars and updates the combat log
+// with the latest turn's damage details.
 func (b *BattleUI) Update(atk AttackData) {
 	b.player.health = atk.PlayerHP
 
-	b.playerHealth.Max = float64(atk.PlayerMax_HP)
+	b.playerHealth.SetMax(float64(atk.PlayerMax_HP))
 	b.playerHealth.SetValue(float64(atk.PlayerHP))
 
-	b.npcHealth.Max = float64(atk.NPCMaxHP)
+	b.npcHealth.SetMax(float64(atk.NPCMaxHP))
 	b.npcHealth.SetValue(float64(atk.NPCHP))
 	b.battleLog.SetText(fmt.Sprintf("You deal %d damage (%s) to %s !", atk.Damage, atk.DamageType, atk.NPCName))
 }
 
+// InitFight sets the combat state to active, loads the player and enemy
+// sprites and names, and initializes the combat UI with the first turn data.
 func (b *BattleUI) InitFight(atk AttackData) {
 	b.inFight = true
 	b.npcNameLabel.SetText(atk.NPCName)
@@ -134,10 +140,12 @@ func (b *BattleUI) InitFight(atk AttackData) {
 	b.Update(atk)
 }
 
+// EndFight marks the current combat session as finished.
 func (b *BattleUI) EndFight() {
 	b.inFight = false
 }
 
+// parse unmarshals a raw JSON attack response string into the AttackData struct.
 func (a *AttackData) parse(msg string) error {
 	rawJSON := strings.TrimSpace(msg)
 	if err := json.Unmarshal([]byte(rawJSON), a); err != nil {

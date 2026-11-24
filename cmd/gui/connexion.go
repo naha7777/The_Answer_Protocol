@@ -11,6 +11,10 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// LoginScreen builds the initial authentication and character creation screen.
+// It first prompts the user to enter a player name and connect to the server,
+// then switches to a character gender selection step before invoking onSuccess.
+// It returns the root CanvasObject view and a message handler callback for server responses.
 func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string)) (fyne.CanvasObject, func(client.Message)) {
 	contentBox := container.NewVBox()
 
@@ -49,8 +53,7 @@ func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string))
 	genderBanner.Alignment = fyne.TextAlignCenter
 
 	selectGender := func(gender string) {
-		player.avatar = "./data/pnj/" + gender + ".png"
-		player.battleAvatar = "./data/npc/" + gender + "attack.png"
+		player.avatar = "./data/npc/" + gender + ".png"
 		player.gender = gender
 		onSuccess(pendingName)
 	}

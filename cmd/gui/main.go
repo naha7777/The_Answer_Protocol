@@ -35,7 +35,6 @@ type Data struct {
 
 type Player struct {
 	avatar			string
-	battleAvatar	string
 	gender			string
 	name			string
 	health			int
