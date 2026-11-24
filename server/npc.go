@@ -104,5 +104,5 @@ func DeadNPC(client *Client, initial_strengh int, npcs string, d *Dispatcher) {
 	client.target = ""
 	client.strengh = initial_strengh
 	// Send an EVT to tell players that an NPC is dead
-	SendRoom(d, client, "EVT NPC %s DEAD", npcs)
+	SendRoom(d, client, "EVT NPC DEAD %s", npcs)
 }
