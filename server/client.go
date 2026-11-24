@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net"
+	"time"
 	"the_answer_protocol/game"
 )
 
@@ -25,6 +26,7 @@ type Client struct {
 	real_strengh	int
 	quit			bool
 	kills			[]string
+	lastChat		time.Time
 }
 
 func (c *Client) Send(format string, a ...any) {

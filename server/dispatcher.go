@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 	"the_answer_protocol/game"
+	"time"
 )
 
 type CommandFunc func(client *Client, args []string)
@@ -64,6 +65,17 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var cmd string
 	var args []string
 	first := strings.ToUpper(parts[0])
+
+
+	if first == "CHAT" {
+		now := time.Now()
+		if !client.lastChat.IsZero() && now.Sub(client.lastChat) < time.Second*2 {
+			client.Send("ERR 18 SPAM")
+			return
+		}
+		client.lastChat = now
+	}
+
 	// call appropriate function
 	// block some commands during a fight
 	if client.status != "combat" {
