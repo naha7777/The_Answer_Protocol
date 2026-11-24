@@ -244,6 +244,14 @@ func main() {
 						chat.Receive("NPC", author, message)
 
 					// ATTACK
+					case strings.HasPrefix(msg.Rest, "flee="):
+						if strings.Contains(msg.Rest, "=succed") {
+							battleUI.EndFight()
+							playerinfo.Update()
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+							break
+						}
 					case strings.HasPrefix(msg.Rest, "attack="):
 						fmt.Println("Case OK ATTACK\n", msg.Rest)
 						if strings.Contains(msg.Rest, "=dead") {
@@ -267,6 +275,10 @@ func main() {
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
+					if len(m) == 2 && m[1] == "DEATH" {
+						popup(data.w, "You are DEAD !!!")
+						a.Quit()
+					}
 					if len(m) >= 3 {
 						switch m[1] {
 						case "GROUP":
