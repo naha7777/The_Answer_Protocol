@@ -35,7 +35,7 @@ type NPCData struct {
 	Name		string				`json:"name"`
 	HP			int					`json:"hp"`
 	Max_hp		int					`json:"max_hp"`
-	Strengh		int					`json:"strengh"`
+	Strength		int					`json:"strength"`
 	Hostile		bool				`json:"hostile"`
 	Dialogue	[]string			`json:"dialogue"`
 	Quest		[]string			`json:"quests"`

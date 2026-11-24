@@ -17,13 +17,13 @@ type Client struct {
 	hp_max    		int
 	status    		string
 	quests    		[]*game.Quest
-	strengh   		int
+	strength   		int
 	target    		string
 	buff    		string
 	time_buff		int
 	debuff			string
 	time_debuff		int
-	real_strengh	int
+	real_strength	int
 	quit			bool
 	kills			[]string
 	lastChat		time.Time

@@ -29,13 +29,13 @@ func CheckBuffDebuff(client *Client, d *Dispatcher) {
 		} else {
 			client.buff = ""
 		}
-	case "strengh":
+	case "strength":
 		if client.time_buff > 0 {
 			client.time_buff -= 1
-			client.Send(`EVT STRENGH : +5 player strengh during %d turns`, client.time_buff)
+			client.Send(`EVT STRENGTH : +5 player strength during %d turns`, client.time_buff)
 		} else {
 			client.buff = ""
-			client.strengh = client.real_strengh
+			client.strength = client.real_strength
 		}
 
 	case "health":

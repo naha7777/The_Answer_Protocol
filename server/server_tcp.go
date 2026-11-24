@@ -26,8 +26,8 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			// inv = append(inv, item)
 			client = &Client{conn: connection, name: "", group: nil, room: room,
 				inventory: nil, hp: 100, hp_max: 100,
-				status: "very healthy", strengh: 10, target: "",
-				real_strengh: 10, quit: false}
+				status: "very healthy", strength: 10, target: "",
+				real_strength: 10, quit: false}
 		}
 	}
 

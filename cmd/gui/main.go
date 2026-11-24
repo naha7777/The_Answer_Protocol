@@ -290,7 +290,7 @@ func main() {
 							} else {
 								// -5 player hp
 							}
-						case "STRENGHT":
+						case "STRENGTH":
 							if m[3] == "POTION" {
 								//  +5 de point de force ou attack pour le joueur
 							} else {

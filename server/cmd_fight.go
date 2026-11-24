@@ -14,7 +14,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 	// percentage chance of landing a critical hit
 	damage_type := "normal"
 	if rand.Float64() < 0.1 {
-		client.strengh += (client.strengh * 40 / 100)
+		client.strength += (client.strength * 40 / 100)
 		damage_type = "critical"
 	}
 
@@ -33,44 +33,44 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 							client.target = npcs
 							d.world.NPCs[npcs].Fighter = client.name
 							if d.world.NPCs[npcs].Hp > 0 {
-								d.world.NPCs[npcs].Hp -= client.strengh
+								d.world.NPCs[npcs].Hp -= client.strength
 								if d.world.NPCs[npcs].Hp < 0 {
 									d.world.NPCs[npcs].Hp = 0
 								}
-								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, d.world.NPCs[npcs].Name, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, client.strengh, damage_type, client.status)
+								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, d.world.NPCs[npcs].Name, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, client.strength, damage_type, client.status)
 								CheckBuffDebuff(client, d)
 								// if the hit kill the NPC
 								if d.world.NPCs[npcs].Hp <= 0 {
-									DeadNPC(client, client.real_strengh, npcs, d)
+									DeadNPC(client, client.real_strength, npcs, d)
 									return
 								}
 								// NPC hit back
-								d.world.NPCs[npcs].Hp += NPCsAction("ATTACK", client, d.world.NPCs[npcs].Strengh, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, d.world.NPCs[npcs].Name, d)
+								d.world.NPCs[npcs].Hp += NPCsAction("ATTACK", client, d.world.NPCs[npcs].Strength, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, d.world.NPCs[npcs].Name, d)
 								if damage_type == "critical" {
-									client.strengh -= (client.strengh * 40 / 100)
+									client.strength -= (client.strength * 40 / 100)
 								}
 								return
 							}
 						} else {
 							client.Send("ERR 12 IN_FIGHT")
-							client.strengh = client.real_strengh
+							client.strength = client.real_strength
 							return
 						}
 					} else {
 						client.Send("ERR 14 NPC_IN_FIGHT")
-						client.strengh = client.real_strengh
+						client.strength = client.real_strength
 						return
 					}
 				} else {
 					client.Send("ERR 405 NPC_NOT_HOSTILE")
-					client.strengh = client.real_strengh
+					client.strength = client.real_strength
 					return
 				}
 			}
 		}
 	}
 	client.Send("ERR 404 NPC_NOT_FOUND")
-	client.strengh = client.real_strengh
+	client.strength = client.real_strength
 }
 
 func (d *Dispatcher) handleStatus(client *Client, args []string) {
@@ -96,7 +96,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 			client.Send(`OK flee=fail, "status"="combat"`)
 			CheckBuffDebuff(client, d)
 			// if the player fail his flee, the NPC has an action
-			npc.Hp += NPCsAction("FLEE", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+			npc.Hp += NPCsAction("FLEE", client, npc.Strength, npc.Hp, npc.Max_hp, npc.Name, d)
 			return
 		}
 	} else {
@@ -111,8 +111,8 @@ func (d *Dispatcher) handleDefend(client *Client, args []string) {
 		client.Send(`OK defend, "status"="combat"`)
 		CheckBuffDebuff(client, d)
 		npc := d.world.NPCs[client.target]
-		npc_strengh := npc.Strengh - (npc.Strengh * 40 / 100)
-		npc.Hp += NPCsAction("DEFEND", client, npc_strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+		npc_strength := npc.Strength - (npc.Strength * 40 / 100)
+		npc.Hp += NPCsAction("DEFEND", client, npc_strength, npc.Hp, npc.Max_hp, npc.Name, d)
 		return
 	} else {
 		client.Send("ERR 13 NOT_IN_FIGHT")
@@ -145,31 +145,31 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 					client.Death(d)
 					return
 				}
-				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "SWORD":
-				client.strengh += UseSword(client, 10, d)
+				client.strength += UseSword(client, 10, d)
 				npc := d.world.NPCs[client.target]
-				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "POISON POTION":
 				npc := d.world.NPCs[client.target]
 				npc.Hp -= UsePoisonPotion(client, 5, d)
 				if npc.Hp <= 0 {
-					DeadNPC(client, client.real_strengh, npc.Name, d)
+					DeadNPC(client, client.real_strength, npc.Name, d)
 					return
 				}
-				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			case "HEALTH POTION":
 				client.hp += UseHealthPotion(client, 4, d)
 				npc := d.world.NPCs[client.target]
-				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
-			case "STRENGH POTION":
-				client.strengh += UseStrenghPotion(client, 4, d)
+			case "STRENGTH POTION":
+				client.strength += UseStrengthPotion(client, 4, d)
 				npc := d.world.NPCs[client.target]
-				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strengh, npc.Hp, npc.Max_hp, npc.Name, d)
+				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp, npc.Max_hp, npc.Name, d)
 				return
 			default:
 				client.Send("ERR 12 IN_FIGHT")
