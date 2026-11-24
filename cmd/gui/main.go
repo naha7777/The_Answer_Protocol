@@ -27,25 +27,28 @@ type Room struct {
 }
 
 type Data struct {
-	w    fyne.Window
-	conn *client.Conn
-	cb   *CardinalButtons
-	g    *GameState
+	w		fyne.Window
+	g		*GameState
+	cb		*CardinalButtons
+	conn	*client.Conn
 }
 
 type Player struct {
-	name   string
-	health int
-	group  GroupInfo
-	room   Room
-	move   bool
+	avatar			string
+	battleAvatar	string
+	gender			string
+	name			string
+	health			int
+	group			GroupInfo
+	room			Room
+	move			bool
 }
 
 type GameState struct {
-	inventory *Inventory
-	player    *Player
-	npc       []string
-	popup     *widget.PopUp
+	inventory	*Inventory
+	player		*Player
+	npc			[]string
+	popup		*widget.PopUp
 }
 
 func (g *GameState) Update(str string) {
@@ -133,6 +136,16 @@ func main() {
 		overlay,
 		hudContent,
 		container.NewVBox(container.NewHBox(playerinfo.Content())),
+	)
+
+	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
+	arenaBg.FillMode = canvas.ImageFillStretch
+
+	battleUI := NewBattleUI(&player, &data)
+	battleContent := container.NewStack(
+		arenaBg,
+		overlay,
+		battleUI.Content(),
 	)
 
 	loggedIn := false
@@ -233,9 +246,21 @@ func main() {
 
 					// ATTACK
 					case strings.HasPrefix(msg.Rest, "attack="):
-						background.File = "./data/arena.jpeg"
-						background.Refresh()
-						fmt.Println(background.File)
+						if strings.Contains(msg.Rest, "=dead") {
+							battleUI.EndFight()
+							playerinfo.Update()
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+							break
+						}
+						var atk AttackData
+						atk.atkData(strings.TrimPrefix(msg.Rest, "attack="))
+						if !battleUI.inFight {
+							battleUI.InitFight(atk)
+							w.SetContent(battleContent)
+						} else {
+							battleUI.Update(atk)
+						}
 					}
 
 				case "EVT":
@@ -268,10 +293,11 @@ func main() {
 
 						case "NPC":
 							switch m[2] {
-							case "DEAD":
+							case "DEAD", "FLEE":
 								// npc dead
-							case "FLEE":
-								// npc flee
+								playerinfo.Update()
+								w.SetContent(battleContent)
+								conn.Send("LOOK")
 							case "ATTACK":
 								// npc attack
 							case "REGENERATION":

@@ -12,10 +12,12 @@ import (
 )
 
 func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string)) (fyne.CanvasObject, func(client.Message)) {
-	banner := canvas.NewText("ENTER YOUR NAME", color.White)
-	banner.TextSize = 40
-	banner.TextStyle = fyne.TextStyle{Bold: true}
-	banner.Alignment = fyne.TextAlignCenter
+	contentBox := container.NewVBox()
+
+	nameBanner := canvas.NewText("ENTER YOUR NAME", color.White)
+	nameBanner.TextSize = 40
+	nameBanner.TextStyle = fyne.TextStyle{Bold: true}
+	nameBanner.Alignment = fyne.TextAlignCenter
 
 	nameEntry := widget.NewEntry()
 
@@ -39,21 +41,42 @@ func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string))
 	nameEntry.OnSubmitted = func(string) { connect() } // touche entree
 	butConnect := widget.NewButton("CONNECT", connect)
 
-	form := container.NewVBox(banner, nameEntry, butConnect, errorLabel)
+	nameForm := container.NewVBox(nameBanner, nameEntry, butConnect, errorLabel)
+
+	genderBanner := canvas.NewText("CHOOSE YOUR CHARACTER", color.White)
+	genderBanner.TextSize = 40
+	genderBanner.TextStyle = fyne.TextStyle{Bold: true}
+	genderBanner.Alignment = fyne.TextAlignCenter
+
+	selectGender := func(gender string) {
+		player.avatar = "./data/pnj/" + gender + ".png"
+		player.battleAvatar = "./data/npc/" + gender + "attack.png"
+		player.gender = gender
+		onSuccess(pendingName)
+	}
+
+	girlChoice := container.NewVBox(widget.NewButton("GIRL", func() { selectGender("girl") }))
+	boyChoice := container.NewVBox(widget.NewButton("BOY", func() { selectGender("boy") }))
+
+	genderForm := container.NewVBox(
+		genderBanner,
+		container.NewCenter(container.NewHBox(girlChoice, boyChoice)),
+	)
+
+	contentBox.Add(nameForm)
 
 	bg := canvas.NewImageFromFile("./data/welcome.jpeg")
 	bg.FillMode = canvas.ImageFillStretch
 	overlay := canvas.NewRectangle(color.NRGBA{A: 150})
 
-	view := container.NewStack(bg, overlay, container.NewCenter(form))
+	view := container.NewStack(bg, overlay, container.NewCenter(contentBox))
 
 	onMessage := func(msg client.Message) {
 		switch {
 		case msg.Kind == "OK" && msg.Rest == "connected":
 			player.name = pendingName
-			player.room.name = "SQUARE"
-			player.room.exits = map[string]bool{"north": true, "south": false, "east": true, "west": false}
-			onSuccess(pendingName)
+			contentBox.Objects = []fyne.CanvasObject{genderForm}
+			contentBox.Refresh()
 		case msg.Kind == "ERR":
 			errorLabel.SetText(msg.Rest)
 		}
