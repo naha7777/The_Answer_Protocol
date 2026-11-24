@@ -11,7 +11,7 @@ func UseBuff(client *Client, item string, buff string, time_buff int, d *Dispatc
 	// use the item during the fight
 	if found {
 		client.Send(`OK use=%s`, item)
-		RemoveItemInventory(client, item, d, false)
+		RemoveItemInventory(client, item, d, false, "fight")
 	}
 	client.buff = buff
 	client.time_buff = time_buff

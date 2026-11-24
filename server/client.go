@@ -33,7 +33,7 @@ func (c *Client) Send(format string, a ...any) {
 
 func (client *Client) Death(d *Dispatcher) {
 	// handle client death : reset his status, inventory, quests, target
-	RemoveItemInventory(client, "false_item", d, false)
+	RemoveItemInventory(client, "false_item", d, false, "drop")
 	RemoveQuest(client)
 
 	client.Send(`EVT DEATH`)

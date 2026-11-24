@@ -49,7 +49,7 @@ func (d *Dispatcher) handleDrop(client *Client, args []string) {
 	defer d.mu.Unlock()
 
 	// drop it in the actual room
-	RemoveItemInventory(client, query, d, true)
+	RemoveItemInventory(client, query, d, true, "drop")
 }
 
 func (d *Dispatcher) handleMove(client *Client, args []string) {
