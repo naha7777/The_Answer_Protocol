@@ -129,12 +129,60 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | A player take a quest | `EVT QUEST took=<quest_id>` | **custom (not in RFC)** |
 
 ## Combat System
-section describing your turn-based combat mechanics, damage formulas, initiative order, and additional combat commands (DEFEND, FLEE, etc.).
+To attack a NPC, he has to be hostile and in the same room as the player.\
+The player has to use the command `ATTACK <NPC_id>` to start a fight. He is always the first to start a fight.\
+Fight a NPC changes his status from exploration to combat status. \
+On combat status, he only can use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS` and `USE_ITEM <item_id>`.
+- `ATTACK` : hit the NPC and reduce his HP. There is only 10% of chance to do a critical hit. The critical hit increase the player strengh for 40% for this hit.
+- `DEFEND` : protect the player from the NPC's action. If the NPC hit back, his strengh will be 40% less.
+- `FLEE` : The player has 40% of chance to succeed his flee.
+- `USE_ITEM` : The player can use items, they active buff or debuff :
+	- beer : debuff - poison for the player who drink it during 3 beers
+	- health potion : buff - regenere player's HP during 4 turns
+	- strengh potion : buff - increase player's strengh during 4 turns
+	- sword potion : buff - increase player's strengh during 10 turns
+	- poison potion : buff - inflige 5 damage to NPC during 5 turns
+- `STATUS` : The player can see his HP, maximum HP and his status
+- `INVENTORY` : The player can check his inventory to find some items to use in fight
+
+After `ATTACK`, `DEFEND`, `FLEE`, and `USE_ITEM`, the NPC can do an an action. He has 3 choices :
+- Regenerate himself with 5 more HP,
+- Attack the player with 10% of chance to do a critical hit,
+- Or flee (always success).
+
+Depending on the player action, the NPC will have more chances to attack or defend :
+- if the player `ATTACK` :
+	- 10% of chance to flee
+	- 80% of chance to attack
+	- 10% of chance to regenerate
+- if the player `DEFEND` :
+	- 5% of chance to flee
+	- 75% of chance to attack
+	- 20% of chance to regenerate
+- if the player fail to `FLEE` :
+	- 95% of chance to attack
+	- 5% of chance to regenerate
+- if the player `USE_ITEM` :
+	- 5% of chance to flee
+	- 55% of chance to attack
+	- 40% of chance to regenerate
+
+If a player attack a NPC, no more player can join the fight. The fight end only if the player or the NPC flee, or if one of them died.
 
 ## Quest System
-section explaining your quest progression mechanics, completion validation, and reward systems.
+A player can see all the available quests in his room by using the command `FIND_QUESTS`.\
+If he his in the same room as a NPC, he can take his quest with `QUEST <npc_id>` if he has an available quest.\
+It gives informations about the quest : the npc who gives it, a description to know what to do to complete it, the rewards...\
+A purpose of a quest can be to bring items, or to kill a NPC, or both at the same time.\
+By taking a quest, he makes it unavailable for the others, except if he abandon it by using `ABANDON_QUEST <quest_id>` command.\
+Then, he will be able to see his progress on this quest and all the others by using `QUESTS`.\
+If he has all the required elements of the quest, he has to go back to the NPC and `COMPLETE_QUEST <quest_id>`. If he well completed the quest, he gives the required items to the NPC (so the items are no longer available in the game) and he receives the rewards right in his inventory.\
+For now, the completed quest will not be available for another player. This quest no longer exist.\
+Doing the `QUESTS` command write now a `completed` status for this quest.
 
 ## World Design
+![World Map](data/map.jpeg "World Map")
+
 section describing your world layout, room connections, NPC roles, and item distribution
 
 ## Server Logging
@@ -158,6 +206,7 @@ section explaining how to test the multiplayer functionality, combat system, and
 - [A Tour of Go](https://fr-go-dev.shuijingwanwq.com/tour/flowcontrol/8)
 - [Les fondamentaux de Go - Organisation d'un projet](https://go-start.vercel.app/fr/chapter-1-introduction/1-4-project-layout/)
 - [Les fondamentaux de Go - Commandes essentielles](https://go-start.vercel.app/fr/chapter-1-introduction/1-5-essential-commands/)
+- [Go by Example: Time](https://gobyexample.com/time)
 
 #### Server
 - [Qu’est-ce que le protocole TCP/IP de contrôle de la transmission ?](https://www.fortinet.com/fr/resources/cyberglossary/tcp-ip)
