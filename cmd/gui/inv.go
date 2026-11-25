@@ -123,7 +123,9 @@ func (i *Inventory) drop(item string) {
 				i.objects = Pop(item, i.objects)
 				i.accessible = append(i.accessible, item)
 				fyne.Do(func() {
-					i.pop.Hide()
+					if i.pop != nil {
+						i.pop.Hide()
+					}
 				})
 				return
 			}
@@ -131,8 +133,22 @@ func (i *Inventory) drop(item string) {
 	}
 }
 
+func (i *Inventory) remove(item string) {
+	for n, obj := range i.items.Objects {
+		if cont, ok := obj.(*fyne.Container); ok {
+			text := cont.Objects[0].(*fyne.Container).Objects[0].(*widget.Label).Text
+			if text == IDToName(item) {
+				sep := i.items.Objects[n+1]
+				i.items.Remove(obj)
+				i.items.Remove(sep)
+				i.objects = Pop(item, i.objects)
+				return
+			}
+		}
+	}
+}
+
 func (i *Inventory) take(item string) {
-	fmt.Println(item)
 	// img
 	item_file := strings.TrimPrefix(item, "item.")
 	image := canvas.NewImageFromFile("data/icons/placeholder.png")

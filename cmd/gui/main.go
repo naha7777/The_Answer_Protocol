@@ -186,6 +186,12 @@ func main() {
 					case strings.HasPrefix(msg.Rest, "quest="):
 						Popup(w, "Quest accepted!")
 						HandleQuest(msg.Rest, data)
+
+					// ITEM REMOVAL
+					case strings.HasPrefix(msg.Rest, "gave="):
+						item := strings.TrimPrefix(msg.Rest, "gave=")
+						game.inventory.remove(item)
+						conn.Send("LOOK")
 					}
 
 				case "EVT":
@@ -217,7 +223,6 @@ func main() {
 							chat.Receive(scope, username, message)
 
 						case "NPC":
-							fmt.Println(m)
 							switch m[2] {
 							case "DEAD":
 								conn.Send("LOOK")
