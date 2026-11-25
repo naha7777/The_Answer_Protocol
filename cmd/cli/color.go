@@ -30,7 +30,8 @@ func Colorize(msg client.Message) string {
 	msg.Raw = sanitize(msg.Raw)
 	switch msg.Kind {
 	case "EVT":
-		if strings.HasPrefix(msg.Rest, "DEATH") || strings.HasPrefix(msg.Rest, "dead") {
+		if strings.HasPrefix(msg.Rest, "DEATH") ||
+		strings.HasPrefix(msg.Rest, "dead") {
 			return Italic + Red + msg.Raw + Reset
 		} else if strings.HasPrefix(msg.Rest, "NPC") {
 			return Yellow + msg.Raw + Reset
@@ -39,7 +40,8 @@ func Colorize(msg client.Message) string {
 	case "ERR":
 		return Red + msg.Raw + Reset
 	case "OK":
-		if strings.HasPrefix(msg.Rest, "attack=") || strings.HasPrefix(msg.Rest, "flee=") ||
+		if strings.HasPrefix(msg.Rest, "attack=") ||
+		strings.HasPrefix(msg.Rest, "flee=") ||
 			strings.HasPrefix(msg.Rest, "defend") {
 			return Italic + Magenta + msg.Raw + Reset
 		}

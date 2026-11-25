@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"sync"
 	"unicode"
 	"unicode/utf8"
 	"strings"
@@ -15,6 +16,23 @@ import (
 
 var conn_nb atomic.Int32
 const connection_limit = 30
+
+var (
+	wg      sync.WaitGroup
+	connsMu sync.Mutex
+	conns   = map[net.Conn]struct{}{}
+)
+
+func trackConn(c net.Conn)   { connsMu.Lock(); conns[c] = struct{}{}; connsMu.Unlock() }
+func untrackConn(c net.Conn) { connsMu.Lock(); delete(conns, c); connsMu.Unlock() }
+
+func closeAllConns() {
+	connsMu.Lock()
+	defer connsMu.Unlock()
+	for c := range conns {
+		c.Close()
+	}
+}
 
 func hasControlChars(s string) bool {
 	for _, r := range s {
@@ -27,8 +45,9 @@ func hasControlChars(s string) bool {
 
 func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 					  world *game.World) {
-	defer conn_nb.Add(-1)
+
 	defer connection.Close()
+	ip := connection.RemoteAddr().String()
 
 	// client creation
 	client := &Client{conn: connection}
@@ -47,12 +66,17 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 
 	// limit the number of connections
 	if conn_nb.Add(1) > connection_limit {
+		Log.Warn("connection refused: server full", "ip", ip)
 		client.Send("ERR 19 SERVER_FULL")
 		conn_nb.Add(-1)
 		return
 	}
+	defer conn_nb.Add(-1)
 
+	// Server log for client connection
+	Log.Info("client connected", "ip", ip)
 	defer func() {
+		Log.Info("client disconnected", "ip", ip)
 		dispatcher.removeClient(client)
 		dispatcher.displayRoomStats()
 		dispatcher.displayStats()
@@ -80,7 +104,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		// manipulation attacks prevention
 		text := string(line)
 		if !utf8.ValidString(text) || hasControlChars(text) {
-			client.Send("ERR 17 INVALID_INPUT")
+			client.Send("ERR 20 INVALID_INPUT")
 			continue
 		}
 		upper := strings.ToUpper(text)
@@ -127,18 +151,30 @@ func Server(listener net.Listener) {
 	// dispatcher creation
 	dispatcher := NewDispatcher(world)
 
+	Log.Info("server started", "addr", listener.Addr().String())
+
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
 			// verrification vu que listener.Close est appele listenner.Accept
 			// retourne une net.ErrClosed donc on a ferme le listenner volontairement
 			if errors.Is(err, net.ErrClosed) {
+				Log.Info("server shutting down")
+				closeAllConns()
+				wg.Wait()
+				Log.Info("server stopped")
 				return
 			}
-			fmt.Fprintln(os.Stderr, "Error accepting:", err)
+			Log.Error("accept failed", "err", err)
 			continue
 		}
 		// one goroutine for one connection
-		go HandleConnection(connection, dispatcher, world)
+		trackConn(connection)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer untrackConn(connection)
+			HandleConnection(connection, dispatcher, world)
+		}()
 	}
 }

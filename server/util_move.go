@@ -10,13 +10,17 @@ func Move(direction string, client *Client, d *Dispatcher) {
 			for _, val := range d.world.Rooms {
 				if v == val.Id {
 					// Change player's room and send an EVT to the rooms' players
-					SendRoom(d, client, "EVT ROOM PRESENCE LEAVE %s", client.name)
-					client.room.Players = Remove(client.name, client.room.Players)
+					SendRoom(d, client, "EVT ROOM PRESENCE LEAVE %s",
+							 client.name)
+					client.room.Players = Remove(client.name,
+												 client.room.Players)
 					client.room = val
-					client.room.Players = append(client.room.Players, client.name)
+					client.room.Players = append(client.room.Players,
+												 client.name)
 					client.Send("OK room=%s", v)
 					find = true
-					SendRoom(d, client, "EVT ROOM PRESENCE ENTER %s", client.name)
+					SendRoom(d, client, "EVT ROOM PRESENCE ENTER %s",
+							 client.name)
 					return
 				}
 			}

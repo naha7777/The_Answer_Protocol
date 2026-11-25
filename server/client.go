@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"time"
+	"strings"
+	"sync"
 	"the_answer_protocol/game"
 )
 
@@ -27,10 +29,41 @@ type Client struct {
 	quit			bool
 	kills			[]string
 	lastChat		time.Time
+	wmu				sync.Mutex
+}
+
+func (c *Client) label() string {
+	if c.name != "" {
+		return c.name
+	}
+	return c.conn.RemoteAddr().String()
 }
 
 func (c *Client) Send(format string, a ...any) {
-	fmt.Fprintf(c.conn, format+"\n", a...)
+	msg := fmt.Sprintf(format, a...)
+
+	c.wmu.Lock() // si tu as ajouté le mutex d'écriture
+	_, err := fmt.Fprintf(c.conn, "%s\n", msg)
+	c.wmu.Unlock()
+	if err != nil {
+		Log.Error("send failed", "to", c.label(), "err", err)
+		return
+	}
+
+	kind, rest, _ := strings.Cut(msg, " ")
+	switch kind {
+	case "ERR":
+		code, _, _ := strings.Cut(rest, " ")
+		if code == "500" {
+			Log.Error("error sent", "to", c.label(), "code", code, "message", msg)
+		} else {
+			Log.Warn("error sent", "to", c.label(), "code", code, "message", msg)
+		}
+	case "EVT":
+		Log.Debug("event sent", "to", c.label(), "message", msg)
+	default:
+		Log.Info("response sent", "to", c.label(), "message", msg)
+	}
 }
 
 func (client *Client) Death(d *Dispatcher) {

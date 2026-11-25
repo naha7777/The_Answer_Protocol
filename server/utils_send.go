@@ -1,6 +1,8 @@
 package server
 
-import "slices"
+import (
+	"slices"
+)
 
 func SendRoom(d *Dispatcher, client *Client, format string, a... any) {
 	// Send a message for all players in a room except the client himself

@@ -34,7 +34,8 @@ func (d *Dispatcher) removeClient(client *Client) {
 	client.conn.Close()
 }
 
-func RemoveItemInventory(client *Client, item_id string, d *Dispatcher, verbose bool, context string) {
+func RemoveItemInventory(client *Client, item_id string, d *Dispatcher,
+						 verbose bool, context string) {
 	final_inventory := []*game.Item{}
 	found := false
 	count := 0
@@ -49,12 +50,16 @@ func RemoveItemInventory(client *Client, item_id string, d *Dispatcher, verbose 
 
 	// drop one item from player's inventory to the room
 	for _, i := range client.inventory {
-		if strings.EqualFold(i.Id, item_id) && count == 0 || strings.EqualFold(i.Name, item_id) && count == 0{
+		if strings.EqualFold(i.Id, item_id) && count == 0 ||
+		strings.EqualFold(i.Name, item_id) && count == 0 {
 			found = true
-			if context == "drop" {
+			switch context {
+			case "drop" :
 				client.room.Items = append(client.room.Items, i.Id)
-			}
+			case "quest":
+				client.Send("OK gave=%s", item_id)
 			count += 1
+			}
 		} else {
 			final_inventory = append(final_inventory, i)
 		}

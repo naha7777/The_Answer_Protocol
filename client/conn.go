@@ -6,10 +6,11 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"fmt"
 	"os"
+	"fmt"
 	"errors"
 	"sync/atomic"
+	"github.com/joho/godotenv"
 )
 
 type Message struct {
@@ -25,17 +26,25 @@ type Conn struct {
 	done      chan struct{}
 	closeOnce sync.Once
 	closed    atomic.Bool
+	errMu	  sync.Mutex
+	err		  error
 }
 
-func Dial(addr string) (*Conn, error) {
+func Dial() (*Conn, error) {
+	_ = godotenv.Load()
+	addr := os.Getenv("SERVER_IP")
+	if addr == "" {
+		addr = "localhost:8080"
+	}
+
 	// try TCP connection, stop after waiting for 5 secondes
 	conn, err := net.DialTimeout("tcp", addr, 5 * time.Second)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot reach %s: %w", addr, err)
 	}
 
 	c := &Conn{
-		conn: 		conn, 
+		conn: 		conn,
 		messages: 	make(chan Message, 64), // until 64 messages in wait
 		done: 		make(chan struct{}),
 	}
@@ -66,8 +75,16 @@ func scan(c *Conn) {
 	// if it closes because of an error, we print it on stderr
 	if err := scanner.Err(); err != nil &&
 		!c.closed.Load() && !errors.Is(err, net.ErrClosed) {
-		fmt.Fprintln(os.Stderr, err)
+		c.errMu.Lock()
+        c.err = err
+        c.errMu.Unlock()
 	}
+}
+
+func (c *Conn) Err() error {
+	c.errMu.Lock()
+	defer c.errMu.Unlock()
+	return c.err
 }
 
 const writeTimeout = 5 * time.Second

@@ -11,6 +11,7 @@ The project is made of three parts:
 - **Server**: holds the world state and implements the protocol.
 - **CLI client**: a colored terminal client with command history (arrow keys).
 - **GUI client**: a graphical client built with Fyne.
+
 The protocol is line-based: every message is a single UTF-8 line terminated by `\n`. The server answers with lines starting with `OK`, `ERR` or `EVT` (asynchronous events pushed to players).
 
 ## Instructions
@@ -41,6 +42,7 @@ With the Makefile:
 ```bash
 make server
 make cli
+make gui
 ```
 
 The server can be stopped with `Ctrl+C`, or by typing `stop`, `quit` or `exit` in its terminal.
@@ -59,6 +61,9 @@ Use `Ctrl+C` (not `Ctrl+Z`) to stop it: a suspended process keeps port 8080 busy
 ├── server/       # connection handling, dispatcher, command handlers
 ├── data/         # world.json and map
 └── Makefile
+└── go.mod
+└── go.sum
+└── README.md
 ```
 
 ### Dispatcher
@@ -109,7 +114,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | Command | Success response | Error responses | Events pushed |
 |---|---|---|---|
 | *(on connect)* | `OK hello proto=1` | none | none |
-| any command before `CONNECT` | | `ERR 100 YOU_MUST_BE_CONNECTED` | |
+| any command before `CONNECT` | | `ERR 02 YOU_MUST_BE_CONNECTED` | |
 | `CONNECT <name>` | `OK connected` | `ERR 10 YOU_HAVE_A_NAME`, `ERR 09 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE` | none |
 | `QUIT` | `OK bye` | | none |
 | `LOOK` | `OK look={"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | |
@@ -119,9 +124,9 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | `INVENTORY` | `OK inventory=[item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
 | `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | none |
-| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 14 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 14 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strengh during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT STRENGH POTION : +5 player strengh during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
 | `WHO` | `OK players=<n>` | | |
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
@@ -132,16 +137,17 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE <username>` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
-| `QUEST <npc name or npc id>` | `OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
-| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_npc": "princess", "quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id: "example", "status": "completed"}]` | none | none |
-| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion` | `ERR 406 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
-| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `406 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
+| `QUEST <npc name or npc id>` | `OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 15 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
+| `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_npc": "princess", "quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id": "example", "status": "completed"}]` | none | none |
+| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion`, `"OK gave=<item_id>"` | `ERR 15 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
+| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `15 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
 | `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` | none |
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`| none |
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` | none |
 | error CLI or GUI send | | `900 SEND_FAILED` | none |
 | error line too long | | `ERR 16 LINE_TOO_LONG` | none |
 | error server full | | `ERR 19 SERVER_FULL` | none |
+| invalid input error | | `ERR 20 INVALID_INPUT` | none |
 | when someone CONNECT himself or QUIT | | | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` |
 
 ### Error codes
@@ -175,6 +181,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | 17 | FULL_INVENTORY | **custom (not in RFC)** |
 | 18 | SPAM | **custom (not in RFC)** |
 | 19 | SERVER_FULL | **custom (not in RFC)** |
+| 20 | INVALID_INPUT | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
@@ -224,11 +231,12 @@ While in combat, the player can only use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS`
 	- poison potion: buff, deals 5 damage to the NPC for 5 turns
 - `STATUS`: shows the player's HP, maximum HP and status.
 - `INVENTORY`: lets the player check which items can be used in the fight.
-After `ATTACK`, `DEFEND`, `FLEE` and `USE_ITEM`, the NPC reacts. It has 3 choices:
 
+After `ATTACK`, `DEFEND`, `FLEE` and `USE_ITEM`, the NPC reacts. It has 3 choices:
 - regenerate 5 HP,
 - attack the player (10% chance of a critical hit),
 - or flee (always succeeds).
+
 Depending on the player's action, the probabilities change:
 
 | Player action | NPC flees | NPC attacks | NPC regenerates |
@@ -238,7 +246,9 @@ Depending on the player's action, the probabilities change:
 | failed `FLEE` | 0% | 95% | 5% |
 | `USE_ITEM` | 5% | 55% | 40% |
 
-Once a player attacks an NPC, no other player can join the fight. The fight ends only when the player or the NPC flees, or when one of them dies. A player who dies respawns in the tavern.
+Once a player attacks an NPC, no other player can join the fight. The fight ends only when the player or the NPC flees, or when one of them dies. It also ends if the player quit the game.
+
+A player who dies respawns in the tavern.
 
 ## Quest System
 
@@ -259,7 +269,8 @@ For now, a completed quest is not available again for another player: it no long
 The player spawns and respawns in the tavern, in the middle of the map.\
 From there, he can go to the flowering meadow, the square, the secret garden or the haunted forest.\
 The haunted forest and the secret garden are linked to the lake.\
-The square is linked to the tavern and the market. The flowering meadow is linked to the tavern and the market too.\
+The square is linked to the tavern and the market. \
+The flowering meadow is linked to the tavern and the market too.\
 Finally, the castle is only linked to the haunted forest.
 
 ### NPC Roles
@@ -267,11 +278,10 @@ Finally, the castle is only linked to the haunted forest.
 There are two kinds of NPC: hostile ones, and the others. Only hostile NPCs can be fought.
 
 Hostile:
-
 - Pirate
 - Captain
-Others:
 
+Others:
 - Witch: gives a quest
 - Ghost
 - Woman: gives a quest

@@ -52,7 +52,8 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
-	// a player can join a group if he received an invitation from the leader of the group
+	// a player can join a group if he received an invitation from the leader
+	// of the group
 	if len(args) == 0 {
 		client.Send("ERR 03 CANT_FIND_LEADER")
 		return
@@ -105,7 +106,8 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	// SendGroup(client, current_group, "EVT GROUP LEAVE %s", client.name)
 	SendGroup(client, current_group, "EVT group_leave=%s", client.name)
 	if len(current_group.members) > 0 {
-		// if this player is the leader of the group, the new leader will be the next who enterred in the group
+		// if this player is the leader of the group, the new leader will be
+		// the next who enterred in the group
 		for _, m := range current_group.members {
 			current_group.leader = m.name
 			break
@@ -119,7 +121,8 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 
 func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	// a group leader can send an invitation to a user to join his group
-	// he needs to be on a group, and a valid username of a player not in the group
+	// he needs to be on a group, and a valid username of a player not in the
+	// group
 	if len(args) == 0 {
 		client.Send("ERR 03 CANT_FIND_USER")
 		return
@@ -154,7 +157,8 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 
 func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
 	// if a player is in a group, he can access to all informations about it
-	// Informations : the group id, the leader, the members and the invited users
+	// Informations : the group id, the leader, the members and the invited
+	// users
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if client.group == nil {

@@ -21,27 +21,31 @@ func UseBeer(client *Client, time int, d *Dispatcher) int {
 func UseSword(client *Client, time int, d *Dispatcher) int {
 	// Use the sword
 	UseBuff(client, "item.sword", "strengh", time, d)
-	client.Send(`EVT SWORD : +5 player strengh during %d turns`, client.time_buff)
+	client.Send(`EVT SWORD : +5 player strengh during %d turns`,
+				client.time_buff)
 	return 5
 }
 
 func UsePoisonPotion(client *Client, time int, d *Dispatcher) int {
 	// Use the poison potion
 	UseBuff(client, "item.poison_potion", "poison", time, d)
-	client.Send(`EVT POISON POTION : -5 npc hp during %d turns`, client.time_buff)
+	client.Send(`EVT POISON POTION : -5 npc hp during %d turns`,
+				client.time_buff)
 	return 5
 }
 
 func UseStrenghPotion(client *Client, time int, d *Dispatcher) int {
 	// Use the strengh potion
 	UseBuff(client, "item.strengh_potion", "strengh", time, d)
-	client.Send(`EVT STRENGH POTION : +5 player strengh during %d turns`, client.time_buff)
+	client.Send(`EVT STRENGH POTION : +5 player strengh during %d turns`,
+				client.time_buff)
 	return 5
 }
 
 func UseHealthPotion(client *Client, time int, d *Dispatcher) int {
 	// Use the health potion
 	UseBuff(client, "item.health_potion", "health", time, d)
-	client.Send(`EVT HEALTH POTION : +5 player hp during %d turns`, client.time_buff)
+	client.Send(`EVT HEALTH POTION : +5 player hp during %d turns`,
+				client.time_buff)
 	return 5
 }

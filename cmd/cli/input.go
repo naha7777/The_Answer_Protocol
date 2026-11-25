@@ -68,7 +68,8 @@ func (in *Input) ReadLine(r *bufio.Reader) (string, error) {
 			fmt.Print("\r\n") // go to the next line on the screen
 			if strings.TrimSpace(line) != "" {
 				if slices.Contains(in.history, line) {
-					// if the line already exist in history, remove it and put it on the end of history
+					// if the line already exist in history, remove it and put
+					// it on the end of history
 					var filtered []string
 					for _, l := range in.history {
 						if l != line {
