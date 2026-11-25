@@ -6,49 +6,49 @@ import (
 )
 
 type World struct {
-	Start	string
-	Respawn	string
-	Rooms	map[string]*Room
-	Items	map[string]*Item
-	NPCs	map[string]*NPC
-	Quests	map[string]*Quest
+	Start   string
+	Respawn string
+	Rooms   map[string]*Room
+	Items   map[string]*Item
+	NPCs    map[string]*NPC
+	Quests  map[string]*Quest
 }
 
 type Room struct {
-	Id			string
-	Name		string
-	Description	string
-	Exits		map[string]string
-	Players		[]string
-	Items		[]string
-	NPCs		[]string
+	Id          string
+	Name        string
+	Description string
+	Exits       map[string]string
+	Players     []string
+	Items       []string
+	NPCs        []string
 }
 
 type Item struct {
-	Id			string
-	Name		string
-	Description	string
-	Obtainable	bool
+	Id          string
+	Name        string
+	Description string
+	Obtainable  bool
 }
 
 type NPC struct {
-	Name		string
-	Hp			int
-	Max_hp		int
-	Strengh		int
-	Hostile		bool
-	Dialogue	[]string
-	Quest		[]string
-	Fighter		string
+	Name     string
+	Hp       int
+	Max_hp   int
+	Strength int
+	Hostile  bool
+	Dialogue []string
+	Quest    []string
+	Fighter  string
 }
 
 type Quest struct {
-	NPC			string
-	Id			string
-	Description	string
-	Reward		[]string
-	Status		string
-	Objective	[]string
+	NPC         string
+	Id          string
+	Description string
+	Reward      []string
+	Status      string
+	Objective   []string
 }
 
 func LoadWorld(path string) (*World, error) {
@@ -70,39 +70,39 @@ func LoadWorld(path string) (*World, error) {
 	room_lst := make(map[string]*Room, len(w.Rooms))
 	for str, room := range w.Rooms {
 		r := &Room{Id: room.Id, Name: room.Name, Exits: room.Exits,
-				   Description: room.Description,
-				   Items: room.Items, NPCs: room.NPCs,
-				   Players: []string{}}
+			Description: room.Description,
+			Items:       room.Items, NPCs: room.NPCs,
+			Players: []string{}}
 		room_lst[str] = r
 	}
 
 	item_lst := make(map[string]*Item, len(w.Items))
 	for str, item := range w.Items {
 		i := &Item{Name: item.Name, Description: item.Description,
-				   Obtainable: item.Obtainable, Id: item.Id}
+			Obtainable: item.Obtainable, Id: item.Id}
 		item_lst[str] = i
 	}
 
 	npc_lst := make(map[string]*NPC, len(w.NPCs))
 	for str, npc := range w.NPCs {
 		n := &NPC{Name: npc.Name, Hp: npc.HP, Max_hp: npc.Max_hp,
-				  Strengh: npc.Strengh,
-				  Hostile: npc.Hostile, Dialogue: npc.Dialogue,
-				  Quest: npc.Quest, Fighter: "",}
+			Strength: npc.Strength,
+			Hostile:  npc.Hostile, Dialogue: npc.Dialogue,
+			Quest: npc.Quest, Fighter: ""}
 		npc_lst[str] = n
 	}
 
 	quest_lst := make(map[string]*Quest, len(w.Quests))
 	for str, quest := range w.Quests {
 		q := &Quest{NPC: quest.NPC, Id: quest.Id,
-					Description: quest.Description,
-					Reward: quest.Reward, Status: quest.Status,
-					Objective: quest.Objective,}
+			Description: quest.Description,
+			Reward:      quest.Reward, Status: quest.Status,
+			Objective: quest.Objective}
 		quest_lst[str] = q
 	}
 
 	real_w := World{Start: w.Start, Respawn: w.Respawn,
-					Rooms: room_lst, Items: item_lst,
-					NPCs: npc_lst, Quests: quest_lst,}
+		Rooms: room_lst, Items: item_lst,
+		NPCs: npc_lst, Quests: quest_lst}
 	return &real_w, nil
 }

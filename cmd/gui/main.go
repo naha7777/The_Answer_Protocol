@@ -16,14 +16,14 @@ import (
 )
 
 type Room struct {
-	id			string
-	name		string
-	description	string
-	exits		map[string]bool
-	npc			[]string
-	players		[]string
-	nb_players	int
-	items		[]string
+	id          string
+	name        string
+	description string
+	exits       map[string]bool
+	npc         []string
+	players     []string
+	nb_players  int
+	items       []string
 }
 
 type Data struct {
@@ -287,7 +287,7 @@ func main() {
 							} else {
 								// -5 player hp
 							}
-						case "STRENGHT":
+						case "StrengthT":
 							if m[3] == "POTION" {
 								//  +5 de point de force ou attack pour le joueur
 							} else {
