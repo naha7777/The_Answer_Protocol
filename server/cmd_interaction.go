@@ -20,8 +20,8 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 	case "GROUP":
 		if client.group != nil {
 			client.Send("OK")
-			SendGroup(client, client.group, "EVT GROUP CHAT %s %s", client.name,
-					  message)
+			SendGroup(d, client, "EVT GROUP CHAT %s %s", client.name,
+				message)
 		} else {
 			client.Send("ERR 401 NOT_IN_GROUP")
 		}
@@ -40,11 +40,11 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 
 func (d *Dispatcher) handleTalk(client *Client, args []string) {
 	// Display the NPC dialogue if he is in the actual room
-	npc := strings.ToUpper(strings.Join(args, " "))
+	str := strings.ToUpper(strings.Join(args, " "))
 	for _, npcs := range client.room.NPCs {
-		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(
-			d.world.NPCs[npcs].Name) {
-			client.Send("OK talk=%s: %v", npcs, d.world.NPCs[npcs].Dialogue[0])
+		npc := FindNPC(d, client, npcs)
+		if strings.ToUpper(npcs) == str || str == strings.ToUpper(npc.Name) {
+			client.Send("OK talk=%s: %v", npcs, npc.Dialogue[0])
 			return
 		}
 	}

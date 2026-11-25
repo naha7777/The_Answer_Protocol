@@ -8,16 +8,16 @@ import (
 )
 
 func (d *Dispatcher) handleQuest(client *Client, args []string) {
-	npc := strings.ToUpper(strings.Join(args, " "))
+	str := strings.ToUpper(strings.Join(args, " "))
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	find := false
 	// check if the NPC is in the actual room
 	for _, npcs := range client.room.NPCs {
-		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(
-			d.world.NPCs[npcs].Name) {
+		npc := FindNPC(d, client, npcs)
+		if strings.ToUpper(npcs) == str || str == strings.ToUpper(npc.Name) {
 			for _, q := range d.world.Quests {
-				for _, quest := range d.world.NPCs[npcs].Quest {
+				for _, quest := range npc.Quest {
 					if q.Id == quest {
 						// check if the NPC has an available quest
 						if q.Status == "available" && q.Description != "" {

@@ -1,7 +1,7 @@
 package server
 
 func UseBuff(client *Client, item string, buff string, time_buff int,
-			 d *Dispatcher) {
+	d *Dispatcher) {
 	// check if the item is in the client inventory
 	found := false
 	for _, i := range client.inventory {
@@ -26,8 +26,9 @@ func CheckBuffDebuff(client *Client, d *Dispatcher) {
 		if client.time_buff > 0 {
 			client.time_buff -= 1
 			client.Send(`EVT POISON : -5 npc hp during %d turns`,
-						client.time_buff)
-			d.world.NPCs[client.target].Hp -= 5
+				client.time_buff)
+			npc := FindNPC(d, client, client.target)
+			npc.Hp -= 5
 		} else {
 			client.buff = ""
 		}
@@ -35,7 +36,7 @@ func CheckBuffDebuff(client *Client, d *Dispatcher) {
 		if client.time_buff > 0 {
 			client.time_buff -= 1
 			client.Send(`EVT STRENGH : +5 player strengh during %d turns`,
-						client.time_buff)
+				client.time_buff)
 		} else {
 			client.buff = ""
 			client.strengh = client.real_strengh
@@ -45,7 +46,7 @@ func CheckBuffDebuff(client *Client, d *Dispatcher) {
 		if client.time_buff > 0 {
 			client.time_buff -= 1
 			client.Send(`EVT HEALTH : +5 player hp during %d turns`,
-						client.time_buff)
+				client.time_buff)
 			client.hp += 5
 		} else {
 			client.buff = ""
@@ -56,7 +57,7 @@ func CheckBuffDebuff(client *Client, d *Dispatcher) {
 		if client.time_debuff > 0 {
 			client.time_debuff -= 1
 			client.Send(`EVT POISON : -5 player hp during %d turns`,
-						client.time_debuff)
+				client.time_debuff)
 			client.hp -= 5
 		} else {
 			client.debuff = ""
