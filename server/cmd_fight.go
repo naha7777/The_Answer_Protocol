@@ -20,7 +20,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 
 	// a player can't fight a NPC in another room
 	for _, npcs := range client.room.NPCs {
-		npc := FindNPC(d, client, client.target)
+		npc := FindNPC(d, client, npcs)
 		if strings.ToUpper(npcs) == target || target == strings.ToUpper(
 			npc.Name) {
 			if npc.Hp > 0 {
