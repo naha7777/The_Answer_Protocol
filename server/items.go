@@ -37,7 +37,7 @@ func UsePoisonPotion(client *Client, time int, d *Dispatcher) int {
 func UseStrengthPotion(client *Client, time int, d *Dispatcher) int {
 	// Use the strength potion
 	UseBuff(client, "item.strength_potion", "strength", time, d)
-	client.Send(`EVT STRENGTH POTION : +5 player strength during %d turns`,
+	client.Send(`EVT Strength POTION : +5 player strength during %d turns`,
 		client.time_buff)
 	return 5
 }

@@ -10,26 +10,26 @@ import (
 )
 
 type Client struct {
-	conn      		net.Conn
-	name      		string
-	group     		*Group
-	room      		*game.Room
-	inventory 		[]*game.Item
-	hp        		int
-	hp_max    		int
-	status    		string
-	quests    		[]*game.Quest
-	strength   		int
-	target    		string
-	buff    		string
-	time_buff		int
-	debuff			string
-	time_debuff		int
-	real_strength	int
-	quit			bool
-	kills			[]string
-	lastChat		time.Time
-	wmu				sync.Mutex
+	conn          net.Conn
+	name          string
+	group         *Group
+	room          *game.Room
+	inventory     []*game.Item
+	hp            int
+	hp_max        int
+	status        string
+	quests        []*game.Quest
+	strength      int
+	target        string
+	buff          string
+	time_buff     int
+	debuff        string
+	time_debuff   int
+	real_strength int
+	quit          bool
+	kills         []string
+	lastChat      time.Time
+	wmu           sync.Mutex
 }
 
 func (c *Client) label() string {

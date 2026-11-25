@@ -20,7 +20,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 
 	// a player can't fight a NPC in another room
 	for _, npcs := range client.room.NPCs {
-		npc := FindNPC(d, client, client.target)
+		npc := FindNPC(d, client, npcs)
 		if strings.ToUpper(npcs) == target || target == strings.ToUpper(
 			npc.Name) {
 			if npc.Hp > 0 {
@@ -33,16 +33,16 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 							// Hit the NPC
 							client.status = "combat"
 							client.target = npcs
-							d.world.NPCs[npcs].Fighter = client.name
-							if d.world.NPCs[npcs].Hp > 0 {
-								d.world.NPCs[npcs].Hp -= client.strength
-								if d.world.NPCs[npcs].Hp < 0 {
-									d.world.NPCs[npcs].Hp = 0
+							npc.Fighter = client.name
+							if npc.Hp > 0 {
+								npc.Hp -= client.strength
+								if npc.Hp < 0 {
+									npc.Hp = 0
 								}
-								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, d.world.NPCs[npcs].Name, d.world.NPCs[npcs].Hp, d.world.NPCs[npcs].Max_hp, client.strength, damage_type, client.status)
+								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc.Name, npc.Hp, npc.Max_hp, client.strength, damage_type, client.status)
 								CheckBuffDebuff(client, d)
 								// if the hit kill the NPC
-								if d.world.NPCs[npcs].Hp <= 0 {
+								if npc.Hp <= 0 {
 									DeadNPC(client, client.real_strength,
 										npcs, d)
 									return
@@ -51,10 +51,10 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 								npc.Hp += NPCsAction(
 									"ATTACK",
 									client,
-									d.world.NPCs[npcs].Strength,
-									d.world.NPCs[npcs].Hp,
-									d.world.NPCs[npcs].Max_hp,
-									d.world.NPCs[npcs].Name, d)
+									npc.Strength,
+									npc.Hp,
+									npc.Max_hp,
+									npc.Name, d)
 								if damage_type == "critical" {
 									client.strength -= (client.strength * 40 / 100)
 								}
@@ -122,7 +122,7 @@ func (d *Dispatcher) handleDefend(client *Client, args []string) {
 	if client.status == "combat" {
 		client.Send(`OK defend, "status"="combat"`)
 		CheckBuffDebuff(client, d)
-		npc := d.world.NPCs[client.target]
+		npc := FindNPC(d, client, client.target)
 		npc_strength := npc.Strength - (npc.Strength * 40 / 100)
 		npc.Hp += NPCsAction("DEFEND", client, npc_strength, npc.Hp, npc.Max_hp,
 			npc.Name, d)
@@ -164,7 +164,7 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 				return
 			case "SWORD":
 				client.strength += UseSword(client, 10, d)
-				npc := d.world.NPCs[client.target]
+				npc := FindNPC(d, client, client.target)
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp,
 					npc.Max_hp, npc.Name, d)
 				return
@@ -180,13 +180,13 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 				return
 			case "HEALTH POTION":
 				client.hp += UseHealthPotion(client, 4, d)
-				npc := d.world.NPCs[client.target]
+				npc := FindNPC(d, client, client.target)
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp,
 					npc.Max_hp, npc.Name, d)
 				return
-			case "STRENGTH POTION":
+			case "Strength POTION":
 				client.strength += UseStrengthPotion(client, 4, d)
-				npc := d.world.NPCs[client.target]
+				npc := FindNPC(d, client, client.target)
 				npc.Hp += NPCsAction("USE_ITEM", client, npc.Strength, npc.Hp,
 					npc.Max_hp, npc.Name, d)
 				return

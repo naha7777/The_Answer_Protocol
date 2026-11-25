@@ -119,7 +119,7 @@ func FindNPC(d *Dispatcher, client *Client, npc_id string) *game.NPC {
 	npc, ok := d.world.NPCs[npc_id]
 	if !ok {
 		Log.Error("world inconsistency", "player", client.name, "npc",
-				  client.target)
+			client.target)
 		client.Send("ERR 500 INTERNAL")
 		return nil
 	}

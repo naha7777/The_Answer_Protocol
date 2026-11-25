@@ -6,16 +6,17 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"sync"
-	"unicode"
-	"unicode/utf8"
-	"strings"
 	"runtime/debug"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"the_answer_protocol/game"
+	"unicode"
+	"unicode/utf8"
 )
 
 var conn_nb atomic.Int32
+
 const connection_limit = 30
 
 var (
@@ -45,7 +46,7 @@ func hasControlChars(s string) bool {
 }
 
 func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
-					  world *game.World) {
+	world *game.World) {
 
 	defer connection.Close()
 	ip := connection.RemoteAddr().String()
@@ -126,7 +127,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 				dispatcher.displayStats()
 				dispatcher.displayRoomStats()
 			}
-		// then, all commands are available
+			// then, all commands are available
 		} else if client.name != "" {
 			dispatcher.Dispatch(client, text)
 		} else {
