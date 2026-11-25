@@ -34,6 +34,7 @@ type Data struct {
 	conn       *client.Conn
 	cb         *CardinalButtons
 	g          *GameState
+	chat       *Chat
 	nb_players int
 }
 

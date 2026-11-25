@@ -62,7 +62,7 @@ func main() {
 	chat := NewChat(w, &player, conn)
 	inv := NewInv(w, &player, conn)
 	game := GameState{inventory: inv, player: &player}
-	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game}
+	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game, chat: chat}
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
 	background.FillMode = canvas.ImageFillStretch
 
@@ -182,8 +182,10 @@ func main() {
 						background.Refresh()
 						fmt.Println(background.File)
 
+					// QUEST
 					case strings.HasPrefix(msg.Rest, "quest="):
 						Popup(w, "Quest accepted!")
+						HandleQuest(msg.Rest, data)
 					}
 
 				case "EVT":

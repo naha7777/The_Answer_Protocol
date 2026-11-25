@@ -74,3 +74,19 @@ func Str_to_quests(str string, d Data) {
 		popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width + 30, Height: 50 * 4})
 	}
 }
+
+func HandleQuest(str string, d Data) {
+	// parse
+	str = strings.TrimPrefix(str, "quest=")
+	var q map[string]string
+	if err := json.Unmarshal([]byte(str), &q); err != nil {
+		fmt.Println("erreur de parsing:", err)
+		return
+	}
+
+	// send desc in chat
+	author := IDToName(q["quest_npc"])
+	desc := q["description"]
+	d.chat.Receive("NPC", author, desc)
+	// OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}
+}
