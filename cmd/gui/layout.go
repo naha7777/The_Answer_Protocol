@@ -43,14 +43,15 @@ type CardinalButtons struct {
 
 func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 
-	if len(objects) < 2 {
+	if len(objects) < 3 {
 		return fyne.NewSize(0, 0)
 	}
 	btnMin := objects[0].MinSize()
 	chatMin := objects[1].MinSize()
+	invMin := objects[2].MinSize()
 
 	margin := float32(10)
-	minW := btnMin.Width + chatMin.Width + 3*margin
+	minW := btnMin.Width + chatMin.Width + invMin.Width + 4*margin
 	minH := btnMin.Height + 2*margin
 	return fyne.NewSize(minW, minH)
 }
@@ -63,32 +64,28 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 
 	margin := float32(10)
 
-	btnSize := objects[0].MinSize()
-	Y := h - btnSize.Height - margin
-	hudHeight := h - Y - margin
+	btnMin := objects[0].MinSize()
+	chatMin := objects[1].MinSize()
+	invMin := objects[2].MinSize()
+
+	hudHeight := max(btnMin.Height, chatMin.Height, invMin.Height)
+	Y := h - hudHeight - margin
 
 	// Buttons
 	btnX := margin
-	objects[0].Resize(fyne.NewSize(btnSize.Width, hudHeight))
+	objects[0].Resize(fyne.NewSize(btnMin.Width, hudHeight))
 	objects[0].Move(fyne.NewPos(btnX, Y))
 
 	// Chat
-	chatX := btnX + btnSize.Width + margin
-	chatWidth := (w - chatX - margin) / 2
-	if chatWidth < 50 {
-		chatWidth = 50
-	}
+	chatX := btnX + btnMin.Width + margin
+	chatWidth := max(chatMin.Width, (w - chatX - margin) / 2)
 
 	objects[1].Resize(fyne.NewSize(chatWidth, hudHeight))
 	objects[1].Move(fyne.NewPos(chatX, Y))
 
 	// Inventory
 	invX := chatX + chatWidth + margin
-	// invY := Y - 50
-	invWidth := (w - invX - margin) / 3
-	if invWidth < 50 {
-		invWidth = 50
-	}
+	invWidth := max(invMin.Width, (w - invX - margin) / 3)
 
 	objects[2].Resize(fyne.NewSize(invWidth, hudHeight))
 	objects[2].Move(fyne.NewPos(invX, Y))

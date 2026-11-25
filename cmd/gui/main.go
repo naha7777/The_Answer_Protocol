@@ -120,12 +120,13 @@ func main() {
 	game := GameState{inventory: inv, player: &player}
 	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game}
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
-	background.FillMode = canvas.ImageFillStretch
+	background.FillMode = canvas.ImageFillCover
+	// background.FillMode = canvas.ImageFillStretch
 
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
 	logView := container.NewVScroll(logLabel)
-
+	
 	// ajouter conn en parametre de la fonction
 	btnContainer := newButtonContainer(background, &player, &data)
 	playerinfo := showPlayerInfo(&player)
@@ -136,17 +137,17 @@ func main() {
 		hudContent,
 		container.NewVBox(container.NewHBox(playerinfo.Content())),
 	)
-
+	
 	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
 	arenaBg.FillMode = canvas.ImageFillStretch
-
+	
 	battleUI := NewBattleUI(&player, &data)
 	battleContent := container.NewStack(
 		arenaBg,
 		overlay,
 		battleUI.Content(),
 	)
-
+	
 	loggedIn := false
 	// playerinfo.Update()
 	loginView, onLoginMsg := LoginScreen(conn, &player, func(name string) {
