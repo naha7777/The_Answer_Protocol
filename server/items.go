@@ -20,8 +20,8 @@ func UseBeer(client *Client, time int, d *Dispatcher) int {
 
 func UseSword(client *Client, time int, d *Dispatcher) int {
 	// Use the sword
-	UseBuff(client, "item.sword", "strengh", time, d)
-	client.Send(`EVT SWORD : +5 player strengh during %d turns`,
+	UseBuff(client, "item.sword", "strength", time, d)
+	client.Send(`EVT SWORD : +5 player strength during %d turns`,
 		client.time_buff)
 	return 5
 }
@@ -34,10 +34,10 @@ func UsePoisonPotion(client *Client, time int, d *Dispatcher) int {
 	return 5
 }
 
-func UseStrenghPotion(client *Client, time int, d *Dispatcher) int {
-	// Use the strengh potion
+func UseStrengthPotion(client *Client, time int, d *Dispatcher) int {
+	// Use the strength potion
 	UseBuff(client, "item.strength_potion", "strength", time, d)
-	client.Send(`EVT STRENGH POTION : +5 player strengh during %d turns`,
+	client.Send(`EVT STRENGTH POTION : +5 player strength during %d turns`,
 		client.time_buff)
 	return 5
 }

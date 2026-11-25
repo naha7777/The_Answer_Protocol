@@ -124,10 +124,10 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | `INVENTORY` | `OK inventory=[item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
 | `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | none |
-| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 14 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strengh during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT STRENGH POTION : +5 player strengh during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
+| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 14 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGTH : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGTH : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGTH : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strength during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT STRENGTH POTION : +5 player strength during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
 | `WHO` | `OK players=<n>` | | |
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
@@ -226,7 +226,7 @@ While in combat, the player can only use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS`
 - `USE_ITEM`: the player can use items, which activate a buff or a debuff:
 	- beer: debuff, the player is poisoned for 3 turns
 	- health potion: buff, regenerates the player's HP for 4 turns
-	- strengh potion: buff, increases the player's strength for 4 turns
+	- strength potion: buff, increases the player's strength for 4 turns
 	- sword: buff, increases the player's strength for 10 turns
 	- poison potion: buff, deals 5 damage to the NPC for 5 turns
 - `STATUS`: shows the player's HP, maximum HP and status.
@@ -295,7 +295,7 @@ Others:
 - Weapon merchant: gives a quest
 ### Item Distribution
 
-Items: Herbs, Spirit, Necklace, Flower, Fish, Strengh Potion, Health Potion, Poison Potion, Sword, Beer, Gold.
+Items: Herbs, Spirit, Necklace, Flower, Fish, Strength Potion, Health Potion, Poison Potion, Sword, Beer, Gold.
 
 Some items can be taken directly in the rooms, others are won by completing a quest.
 
