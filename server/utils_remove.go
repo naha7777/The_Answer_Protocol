@@ -9,6 +9,11 @@ func (d *Dispatcher) removeClient(client *Client) {
 	// Delete a client because of deconnection or problem
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	if client.target != "" {
+		d.world.NPCs[client.target].Fighter = ""
+		client.target = ""
+	}
+
 	if client.name == "" {
 		return
 	}

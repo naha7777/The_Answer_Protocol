@@ -35,6 +35,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 	client.room.Players = append(client.room.Players, client.name)
 	d.clients[client.name] = client
 	client.Send("OK connected")
+	SendRoom(d, client, "EVT ROOM PRESENCE ENTER %s", client.name)
 }
 
 func (d *Dispatcher) handleQuit(client *Client, args []string) {

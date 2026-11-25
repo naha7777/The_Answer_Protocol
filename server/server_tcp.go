@@ -6,16 +6,30 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"unicode"
+	"unicode/utf8"
 	"strings"
+	"sync/atomic"
 	"the_answer_protocol/game"
 )
 
-var conn_nb int
+var conn_nb atomic.Int32
 const connection_limit = 30
+
+func hasControlChars(s string) bool {
+	for _, r := range s {
+		if unicode.IsControl(r) {
+			return true
+		}
+	}
+	return false
+}
 
 func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 					  world *game.World) {
+	defer conn_nb.Add(-1)
 	defer connection.Close()
+
 	// client creation
 	client := &Client{conn: connection}
 	for _, room := range world.Rooms {
@@ -32,10 +46,9 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	}
 
 	// limit the number of connections
-	if conn_nb > connection_limit {
-		client.Send(`ERR 19 SERVER_FULL`)
-		dispatcher.removeClient(client)
-		conn_nb -= 1
+	if conn_nb.Add(1) > connection_limit {
+		client.Send("ERR 19 SERVER_FULL")
+		conn_nb.Add(-1)
 		return
 	}
 
@@ -43,7 +56,6 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		dispatcher.removeClient(client)
 		dispatcher.displayRoomStats()
 		dispatcher.displayStats()
-		conn_nb -= 1
 	}()
 	client.Send("OK hello proto=1")
 
@@ -65,8 +77,14 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			continue
 		}
 
+		// manipulation attacks prevention
 		text := string(line)
+		if !utf8.ValidString(text) || hasControlChars(text) {
+			client.Send("ERR 17 INVALID_INPUT")
+			continue
+		}
 		upper := strings.ToUpper(text)
+
 		// the first command must be CONNECT with a valid name
 		if client.name == "" && strings.HasPrefix(upper, "CONNECT") {
 			dispatcher.Dispatch(client, text)
@@ -121,7 +139,6 @@ func Server(listener net.Listener) {
 			continue
 		}
 		// one goroutine for one connection
-		conn_nb += 1
 		go HandleConnection(connection, dispatcher, world)
 	}
 }
