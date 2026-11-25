@@ -4,22 +4,26 @@ import (
 	"math/rand/v2"
 )
 
-func NPCsAction(player_action string, client *Client, strength int, npc_hp int, NPC_max_hp int, npc_name string, d *Dispatcher) int {
+func NPCsAction(player_action string, client *Client, strength int, npc_hp int,
+	NPC_max_hp int, npc_name string, d *Dispatcher) int {
 	initial_strength := strength
 
-	// percentage chance that the NPC will attack, flee, or regenerate depending on the player's action
+	// percentage chance that the NPC will attack, flee, or regenerate depending
+	// on the player's action
 	switch player_action {
 	case "ATTACK":
 		if rand.Float64() < 0.1 {
 			return Flee(client, d)
 		} else if rand.Float64() < 0.8 {
-			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp, "normal")
+			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp,
+				"normal")
 		} else {
 			return Regen(client, strength, d, npc_name, npc_hp, NPC_max_hp)
 		}
 	case "FLEE":
-		 if rand.Float64() < 0.95 {
-			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp, "normal")
+		if rand.Float64() < 0.95 {
+			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp,
+				"normal")
 		} else {
 			return Regen(client, strength, d, npc_name, npc_hp, NPC_max_hp)
 		}
@@ -27,7 +31,8 @@ func NPCsAction(player_action string, client *Client, strength int, npc_hp int, 
 		if rand.Float64() < 0.05 {
 			return Flee(client, d)
 		} else if rand.Float64() < 0.75 {
-			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp, "normal")
+			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp,
+				"normal")
 		} else {
 			return Regen(client, strength, d, npc_name, npc_hp, NPC_max_hp)
 		}
@@ -35,7 +40,8 @@ func NPCsAction(player_action string, client *Client, strength int, npc_hp int, 
 		if rand.Float64() < 0.05 {
 			return Flee(client, d)
 		} else if rand.Float64() < 0.55 {
-			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp, "normal")
+			return Attack(client, strength, d, npc_name, npc_hp, NPC_max_hp,
+				"normal")
 		} else {
 			return Regen(client, strength, d, npc_name, npc_hp, NPC_max_hp)
 		}
@@ -44,10 +50,11 @@ func NPCsAction(player_action string, client *Client, strength int, npc_hp int, 
 	return 0
 }
 
-func Attack(client *Client, strength int, d *Dispatcher, npc_name string, npc_hp int, NPC_max_hp int, damage_type string) int {
+func Attack(client *Client, strength int, d *Dispatcher, npc_name string,
+	npc_hp int, NPC_max_hp int, damage_type string) int {
 	// percentage chance of landing a critical hit
 	if rand.Float64() < 0.1 {
-		strength += (strength*40/100)
+		strength += (strength * 40 / 100)
 		damage_type = "critical"
 	}
 	// NPC hit back
@@ -56,23 +63,24 @@ func Attack(client *Client, strength int, d *Dispatcher, npc_name string, npc_hp
 	client.hp -= strength
 	// handle player's death
 	if client.hp <= 0 {
-		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
+		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d,  "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
 		client.Death(d)
 		return 0
 	}
 	// print attack's datas
-	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
+	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
 	return 0
 }
 
-func Regen(client *Client, strength int, d *Dispatcher, npc_name string, npc_hp int, NPC_max_hp int) int {
+func Regen(client *Client, strength int, d *Dispatcher, npc_name string,
+	npc_hp int, NPC_max_hp int) int {
 	client.Send(`EVT NPC REGENERATION : +5 hp`)
 	// add 5 to NPC's HP
 	new_hp := npc_hp + 5
 	if new_hp > NPC_max_hp {
 		new_hp = NPC_max_hp
 	}
-	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strength, "normal", client.status)
+	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strength, "normal", client.status)
 	return new_hp - npc_hp
 }
 
@@ -89,7 +97,7 @@ func Flee(client *Client, d *Dispatcher) int {
 func DeadNPC(client *Client, initial_strength int, npcs string, d *Dispatcher) {
 	// reinitialise player's status, player's target and player's strength
 	client.status = "exploration"
-	client.Send(`OK attack=%s=dead, "status"="%s"`, npcs, client.status)
+	client.Send(`OK attack="%s"=dead, "status"="%s"`, npcs, client.status)
 	// Add the NPC on the player's kill list
 	client.kills = append(client.kills, npcs)
 	room_npc := []string{}
@@ -103,5 +111,5 @@ func DeadNPC(client *Client, initial_strength int, npcs string, d *Dispatcher) {
 	client.target = ""
 	client.strength = initial_strength
 	// Send an EVT to tell players that an NPC is dead
-	SendRoom(d, client, "EVT NPC DEAD %s", npcs)
+	SendRoom(d, client, `EVT NPC DEAD "%s"`, npcs)
 }

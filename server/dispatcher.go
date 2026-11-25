@@ -66,6 +66,8 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var args []string
 	first := strings.ToUpper(parts[0])
 
+	Log.Info("command", "player", client.name, "ip", client.conn.RemoteAddr().String(), "cmd", first, "args", parts[1:])
+
 	// spam protection
 	if first == "CHAT" {
 		now := time.Now()
@@ -95,7 +97,8 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 			return
 		}
 	} else {
-		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" || first == "STATUS" || first == "USE_ITEM" || first == "INVENTORY" {
+		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" ||
+		first == "STATUS" || first == "USE_ITEM" || first == "INVENTORY" {
 			cmd = strings.ToUpper(parts[0])
 			args = parts[1:]
 		} else {

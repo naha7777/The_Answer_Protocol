@@ -14,7 +14,8 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 	find := false
 	// check if the NPC is in the actual room
 	for _, npcs := range client.room.NPCs {
-		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(d.world.NPCs[npcs].Name) {
+		if strings.ToUpper(npcs) == npc || npc == strings.ToUpper(
+			d.world.NPCs[npcs].Name) {
 			for _, q := range d.world.Quests {
 				for _, quest := range d.world.NPCs[npcs].Quest {
 					if q.Id == quest {
@@ -34,7 +35,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 		}
 	}
 	if !find {
-		client.Send("ERR 406 NO_QUEST_AVAILABLE")
+		client.Send("ERR 15 NO_QUEST_AVAILABLE")
 		return
 	}
 	client.Send("ERR 404 NPC_NOT_FOUND")
@@ -76,7 +77,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 	defer d.mu.Unlock()
 	// check if the quest is not an empty string
 	if len(args) == 0 {
-		client.Send("ERR 406 NO_QUEST_AVAILABLE")
+		client.Send("ERR 15 NO_QUEST_AVAILABLE")
 		return
 	}
 	for _, quest := range client.quests {
@@ -87,7 +88,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 			if slices.Contains(client.room.NPCs, quest.NPC) {
 				// check if the quest is still available
 				if quest.Status != "active" {
-					client.Send("ERR 406 NO_QUEST_AVAILABLE")
+					client.Send("ERR 15 NO_QUEST_AVAILABLE")
 					return
 				}
 				// check if the quest's objectives are done
@@ -110,7 +111,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 		}
 	}
 	if !find {
-		client.Send("ERR 406 NO_QUEST_AVAILABLE")
+		client.Send("ERR 15 NO_QUEST_AVAILABLE")
 		return
 	}
 }
@@ -120,12 +121,13 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 	defer d.mu.Unlock()
 	// check if the quest is not an empty string
 	if len(args) == 0 {
-		client.Send("ERR 406 NO_QUEST_AVAILABLE")
+		client.Send("ERR 15 NO_QUEST_AVAILABLE")
 		return
 	}
 
 	var final_quests []*game.Quest
-	// check if the quest is a player's quest, if it is, abandon it and make it available
+	// check if the quest is a player's quest, if it is, abandon it and make it
+	// available
 	for _, quest := range client.quests {
 		if quest.Id == args[0] {
 			client.Send("OK abandon_quest=%s", quest.Id)
@@ -133,6 +135,8 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 			quest.Status = "available"
 		} else {
 			final_quests = append(final_quests, quest)
+			client.Send("ERR 15 NO_QUEST_AVAILABLE")
+			return
 		}
 	}
 }

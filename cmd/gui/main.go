@@ -38,7 +38,7 @@ var (
 
 func main() {
 
-	conn, err := client.Dial("localhost:8080")
+	conn, err := client.Dial()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
 		os.Exit(1)

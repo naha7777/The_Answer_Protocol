@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -16,16 +15,17 @@ func main() {
 	// the server listens on port 8080
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error listening : %s", err)
+		server.Log.Error("listen failed", "err", err)
 		os.Exit(1)
 	}
 
 	// handle listener error
 	var once sync.Once
-	shutdown := func() {
+	shutdown := func(reason string) {
 		once.Do(func() {
+			server.Log.Info("shutdown requested", "reason", reason)
 			if err := listener.Close(); err != nil {
-				fmt.Fprintf(os.Stderr, "Listener closure error: %s\n", err)
+				server.Log.Error("listener closure failed", "err", err)
 			}
 		})
 	}
@@ -35,8 +35,7 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sigChan
-		fmt.Println("\nSignal received, shutting down...")
-		shutdown()
+		shutdown("signal")
 	}()
 
 	// handle closure with 'quit', 'exit' or 'stop'
@@ -46,21 +45,18 @@ func main() {
 			cmd := strings.TrimSpace(strings.ToLower(scanner.Text()))
 			switch cmd {
 			case "stop", "quit", "exit":
-				fmt.Println("Server shutdown request")
-				if err := listener.Close(); err != nil {
-					fmt.Fprintf(os.Stderr, "Listener closure error: %s\n", err)
-				}
+				shutdown("stdin command")
 				return
 			case "":
 				continue
 			default:
-				fmt.Printf("Unknown command: %q (use 'quit', 'stop' or 'exit').\n", cmd)
+				server.Log.Warn("unknown server command", "cmd", cmd,
+								"hint", "use quit, stop or exit")
 			}
 		}
 		if err := scanner.Err(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading stdin: %s\n", err)
+			server.Log.Error("stdin read failed", "err", err)
 		}
 	}()
 	server.Server(listener)
-	fmt.Println("Shut down the server properly")
 }
