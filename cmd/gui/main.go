@@ -238,6 +238,9 @@ func main() {
 						background.File = "./data/arena.jpeg"
 						background.Refresh()
 						fmt.Println(background.File)
+
+					case strings.HasPrefix(msg.Rest, "quest="):
+						popup(w, "Quest accepted!")
 					}
 
 				case "EVT":
@@ -318,6 +321,7 @@ func main() {
 							conn.Send("LOOK")
 						}
 					}
+					// EVT QUEST took=<quest_id>
 				case "ERR":
 					popup(w, msg.Rest)
 				}
