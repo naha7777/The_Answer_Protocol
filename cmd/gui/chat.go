@@ -60,7 +60,7 @@ func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 		if c.player.group.Id != "" {
 			c.setChannel("GROUP", orange)
 		} else {
-			popup(w, "You are not in a group")
+			Popup(w, "You are not in a group")
 		}
 	})
 	cbut_say := widget.NewButton("SAY", c.send)
@@ -98,11 +98,11 @@ func (c *Chat) send() {
 		return
 	}
 	if c.scope == "GROUP" && c.player.group.Id == "" {
-		popup(c.window, "You are not in a group")
+		Popup(c.window, "You are not in a group")
 		return
 	}
 	if err := c.conn.Send("CHAT " + c.scope + " " + text); err != nil {
-		popup(c.window, "901 SEND_FAILED")
+		Popup(c.window, "901 SEND_FAILED")
 		return
 	}
 	if c.scope != "GROUP" {

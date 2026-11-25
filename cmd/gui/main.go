@@ -1,5 +1,9 @@
 package main
 
+// /===========================================\
+// |				  Import				   |
+// \===========================================/
+
 import (
 	"encoding/json"
 	"fmt"
@@ -15,66 +19,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
-
-type Room struct {
-	id          string
-	name        string
-	description string
-	exits       map[string]bool
-	npc         []string
-	players     []string
-	nb_players  int
-	items       []string
-}
-
-type Data struct {
-	w          fyne.Window
-	conn       *client.Conn
-	cb         *CardinalButtons
-	g          *GameState
-	nb_players int
-}
-
-type Player struct {
-	name   string
-	health int
-	group  GroupInfo
-	room   Room
-	move   bool
-}
-
-type GameState struct {
-	inventory *Inventory
-	player    *Player
-	npc       []string
-	popup     *widget.PopUp
-}
-
-func (g *GameState) Update(str string) {
-	if strings.HasPrefix(str, "inventory=") {
-		g.inventory.Update(str)
-	} else if strings.HasPrefix(str, "look=") {
-		g.inventory.Update(str)
-		str = strings.TrimPrefix(str, "look=")
-		var data map[string]any
-		if err := json.Unmarshal([]byte(str), &data); err != nil {
-			fmt.Println("erreur de parsing:", err)
-			return
-		}
-		var NpcsID []string
-		if room, ok := data["room"].(map[string]any); ok {
-			if rawNpcs, ok := room["NPCs"].([]any); ok {
-				for _, npc := range rawNpcs {
-					if str, ok := npc.(string); ok {
-						NpcsID = append(NpcsID, str)
-					}
-				}
-			}
-		}
-		g.npc = NpcsID
-		// "NPCs":["npc.village_guard"]
-	}
-}
 
 // /===========================================\
 // |				 Var/Const				   |
@@ -138,7 +82,6 @@ func main() {
 	)
 
 	loggedIn := false
-	// playerinfo.Update()
 	loginView, onLoginMsg := LoginScreen(conn, &player, func(name string) {
 		loggedIn = true
 		playerinfo.Update(data)
@@ -179,19 +122,19 @@ func main() {
 					// GROUP
 					case strings.HasPrefix(msg.Rest, "group_created="):
 						conn.Send("INFO_GROUP")
-						popup(w, strings.TrimPrefix(msg.Rest, "group_created=")+" group was created")
+						Popup(w, strings.TrimPrefix(msg.Rest, "group_created=")+" group was created")
 					case strings.HasPrefix(msg.Rest, "group_leaved="):
-						popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
+						Popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
 						player.group = GroupInfo{}
 						playerinfo.Update(data)
 					case strings.HasPrefix(msg.Rest, "group_joined="):
 						conn.Send("INFO_GROUP")
-						popup(w, "You join the "+strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_joined="))+"group")
+						Popup(w, "You join the "+strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_joined="))+"group")
 					case strings.HasPrefix(msg.Rest, "group_infos="):
 						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
 						var infos groupInfosMsg
 						if err := json.Unmarshal([]byte(raw), &infos); err != nil {
-							popup(w, "invalid group infos")
+							Popup(w, "invalid group infos")
 							break
 						}
 						player.group = infos.Group
@@ -240,7 +183,7 @@ func main() {
 						fmt.Println(background.File)
 
 					case strings.HasPrefix(msg.Rest, "quest="):
-						popup(w, "Quest accepted!")
+						Popup(w, "Quest accepted!")
 					}
 
 				case "EVT":
@@ -321,9 +264,8 @@ func main() {
 							conn.Send("LOOK")
 						}
 					}
-					// EVT QUEST took=<quest_id>
 				case "ERR":
-					popup(w, msg.Rest)
+					Popup(w, msg.Rest)
 				}
 			})
 		}

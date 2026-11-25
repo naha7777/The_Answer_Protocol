@@ -1,5 +1,9 @@
 package main
 
+// /===========================================\
+// |				  Import				   |
+// \===========================================/
+
 import (
 	"encoding/json"
 	"fmt"
@@ -12,6 +16,10 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
+
+// /===========================================\
+// |				   Struct				   |
+// \===========================================/
 
 type ServerResponse struct {
 	RawRoom ServerData `json:"room"`
@@ -39,6 +47,10 @@ type InfoBox struct {
 	items        *widget.Label
 	content      fyne.CanvasObject
 }
+
+// /===========================================\
+// |				 Function				   |
+// \===========================================/
 
 func showPlayerInfo(p *Player, data Data) *InfoBox {
 
@@ -71,6 +83,10 @@ func showPlayerInfo(p *Player, data Data) *InfoBox {
 	b.Update(data)
 	return b
 }
+
+// /===========================================\
+// |				   Method				   |
+// \===========================================/
 
 func (b *InfoBox) Content() fyne.CanvasObject { return b.content }
 

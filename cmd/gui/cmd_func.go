@@ -74,26 +74,3 @@ func Str_to_quests(str string, d Data) {
 		popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width + 30, Height: 50 * 4})
 	}
 }
-
-func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
-	var pop *widget.PopUp
-
-	for _, o := range objects {
-		if btn, ok := o.(*widget.Button); ok {
-			action := btn.OnTapped
-			btn.OnTapped = func() {
-				pop.Hide()
-				if action != nil {
-					action()
-				}
-			}
-		}
-	}
-
-	menu := container.NewVBox(
-		objects...,
-	)
-	pop = widget.NewPopUp(menu, w.Canvas())
-	pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), item)
-	return pop
-}

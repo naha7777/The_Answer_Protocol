@@ -19,7 +19,7 @@ import (
 // |				 Function				   |
 // \===========================================/
 
-func popup(w fyne.Window, txt string) {
+func Popup(w fyne.Window, txt string) {
 	width := w.Canvas().Size().Width
 	height := w.Canvas().Size().Height
 
@@ -66,6 +66,29 @@ func Generate_option(options []string, action string, conn *client.Conn) *fyne.C
 		cont.Add(but)
 	}
 	return cont
+}
+
+func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
+	var pop *widget.PopUp
+
+	for _, o := range objects {
+		if btn, ok := o.(*widget.Button); ok {
+			action := btn.OnTapped
+			btn.OnTapped = func() {
+				pop.Hide()
+				if action != nil {
+					action()
+				}
+			}
+		}
+	}
+
+	menu := container.NewVBox(
+		objects...,
+	)
+	pop = widget.NewPopUp(menu, w.Canvas())
+	pop.ShowAtRelativePosition(fyne.NewPos(0, -pop.MinSize().Height), item)
+	return pop
 }
 
 func IDToName(id string) string {

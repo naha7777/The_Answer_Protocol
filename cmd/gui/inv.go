@@ -23,6 +23,8 @@ import (
 // |				   Struct				   |
 // \===========================================/
 
+// objects = items ids in the inventory
+// accessible = items in the current room
 type Inventory struct {
 	objects    []string
 	accessible []string
@@ -32,6 +34,11 @@ type Inventory struct {
 	items  *fyne.Container
 	scroll *container.Scroll
 	root   fyne.CanvasObject
+}
+
+// struct for json parsing purposes
+type Response struct {
+	Items []string `json:"items"`
 }
 
 // /===========================================\
@@ -149,10 +156,6 @@ func (i *Inventory) take(item string) {
 			i.pop.Hide()
 		}
 	})
-}
-
-type Response struct {
-	Items []string `json:"items"`
 }
 
 func (i *Inventory) Update(str string) {

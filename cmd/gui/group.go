@@ -1,5 +1,9 @@
 package main
 
+// /===========================================\
+// |				  Import				   |
+// \===========================================/
+
 import (
 	"fmt"
 	"strings"
@@ -8,6 +12,10 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
+
+// /===========================================\
+// |				   Struct				   |
+// \===========================================/
 
 type GroupInfo struct {
 	Id      string   `json:"Id"`
@@ -19,6 +27,10 @@ type GroupInfo struct {
 type groupInfosMsg struct {
 	Group GroupInfo `json:"group"`
 }
+
+// /===========================================\
+// |				 Function				   |
+// \===========================================/
 
 func confirmGroup(w fyne.Window, group []string, onYes func()) {
 	var groupName, leaderName string

@@ -19,14 +19,9 @@ import (
 // \===========================================/
 
 // struct for the HUD needed to implement the fyne layout Interface
-// /!\ Need at least 4 widget
+// /!\ Need at least 3 widgets
 type Hud struct {
 }
-
-// type Layout struct {
-// 	backgroundFile string
-// 	container      *fyne.Container
-// }
 
 type CardinalButtons struct {
 	North *widget.Button
@@ -36,10 +31,10 @@ type CardinalButtons struct {
 }
 
 // /===========================================\
-// |				 Function				   |
+// |				   Method				   |
 // \===========================================/
 
-// Need to implement the Layout Interface with MinSize and Layout func
+// Need to implement the Layout Interface with MinSize and Layout methods
 
 func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 
@@ -94,6 +89,32 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 	objects[2].Move(fyne.NewPos(invX, Y))
 }
 
+// Method for showing/hiding buttons based on the “exits” map
+func (cb *CardinalButtons) Update(exits map[string]bool) {
+	if exits == nil {
+		exits = make(map[string]bool)
+	}
+	updateBtn := func(btn *widget.Button, isOpen bool) {
+		if btn == nil {
+			return
+		}
+		if isOpen {
+			btn.Enable()
+		} else {
+			btn.Disable()
+		}
+	}
+
+	updateBtn(cb.North, exits["north"])
+	updateBtn(cb.South, exits["south"])
+	updateBtn(cb.East, exits["east"])
+	updateBtn(cb.West, exits["west"])
+}
+
+// /===========================================\
+// |				 Function				   |
+// \===========================================/
+
 func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Container {
 
 	mapImg := "./data/map.jpeg"
@@ -121,7 +142,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 				p.move = true
 			}
 			if err := d.conn.Send(cmd); err != nil {
-				fyne.Do(func() { popup(d.w, "901 SEND_FAILED") })
+				fyne.Do(func() { Popup(d.w, "901 SEND_FAILED") })
 			}
 		}
 	}
@@ -197,26 +218,4 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 		btnsFrame,
 		container.NewPadded(insideBtn),
 	)
-}
-
-// Method for showing/hiding buttons based on the “exits” map
-func (cb *CardinalButtons) Update(exits map[string]bool) {
-	if exits == nil {
-		exits = make(map[string]bool)
-	}
-	updateBtn := func(btn *widget.Button, isOpen bool) {
-		if btn == nil {
-			return
-		}
-		if isOpen {
-			btn.Enable()
-		} else {
-			btn.Disable()
-		}
-	}
-
-	updateBtn(cb.North, exits["north"])
-	updateBtn(cb.South, exits["south"])
-	updateBtn(cb.East, exits["east"])
-	updateBtn(cb.West, exits["west"])
 }

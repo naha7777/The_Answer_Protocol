@@ -1,5 +1,9 @@
 package main
 
+// /===========================================\
+// |				  Import				   |
+// \===========================================/
+
 import (
 	"image/color"
 	"strings"
@@ -10,6 +14,10 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
+
+// /===========================================\
+// |				 Function				   |
+// \===========================================/
 
 func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string)) (fyne.CanvasObject, func(client.Message)) {
 	banner := canvas.NewText("ENTER YOUR NAME", color.White)
