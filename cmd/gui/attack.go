@@ -57,8 +57,8 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	b := &BattleUI{
 		playerImg:			playerImg,
 		npcImg:				npcImg,
-		playerHealth:		NewHealthBar(100),
-		npcHealth:			NewHealthBar(100),
+		playerHealth:		NewHealthBar(float64(player.health)),
+		npcHealth:			NewHealthBar(0),
 		playerNameLabel:	widget.NewLabel(player.name),
 		npcNameLabel:		widget.NewLabel("enemy"),
 		battleLog:			widget.NewLabel(""),

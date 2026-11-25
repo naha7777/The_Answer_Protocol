@@ -23,7 +23,11 @@ type HealthBar struct {
 // NewHealthBar creates and initializes a new HealthBar with the specified
 // maximum health value, defaulting current health to full.
 func NewHealthBar(max float64) *HealthBar {
-	// 
+
+	if max <= 0 {
+		max = 1
+	}
+
 	bg := canvas.NewRectangle(color.NRGBA{R: 30, G: 30, B: 30, A: 220})
 	bg.StrokeColor = color.White
 	bg.StrokeWidth = 2
@@ -75,6 +79,7 @@ func (h *HealthBar) SetValue(val float64) {
 		val = h.max
 	}
 
+	h.current = val
 	ratio := h.current / h.max
 	totalW := float32(300)
 	totalH := float32(26)
@@ -116,9 +121,9 @@ func healthColor(ratio float64) color.NRGBA {
 	case ratio >= 0.10:
 		t := (ratio - 0.10) / 0.30
 		return color.NRGBA{
-			R: lerp(orange.R, green.R, t),
-			G: lerp(orange.G, green.G, t),
-			B: lerp(orange.B, green.B, t),
+			R: lerp(red.R, orange.R, t),
+			G: lerp(red.G, orange.G, t),
+			B: lerp(red.B, orange.B, t),
 			A: 255,
 		}
 	default:

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"the_answer_protocol/client"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -277,7 +278,7 @@ func main() {
 					m := strings.Split(msg.Raw, " ")
 					if len(m) == 2 && m[1] == "DEATH" {
 						popup(data.w, "You are DEAD !!!")
-						a.Quit()
+						time.Sleep(3*time.Second)
 					}
 					if len(m) >= 3 {
 						switch m[1] {

@@ -57,12 +57,12 @@ func Attack(client *Client, strengh int, d *Dispatcher, npc_name string, npc_hp 
 	// handle player's death
 	if client.hp <= 0 {
 		client.status = "exploration"
-		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
+		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
 		client.Death(d)
 		return 0
 	}
 	// print attack's datas
-	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
+	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strengh, damage_type, client.status)
 	return 0
 }
 
@@ -73,7 +73,7 @@ func Regen(client *Client, strengh int, d *Dispatcher, npc_name string, npc_hp i
 	if new_hp > NPC_max_hp {
 		new_hp = NPC_max_hp
 	}
-	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": %s, "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": %s, "status": %s}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strengh, "normal", client.status)
+	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strengh, "normal", client.status)
 	return 5
 }
 
