@@ -54,6 +54,10 @@ func (d *Dispatcher) registerCommands() {
 	d.commands["DEFEND"] = d.handleDefend
 	d.commands["USE_ITEM"] = d.handleUseItem
 	d.commands["FIND_QUESTS"] = d.handleFindQuests
+	// d.commands["CRASH"] = func(c *Client, args []string) {
+	// 	var m map[string]int
+	// 	m["x"] = 1
+	// }
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {

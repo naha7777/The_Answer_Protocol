@@ -20,13 +20,14 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 
 	// a player can't fight a NPC in another room
 	for _, npcs := range client.room.NPCs {
+		npc := FindNPC(d, client, client.target)
 		if strings.ToUpper(npcs) == target || target == strings.ToUpper(
-			d.world.NPCs[npcs].Name) {
-			if d.world.NPCs[npcs].Hp > 0 {
+			npc.Name) {
+			if npc.Hp > 0 {
 				// a player can't fight a NPC if he is not hostile
-				if d.world.NPCs[npcs].Hostile {
+				if npc.Hostile {
 					// another player can't attack a NPC if he is in a fight
-					if d.world.NPCs[npcs].Fighter == "" || d.world.NPCs[npcs].Fighter == client.name {
+					if npc.Fighter == "" || npc.Fighter == client.name {
 						// a player can't fight two NPC at the same time
 						if npcs == client.target || client.target == "" {
 							// Hit the NPC
@@ -47,7 +48,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 									return
 								}
 								// NPC hit back
-								d.world.NPCs[npcs].Hp += NPCsAction(
+								npc.Hp += NPCsAction(
 									"ATTACK",
 									client,
 									d.world.NPCs[npcs].Strength,
@@ -101,7 +102,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 			client.target = ""
 			return
 		} else {
-			npc := d.world.NPCs[client.target]
+			npc := FindNPC(d, client, client.target)
 			client.Send(`OK flee=fail, "status"="combat"`)
 			CheckBuffDebuff(client, d)
 			// if the player fail his flee, the NPC has an action
@@ -153,7 +154,7 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 			switch query {
 			case "BEER":
 				client.hp -= UseBeer(client, 3, d)
-				npc := d.world.NPCs[client.target]
+				npc := FindNPC(d, client, client.target)
 				if client.hp <= 0 {
 					client.Death(d)
 					return
@@ -168,7 +169,7 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 					npc.Max_hp, npc.Name, d)
 				return
 			case "POISON POTION":
-				npc := d.world.NPCs[client.target]
+				npc := FindNPC(d, client, client.target)
 				npc.Hp -= UsePoisonPotion(client, 5, d)
 				if npc.Hp <= 0 {
 					DeadNPC(client, client.real_strength, npc.Name, d)

@@ -3,10 +3,10 @@ package server
 import (
 	"fmt"
 	"net"
-	"time"
 	"strings"
 	"sync"
 	"the_answer_protocol/game"
+	"time"
 )
 
 type Client struct {
@@ -39,13 +39,16 @@ func (c *Client) label() string {
 	return c.conn.RemoteAddr().String()
 }
 
+func (c *Client) write(msg string) error {
+	c.wmu.Lock()
+	defer c.wmu.Unlock()
+	_, err := fmt.Fprintf(c.conn, "%s\n", msg)
+	return err
+}
+
 func (c *Client) Send(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-
-	c.wmu.Lock() // si tu as ajouté le mutex d'écriture
-	_, err := fmt.Fprintf(c.conn, "%s\n", msg)
-	c.wmu.Unlock()
-	if err != nil {
+	if err := c.write(msg); err != nil {
 		Log.Error("send failed", "to", c.label(), "err", err)
 		return
 	}
@@ -60,7 +63,7 @@ func (c *Client) Send(format string, a ...any) {
 			Log.Warn("error sent", "to", c.label(), "code", code, "message", msg)
 		}
 	case "EVT":
-		Log.Debug("event sent", "to", c.label(), "message", msg)
+		Log.Info("event sent", "event", msg, "recipients", []string{c.label()}, "count", 1)
 	default:
 		Log.Info("response sent", "to", c.label(), "message", msg)
 	}
@@ -72,7 +75,8 @@ func (client *Client) Death(d *Dispatcher) {
 
 	client.Send(`EVT DEATH`)
 	client.status = "exploration"
-	d.world.NPCs[client.target].Fighter = ""
+	npc := FindNPC(d, client, client.target)
+	npc.Fighter = ""
 	client.target = ""
 	// Send an EVT to the players
 	SendAll(d, client, `EVT dead=%s`, client.name)

@@ -2,6 +2,7 @@ package server
 
 import (
 	"math/rand/v2"
+	"the_answer_protocol/game"
 )
 
 func NPCsAction(player_action string, client *Client, strength int, npc_hp int,
@@ -112,4 +113,15 @@ func DeadNPC(client *Client, initial_strength int, npcs string, d *Dispatcher) {
 	client.strength = initial_strength
 	// Send an EVT to tell players that an NPC is dead
 	SendRoom(d, client, `EVT NPC DEAD "%s"`, npcs)
+}
+
+func FindNPC(d *Dispatcher, client *Client, npc_id string) *game.NPC {
+	npc, ok := d.world.NPCs[npc_id]
+	if !ok {
+		Log.Error("world inconsistency", "player", client.name, "npc",
+				  client.target)
+		client.Send("ERR 500 INTERNAL")
+		return nil
+	}
+	return npc
 }

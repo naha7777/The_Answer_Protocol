@@ -10,6 +10,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 	"strings"
+	"runtime/debug"
 	"sync/atomic"
 	"the_answer_protocol/game"
 )
@@ -80,6 +81,15 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		dispatcher.removeClient(client)
 		dispatcher.displayRoomStats()
 		dispatcher.displayStats()
+	}()
+
+	// avoid panic
+	defer func() {
+		if r := recover(); r != nil {
+			Log.Error("panic recovered", "player", client.name, "ip", ip,
+				"panic", fmt.Sprint(r), "stack", string(debug.Stack()))
+			client.Send("ERR 500 INTERNAL")
+		}
 	}()
 	client.Send("OK hello proto=1")
 
