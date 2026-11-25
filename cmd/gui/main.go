@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"the_answer_protocol/client"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -35,13 +34,13 @@ type Data struct {
 }
 
 type Player struct {
-	avatar			string
-	gender			string
-	name			string
-	health			int
-	group			GroupInfo
-	room			Room
-	move			bool
+	avatar	string
+	gender	string
+	name	string
+	health	int
+	group	GroupInfo
+	room	Room
+	move	bool
 }
 
 type GameState struct {
@@ -251,14 +250,15 @@ func main() {
 							playerinfo.Update()
 							w.SetContent(gameContent)
 							conn.Send("LOOK")
-							break
 						}
 					case strings.HasPrefix(msg.Rest, "attack="):
-						fmt.Println("Case OK ATTACK\n", msg.Rest)
-						if strings.Contains(msg.Rest, "=dead") {
+						raw := strings.TrimPrefix(msg.Rest, "attack=")
+						if strings.HasSuffix(raw, "=dead") {
+							npcID := strings.TrimSuffix(raw, "=dead")
 							battleUI.EndFight()
 							playerinfo.Update()
 							w.SetContent(gameContent)
+							popup(w, IDToName(npcID) + " is dead!")
 							conn.Send("LOOK")
 							break
 						}
@@ -272,21 +272,33 @@ func main() {
 						} else {
 							battleUI.Update(atk)
 						}
+					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+						status := strings.TrimPrefix(msg.Rest, `"status"=`)
+						status = strings.TrimPrefix(status, "status=")
+						status = strings.Trim(status, `"`)
+						if status != "combat" && battleUI.inFight {
+							battleUI.EndFight()
+							playerinfo.Update()
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+						}
 					}
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
 					if len(m) == 2 && m[1] == "DEATH" {
 						popup(data.w, "You are DEAD !!!")
-						time.Sleep(3*time.Second)
+						battleUI.EndFight()
+						conn.Send("LOOK")
+						w.SetContent(gameContent)
 					}
 					if len(m) >= 3 {
 						switch m[1] {
 						case "GROUP":
 							switch m[2] {
 							case "INVITE":
-								if len(m) >= 5 {
-									confirmGroup(w, []string{m[4], m[3]}, func() {
+								if len(m) >= 4 {
+									confirmGroup(w, []string{m[3], m[2]}, func() {
 										conn.Send("GROUP JOIN " + m[3])
 									})
 								}
@@ -300,11 +312,6 @@ func main() {
 							case "LEAVE":
 								player.room.nb_players -= 1
 							}
-
-						case "CHAT":
-							parts := strings.SplitN(msg.Rest, " ", 4)
-							scope, username, message := parts[0], parts[2], parts[3]
-							chat.Receive(scope, username, message)
 
 						case "NPC":
 							switch m[2] {
@@ -323,7 +330,7 @@ func main() {
 						case "SWORD":
 							// +5 de point de force ou attack pour le joueur
 						case "POISON":
-							if m[3] == "POTION" {
+							if len(m) >= 4 && m[3] == "POTION" {
 								// -5 npc hp
 							} else {
 								// -5 player hp
@@ -341,6 +348,11 @@ func main() {
 								// +5 hp pour le npc
 							}
 						
+						}
+						if m[2] == "CHAT" {
+							parts := strings.SplitN(msg.Rest, " ", 4)
+							scope, username, message := parts[0], parts[2], parts[3]
+							chat.Receive(scope, username, message)
 						}
 					}
 

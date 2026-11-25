@@ -31,6 +31,7 @@ type AttackData struct {
 // health bars, action buttons, and the combat log.
 type BattleUI struct {
 	inFight			bool
+	targetNPC		string
 	data			*Data
 	player			*Player
 	playerImg		*canvas.Image
@@ -86,12 +87,25 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 		layout.NewSpacer(),
 	)
 
-	attackBtn := widget.NewButton("ATTACK", func() {b.data.conn.Send("ATTACK")})
+	attackBtn := widget.NewButton("ATTACK", func() {
+		if b.targetNPC != "" {
+			b.data.conn.Send("ATTACK " + b.targetNPC)
+		}
+	})
 	fleeBtn := widget.NewButton("FLEE", func() {b.data.conn.Send("FLEE")})
+	defendBtn := widget.NewButton("DEFEND", func() {b.data.conn.Send("DEFEND")})
+
+	var itemsBtn *widget.Button
+	itemsBtn = widget.NewButton("USE ITEM", func() {
+		data.g.popup = Option_popup(
+			itemsBtn,
+			data.w,
+			Generate_option(data.g.inventory.objects, "USE_ITEM", data.conn))
+		})
 
 	bottomBar := container.NewVBox(
 		container.NewCenter(b.battleLog),
-		container.NewCenter(container.NewHBox(attackBtn, fleeBtn)),
+		container.NewCenter(container.NewHBox(attackBtn, fleeBtn, defendBtn, itemsBtn)),
 	)
 
 	topOffset := canvas.NewRectangle(color.Transparent)
@@ -127,6 +141,7 @@ func (b *BattleUI) Update(atk AttackData) {
 // sprites and names, and initializes the combat UI with the first turn data.
 func (b *BattleUI) InitFight(atk AttackData) {
 	b.inFight = true
+	b.targetNPC = atk.NPCName
 	b.npcNameLabel.SetText(atk.NPCName)
 	b.playerImg.File = "./data/npc/" + b.player.gender + "attack.png"
 	b.playerImg.Refresh()

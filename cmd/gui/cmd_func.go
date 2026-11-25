@@ -72,17 +72,24 @@ func Str_to_quests(str string, w fyne.Window) {
 func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
 	var pop *widget.PopUp
 
-	for _, o := range objects {
-		if btn, ok := o.(*widget.Button); ok {
-			action := btn.OnTapped
-			btn.OnTapped = func() {
-				pop.Hide()
-				if action != nil {
-					action()
+	var hookButtons func(objs []fyne.CanvasObject)
+	hookButtons = func(objs []fyne.CanvasObject) {
+		for _, o := range objs {
+			switch v := o.(type) {
+			case *widget.Button:
+				action := v.OnTapped
+				v.OnTapped = func() {
+					pop.Hide()
+					if action != nil {
+						action()
+					}
 				}
+			case *fyne.Container:
+				hookButtons(v.Objects)
 			}
 		}
 	}
+	hookButtons(objects)
 
 	menu := container.NewVBox(
 		objects...,
