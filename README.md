@@ -4,9 +4,25 @@ _This project has been created as part of the 42 curriculum by anacharp, frrenau
 
 ## Description
 
+**The Answer Protocol (TAP)** is a text-based, multiplayer adventure game played over TCP. A Go server hosts a shared virtual world (rooms, items, NPCs, quests) and several clients can connect at the same time to explore it, fight hostile NPCs, complete quests, form groups and chat.
+
+The project is made of three parts:
+
+- **Server**: holds the world state and implements the protocol.
+- **CLI client**: a colored terminal client with command history (arrow keys).
+- **GUI client**: a graphical client built with Fyne.
+The protocol is line-based: every message is a single UTF-8 line terminated by `\n`. The server answers with lines starting with `OK`, `ERR` or `EVT` (asynchronous events pushed to players).
+
 ## Instructions
 
-Server:
+### Requirements
+
+- Go (see `go.mod` for the version)
+- `make`
+- GUI only: the dependencies required by [Fyne](https://docs.fyne.io/)
+### Run
+
+Server (listens on `:8080`):
 ```bash
 go run ./cmd/server
 ```
@@ -21,8 +37,70 @@ CLI:
 go run ./cmd/cli
 ```
 
+With the Makefile:
+```bash
+make server
+make cli
+```
+
+The server can be stopped with `Ctrl+C`, or by typing `stop`, `quit` or `exit` in its terminal.
+Use `Ctrl+C` (not `Ctrl+Z`) to stop it: a suspended process keeps port 8080 busy.
+
 ## Architecture
-section explaining your server design choices (dispatcher/router vs inline handling, concurrency model, etc.)
+
+```
+.
+├── cmd/
+│   ├── server/   # server entry point (listener, shutdown handling)
+│   ├── cli/      # terminal client
+│   └── gui/      # graphical client
+├── client/       # connection library shared by the CLI and the GUI
+├── game/         # world model (rooms, items, NPCs, quests) and world loading
+├── server/       # connection handling, dispatcher, command handlers
+├── data/         # world.json and map
+└── Makefile
+```
+
+### Dispatcher
+
+All commands go through a single `Dispatcher` (`server/dispatcher.go`). It keeps a map `command name -> handler` (`CommandFunc`), filled in `registerCommands()`.
+
+For each line received, `Dispatch`:
+
+1. splits the line into words and upper-cases the command (`GROUP` commands use two words, e.g. `GROUP CREATE`),
+2. applies the anti-spam rule on `CHAT`,
+3. checks the player's status: during a fight (`combat`), only `ATTACK`, `DEFEND`, `FLEE`, `STATUS`, `USE_ITEM` and `INVENTORY` are allowed,
+4. calls the matching handler, or answers an unknown-command error.
+This design was chosen over inline handling in the connection loop because adding a command only means writing a handler and registering it, and because the connection code stays independent of the game rules.
+
+### Concurrency model
+
+- **One goroutine per connection** (`HandleConnection`), started by the accept loop in `Server`.
+- The shared state (clients, groups, world) is protected by a single mutex, `Dispatcher.mu`. Handlers that read or modify the world lock it.
+- The number of connections is tracked with a counter and limited to 30 (`ERR 19 SERVER_FULL` beyond that).
+- Cleanup (removing the player from the room, dropping the inventory, updating stats) is done in one place: a `defer` in `HandleConnection`. It runs whether the player typed `QUIT`, closed the terminal, or lost the connection.
+- Graceful shutdown: `Ctrl+C` / `SIGTERM` / the `stop` command close the listener, which makes the accept loop return.
+### TCP stream handling
+
+TCP is a stream of bytes, not a stream of messages. The server reads with a `bufio.Reader` and only processes a command once the terminating `\n` has arrived:
+
+- **Fragmentation**: a command split across several packets is buffered until the full line is received.
+- **Coalescence**: several commands received in one packet are processed one by one.
+- **Line limit**: lines longer than 1024 bytes are discarded and answered with `ERR 16 LINE_TOO_LONG`, without closing the connection.
+### Resource limits
+
+| Limit | Value |
+|---|---|
+| Line length | 1024 bytes |
+| Simultaneous connections | 30 |
+| Inventory size | 100 items |
+| Chat frequency | 1 message per 2 seconds per player |
+
+### Client side
+
+The `client` package opens the connection, reads server lines in a goroutine and exposes them through a `Messages()` channel. `Close()` is idempotent and a `done` channel prevents the reader goroutine from blocking when nobody reads anymore.
+
+The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the history with the up/down arrows, and prints server messages without breaking the line being typed.
 
 ## Protocole Implementation
 
@@ -40,7 +118,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | `"EVT PLAYER DROPPED <item_id>` |
 | `INVENTORY` | `OK inventory=[item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
-| `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | | none |
+| `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | none |
 | `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 14 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
 | `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": Robber, "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": normal, "status": combat}` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT STRENGH : +5 player strengh during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
@@ -49,7 +127,7 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
 | `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
-| `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none | done |
+| `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none |
 | `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE <leadername>` to the invited user |
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
 | `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE <username>` to remaining members |
@@ -62,9 +140,9 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`| none |
 | error CLI or GUI connection | | `900 CONNECTION_FAILED` | none |
 | error CLI or GUI send | | `900 SEND_FAILED` | none |
+| error line too long | | `ERR 16 LINE_TOO_LONG` | none |
 | error server full | | `ERR 19 SERVER_FULL` | none |
 | when someone CONNECT himself or QUIT | | | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` |
-
 
 ### Error codes
 
@@ -129,73 +207,198 @@ section explaining your server design choices (dispatcher/router vs inline handl
 | A player take a quest | `EVT QUEST took=<quest_id>` | **custom (not in RFC)** |
 
 ## Combat System
-To attack a NPC, he has to be hostile and in the same room as the player.\
-The player has to use the command `ATTACK <NPC_id>` to start a fight. He is always the first to start a fight.\
-Fight a NPC changes his status from exploration to combat status. \
-On combat status, he only can use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS` and `USE_ITEM <item_id>`.
-- `ATTACK` : hit the NPC and reduce his HP. There is only 10% of chance to do a critical hit. The critical hit increase the player strengh for 40% for this hit.
-- `DEFEND` : protect the player from the NPC's action. If the NPC hit back, his strengh will be 40% less.
-- `FLEE` : The player has 40% of chance to succeed his flee.
-- `USE_ITEM` : The player can use items, they active buff or debuff :
-	- beer : debuff - poison for the player who drink it during 3 beers
-	- health potion : buff - regenere player's HP during 4 turns
-	- strengh potion : buff - increase player's strengh during 4 turns
-	- sword potion : buff - increase player's strengh during 10 turns
-	- poison potion : buff - inflige 5 damage to NPC during 5 turns
-- `STATUS` : The player can see his HP, maximum HP and his status
-- `INVENTORY` : The player can check his inventory to find some items to use in fight
 
-After `ATTACK`, `DEFEND`, `FLEE`, and `USE_ITEM`, the NPC can do an an action. He has 3 choices :
-- Regenerate himself with 5 more HP,
-- Attack the player with 10% of chance to do a critical hit,
-- Or flee (always success).
+To attack an NPC, it has to be hostile and in the same room as the player.\
+The player uses `ATTACK <NPC_id>` to start a fight, and is always the first to strike.\
+Fighting an NPC changes the player's status from `exploration` to `combat`.\
+While in combat, the player can only use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS` and `USE_ITEM <item_id>`. Any other command is refused with `ERR 12 IN_FIGHT`.
 
-Depending on the player action, the NPC will have more chances to attack or defend :
-- if the player `ATTACK` :
-	- 10% of chance to flee
-	- 80% of chance to attack
-	- 10% of chance to regenerate
-- if the player `DEFEND` :
-	- 5% of chance to flee
-	- 75% of chance to attack
-	- 20% of chance to regenerate
-- if the player fail to `FLEE` :
-	- 95% of chance to attack
-	- 5% of chance to regenerate
-- if the player `USE_ITEM` :
-	- 5% of chance to flee
-	- 55% of chance to attack
-	- 40% of chance to regenerate
+- `ATTACK`: hits the NPC and reduces its HP. There is a 10% chance of a critical hit, which increases the player's strength by 40% for that hit.
+- `DEFEND`: protects the player from the NPC's action. If the NPC hits back, its strength is reduced by 40%.
+- `FLEE`: the player has a 40% chance to succeed.
+- `USE_ITEM`: the player can use items, which activate a buff or a debuff:
+	- beer: debuff, the player is poisoned for 3 turns
+	- health potion: buff, regenerates the player's HP for 4 turns
+	- strengh potion: buff, increases the player's strength for 4 turns
+	- sword: buff, increases the player's strength for 10 turns
+	- poison potion: buff, deals 5 damage to the NPC for 5 turns
+- `STATUS`: shows the player's HP, maximum HP and status.
+- `INVENTORY`: lets the player check which items can be used in the fight.
+After `ATTACK`, `DEFEND`, `FLEE` and `USE_ITEM`, the NPC reacts. It has 3 choices:
 
-If a player attack a NPC, no more player can join the fight. The fight end only if the player or the NPC flee, or if one of them died.
+- regenerate 5 HP,
+- attack the player (10% chance of a critical hit),
+- or flee (always succeeds).
+Depending on the player's action, the probabilities change:
+
+| Player action | NPC flees | NPC attacks | NPC regenerates |
+|---|---|---|---|
+| `ATTACK` | 10% | 80% | 10% |
+| `DEFEND` | 5% | 75% | 20% |
+| failed `FLEE` | 0% | 95% | 5% |
+| `USE_ITEM` | 5% | 55% | 40% |
+
+Once a player attacks an NPC, no other player can join the fight. The fight ends only when the player or the NPC flees, or when one of them dies. A player who dies respawns in the tavern.
 
 ## Quest System
-A player can see all the available quests in his room by using the command `FIND_QUESTS`.\
-If he his in the same room as a NPC, he can take his quest with `QUEST <npc_id>` if he has an available quest.\
-It gives informations about the quest : the npc who gives it, a description to know what to do to complete it, the rewards...\
-A purpose of a quest can be to bring items, or to kill a NPC, or both at the same time.\
-By taking a quest, he makes it unavailable for the others, except if he abandon it by using `ABANDON_QUEST <quest_id>` command.\
-Then, he will be able to see his progress on this quest and all the others by using `QUESTS`.\
-If he has all the required elements of the quest, he has to go back to the NPC and `COMPLETE_QUEST <quest_id>`. If he well completed the quest, he gives the required items to the NPC (so the items are no longer available in the game) and he receives the rewards right in his inventory.\
-For now, the completed quest will not be available for another player. This quest no longer exist.\
-Doing the `QUESTS` command write now a `completed` status for this quest.
+
+A player can list the available quests of his room with `FIND_QUESTS`.\
+If he is in the same room as an NPC that has an available quest, he takes it with `QUEST <npc_id>`. The answer gives the NPC, a description of what to do, the reward, etc.\
+A quest can ask to bring items, to kill an NPC, or both.\
+Taking a quest makes it unavailable for the other players, unless it is abandoned with `ABANDON_QUEST <quest_id>`.\
+`QUESTS` shows the progress on the quests taken and the status (`active` or `completed`) of each.\
+When the player has everything required, he goes back to the NPC and uses `COMPLETE_QUEST <quest_id>`. The required items are given to the NPC (they are no longer available in the game) and the rewards go directly into his inventory.\
+For now, a completed quest is not available again for another player: it no longer exists.
 
 ## World Design
+
 ![World Map](data/map.jpeg "World Map")
 
-section describing your world layout, room connections, NPC roles, and item distribution
+### World layout and room connections
 
+The player spawns and respawns in the tavern, in the middle of the map.\
+From there, he can go to the flowering meadow, the square, the secret garden or the haunted forest.\
+The haunted forest and the secret garden are linked to the lake.\
+The square is linked to the tavern and the market. The flowering meadow is linked to the tavern and the market too.\
+Finally, the castle is only linked to the haunted forest.
+
+### NPC Roles
+
+There are two kinds of NPC: hostile ones, and the others. Only hostile NPCs can be fought.
+
+Hostile:
+
+- Pirate
+- Captain
+Others:
+
+- Witch: gives a quest
+- Ghost
+- Woman: gives a quest
+- Fisherman
+- Bartender: gives quests
+- Princess: gives quests
+- Village guard
+- Royal guard: gives a quest
+- Jewelry merchant: gives a quest
+- Food merchant: gives a quest
+- Weapon merchant: gives a quest
+### Item Distribution
+
+Items: Herbs, Spirit, Necklace, Flower, Fish, Strengh Potion, Health Potion, Poison Potion, Sword, Beer, Gold.
+
+Some items can be taken directly in the rooms, others are won by completing a quest.
+
+Every item exists as a unique instance in the world, in one of three states: lying in a room, held in a player's inventory, or dropped back in a room. Items can be taken, dropped, used in a fight (they are then consumed), or given to an NPC for a quest (they are then consumed).
+
+Items can be designated by their id (`item.gold`) or by their name (`Gold`), and multi-word names are supported.
+
+If a player dies or disconnects, his whole inventory is dropped in the room where he is.
+
+An inventory is full at 100 items.
+
+## Security
+
+- **Input size**: lines over 1024 bytes are rejected (`ERR 16 LINE_TOO_LONG`).
+- **Anti-spam**: one `CHAT` message every 2 seconds per player (`ERR 18 SPAM`).
+- **Connection limit**: 30 players at the same time (`ERR 19 SERVER_FULL`).
+- **Unique names**: two players cannot have the same name (`ERR 201 NAME_IN_USE`).
+- **Encoding**: messages are UTF-8.
 ## Server Logging
-section documenting your logging implementation, including log format, event types, output destinations, and how to monitor server behavior and detect abuse patterns.
 
+> To complete with the real implementation of the project.
+
+Suggested content for this section:
+
+- **Format**: one line per event, `<timestamp> <level> <event> <details>`, for example `2026-11-25T14:03:12Z INFO connect name=bob addr=127.0.0.1:38400`.
+- **Event types**: connection / disconnection, `CONNECT` accepted or refused, commands received (with the player name), combat events (attack, flee, death), quest events (took, completed, abandoned), chat (scope and sender, not necessarily the content), protocol errors (`ERR 01`, `ERR 16`, `ERR 18`...), server full.
+- **Output**: standard error, or a log file (`server.log`).
+- **Monitoring**: `tail -f server.log`, `grep` on `SPAM`, `LINE_TOO_LONG` or `SERVER_FULL` to detect abuse (the same address triggering many errors in a short time).
 ## Group Contributions
-section clearly indicating each team member’s responsibilities and contributions to different components (server, CLI client, GUI client, world design, etc.).
+
+| Task | Details | Group Member |
+| ---- | ------- | ------------ |
+| Server | TCP server, dispatcher, commands, combat, quests, groups, chat, limits | anacharp |
+| CLI client | Connection library, colored display, command history | anacharp |
+| GUI client | Fyne interface | frrenaux, tcolson |
+| World Design | Map, rooms, NPCs, items, quests (`data/world.json`) | anacharp, frrenaux |
 
 ## Building and Running
-section with detailed instructions for your chosen building tool and how to run each component (server, CLI client, GUI client).
+
+The Makefile provides one target per component:
+
+```bash
+make server   # starts the server on :8080
+make cli      # starts the CLI client
+```
+
+Without `make`:
+
+```bash
+go build -o bin/server ./cmd/server && ./bin/server
+go build -o bin/cli    ./cmd/cli    && ./bin/cli
+go build -o bin/gui    ./cmd/gui    && ./bin/gui
+```
+
+Always start the server first. The server and the clients must be started from the root of the repository (the server loads `data/world.json`).
+
+To free the port if an old server is still running:
+
+```bash
+fuser -k 8080/tcp
+```
 
 ## Testing
-section explaining how to test the multiplayer functionality, combat system, and quest mechanics.
+
+Run the server with the race detector to detect data races while testing:
+
+```bash
+go run -race ./cmd/server
+```
+
+### Multiplayer
+
+1. Start the server.
+2. Open two or more terminals and run `go run ./cmd/cli` in each.
+3. `CONNECT alice` in the first one, `CONNECT bob` in the second.
+4. Check the events: `EVT STATS players=2`, `EVT ROOM PRESENCE ENTER bob`.
+5. Test `WHO`, `LOOK` (both players are listed), `CHAT GLOBAL`, `CHAT ROOM`.
+6. Groups: `GROUP CREATE team`, `GROUP INVITE bob`, then `GROUP JOIN alice` on bob's side, `INFO_GROUP`, `CHAT GROUP`, `GROUP LEAVE`.
+7. Check the errors: same name twice (`ERR 201`), two `CHAT` in less than 2 seconds (`ERR 18`).
+8. Quit one client with `QUIT`, then by closing its terminal: the other one must receive the updated stats.
+### Combat
+
+1. Go to a room with a hostile NPC (pirate, captain) and `ATTACK <npc>`.
+2. Check that other commands are refused (`ERR 12 IN_FIGHT`) and that `DEFEND`, `FLEE`, `STATUS`, `INVENTORY` and `USE_ITEM` are accepted.
+3. Attack a non-hostile NPC: `ERR 405`. Attack an NPC already in a fight: `ERR 14`.
+4. Use each consumable and check the buff/debuff events.
+5. Let the player die: inventory dropped in the room, respawn in the tavern.
+### Quests
+
+1. `FIND_QUESTS` near an NPC, then `QUEST <npc>`.
+2. `QUESTS` shows the quest as `active` with its progress.
+3. With a second player, check that the quest is no longer available.
+4. `ABANDON_QUEST <id>`, then check that it is available again.
+5. Collect the required items, return to the NPC and `COMPLETE_QUEST <id>`: items consumed, rewards received.
+6. `COMPLETE_QUEST` without the items: `ERR 11`.
+### Protocol (TCP stream)
+
+These tests use `nc` and `printf` because the CLI always sends complete lines.
+
+Fragmentation (a command received in two pieces, the answer must only come after the `\n`):
+```bash
+(printf 'CONNECT bob\n'; sleep 1; printf 'lo'; sleep 2; printf 'ok\n'; sleep 1) | nc localhost 8080
+```
+
+Coalescence (two commands in one packet, two answers expected):
+```bash
+(printf 'CONNECT bob\n'; sleep 1; printf 'look\nwho\n'; sleep 1) | nc localhost 8080
+```
+
+Line too long (answer `ERR 16 LINE_TOO_LONG`, connection kept open):
+```bash
+(printf 'CONNECT bob\n'; sleep 1; head -c 2000 /dev/zero | tr '\0' 'a'; printf '\n'; sleep 1) | nc localhost 8080
+```
 
 ## Resources
 
@@ -207,9 +410,8 @@ section explaining how to test the multiplayer functionality, combat system, and
 - [Les fondamentaux de Go - Organisation d'un projet](https://go-start.vercel.app/fr/chapter-1-introduction/1-4-project-layout/)
 - [Les fondamentaux de Go - Commandes essentielles](https://go-start.vercel.app/fr/chapter-1-introduction/1-5-essential-commands/)
 - [Go by Example: Time](https://gobyexample.com/time)
-
 #### Server
-- [Qu’est-ce que le protocole TCP/IP de contrôle de la transmission ?](https://www.fortinet.com/fr/resources/cyberglossary/tcp-ip)
+- [Qu'est-ce que le protocole TCP/IP de contrôle de la transmission ?](https://www.fortinet.com/fr/resources/cyberglossary/tcp-ip)
 - [Build a Blazing-Fast TCP Server in Go: A Practical Guide](https://dev.to/jones_charles_ad50858dbc0/build-a-blazing-fast-tcp-server-in-go-a-practical-guide-29d)
 - [Go by Example: TCP Server](https://gobyexample.com/tcp-server)
 - [Les fondamentaux de Go - Serveur TCP](https://go-start.vercel.app/fr/chapter-10-cli-mastery-build-a-publishable-task-manager/10-17-tcp-server/)
@@ -219,11 +421,21 @@ section explaining how to test the multiplayer functionality, combat system, and
 - [Goroutines](https://go.dev/tour/concurrency/1)
 - [Channels](https://go.dev/tour/concurrency/2)
 - [Buffered Channels](https://go.dev/tour/concurrency/3)
-
 #### Client
 - [What is the net.DialTimeout function in Golang?](https://www.educative.io/answers/what-is-the-netdialtimeout-function-in-golang)
-
+- [Package golang.org/x/term](https://pkg.go.dev/golang.org/x/term)
 #### GUI
 - [Package Fyne](https://docs.fyne.io/)
+#### Specification
+- [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119): MUST / SHOULD / MAY
+- [RFC 5234](https://www.rfc-editor.org/rfc/rfc5234): ABNF
+- [RFC 793](https://www.rfc-editor.org/rfc/rfc793): TCP
+- [RFC 3629](https://www.rfc-editor.org/rfc/rfc3629): UTF-8
 
 ### AI Usage
+
+AI was used as a helper for:
+- understanding and debugging errors (panic on a nil pointer, import cycle, `null` instead of `[]` in JSON, port already in use, `use of closed network connection`),
+- understanding the specification (TCP fragmentation and coalescence, resource management, security considerations),
+- suggestions for the clean shutdown of the server and the CLI, the raw-mode input with history, the line size limit and the anti-spam,
+- proofreading and restructuring this README.
