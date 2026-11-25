@@ -293,6 +293,7 @@ Others:
 - Jewelry merchant: gives a quest
 - Food merchant: gives a quest
 - Weapon merchant: gives a quest
+
 ### Item Distribution
 
 Items: Herbs, Spirit, Necklace, Flower, Fish, Strength Potion, Health Potion, Poison Potion, Sword, Beer, Gold.
@@ -314,16 +315,102 @@ An inventory is full at 100 items.
 - **Connection limit**: 30 players at the same time (`ERR 19 SERVER_FULL`).
 - **Unique names**: two players cannot have the same name (`ERR 201 NAME_IN_USE`).
 - **Encoding**: messages are UTF-8.
+
 ## Server Logging
 
-> To complete with the real implementation of the project.
+The server logs with the standard `log/slog` package (`server/log.go`). Every log line is a **JSON object** written on one line, which makes it easy to parse with `jq` or `grep`.
 
-Suggested content for this section:
+### Format
 
-- **Format**: one line per event, `<timestamp> <level> <event> <details>`, for example `2026-11-25T14:03:12Z INFO connect name=bob addr=127.0.0.1:38400`.
-- **Event types**: connection / disconnection, `CONNECT` accepted or refused, commands received (with the player name), combat events (attack, flee, death), quest events (took, completed, abandoned), chat (scope and sender, not necessarily the content), protocol errors (`ERR 01`, `ERR 16`, `ERR 18`...), server full.
-- **Output**: standard error, or a log file (`server.log`).
-- **Monitoring**: `tail -f server.log`, `grep` on `SPAM`, `LINE_TOO_LONG` or `SERVER_FULL` to detect abuse (the same address triggering many errors in a short time).
+```json
+{"time":"2026/11/25 11:13:40","level":"INFO","msg":"command","source":"SERVER","player":"h","ip":"10.11.1.5:39316","cmd":"ATTACK","args":["pizza"]}
+```
+
+| Field | Meaning |
+|---|---|
+| `time` | Date and time of the event (`YYYY/MM/DD HH:MM:SS`) |
+| `level` | `INFO`, `WARN` or `ERROR` (`DEBUG` is available, see below) |
+| `source` | Always `SERVER` |
+| `msg` | Type of event |
+| `ip` | Address of the **client** (`ip:port`), never the server's |
+| `player` | The player who **did** the action |
+| `to` | The player who **received** a message (only on messages sent by the server) |
+
+### Log levels
+
+| Level | Used for | Examples |
+|---|---|---|
+| `INFO` | Normal activity | connection, command, response, event, quest, combat |
+| `WARN` | A mistake or abuse from the client, handled by the server | `ERR 404`, `ERR 18 SPAM`, line too long, server full |
+| `ERROR` | A failure of the **server** itself | `ERR 500 INTERNAL`, recovered panic, send failure, `accept` failure |
+| `DEBUG` | Very verbose details (off by default) | enabled with `LOG_LEVEL=debug` |
+
+A player typing a wrong command can only cause a `WARN`. An `ERROR` always means a bug or a failure on the server side.
+
+### Event types
+
+| `msg` | Level | Description |
+|---|---|---|
+| `server started` / `server stopped` | INFO | Start and end of the server (with the listening address) |
+| `shutdown requested` | INFO | `Ctrl+C`, `SIGTERM`, or `stop`/`quit`/`exit` typed on the server |
+| `client connected` / `client disconnected` | INFO | Connection and disconnection, with the client's IP and player name |
+| `command` | INFO | Every command received: player, IP, command and arguments |
+| `response sent` | INFO | Every `OK` answer sent to a client |
+| `error sent` | WARN / ERROR | Every `ERR` answer sent, with its `code` (`ERROR` for `500`) |
+| `event sent` | INFO | Every `EVT`, with the event and the **list of players who received it** (`recipients`, `count`) |
+| `item taken` / `item dropped` | INFO | Item movements between rooms and inventories |
+| `combat` / `npc killed` | INFO | Damage dealt and received, NPC deaths |
+| `quest taken` / `quest completed` / `quest abandoned` | INFO | Quest progress |
+| `send failed` | ERROR | Writing to a client's connection failed |
+| `panic recovered` | ERROR | A handler crashed: only that player is disconnected, the server keeps running (stack trace included) |
+| `abuse: chat spam` | WARN | More than one `CHAT` every 2 seconds |
+| `abuse: line too long` | WARN | Line over 1024 bytes |
+| `abuse: rapid connections` | WARN | Too many connections from the same address in a short time |
+| `connection refused: server full` | WARN | More than 30 simultaneous players |
+
+Events sent to several players (presence, stats, chat, group) produce **one** log line, with all the recipients:
+
+```json
+{"time":"2026/11/25 11:52:10","level":"INFO","msg":"event sent","source":"SERVER","event":"EVT ROOM PRESENCE ENTER bob","recipients":["alice","carol"],"count":2}
+```
+
+### Output
+
+Logs are written on the **standard output** (`stdout`) of the server. To keep a copy in a file:
+
+```bash
+make server | tee server.log
+```
+
+The log level can be changed with an environment variable:
+
+```bash
+LOG_LEVEL=debug make server
+```
+
+JSON encoding escapes control characters, so a player name containing terminal escape sequences cannot alter the terminal of the person reading the logs.
+
+### Monitoring and abuse detection
+
+```bash
+tail -f server.log                                   # follow the server live
+grep '"level":"WARN"'  server.log                    # client mistakes and abuse
+grep '"level":"ERROR"' server.log                    # server failures
+grep '"msg":"abuse' server.log                       # abuse patterns only
+grep '"code":"18"' server.log                        # all spam errors
+grep '"msg":"quest' server.log                       # quest activity
+
+# with jq
+jq 'select(.player=="bob" or .to=="bob")' server.log                 # everything about bob
+jq -r 'select(.msg=="client connected") | .ip' server.log | sort | uniq -c | sort -rn   # connections per address
+```
+
+Abuse is detected from: chat flooding (`abuse: chat spam`), oversized lines (`abuse: line too long`), repeated connections from the same address (`abuse: rapid connections`), and a full server (`connection refused: server full`). An address appearing many times in these lines in a short time is a sign of abuse.
+
+### Performance
+
+`slog` is thread-safe and writes each line with a single `Write`, so lines from different goroutines are never mixed. The logs are written synchronously to the standard output, which stays fast for the size of this project, and broadcast events are logged once instead of once per recipient.
+
 ## Group Contributions
 
 | Task | Details | Group Member |
