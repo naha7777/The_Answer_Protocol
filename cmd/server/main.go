@@ -15,7 +15,7 @@ func main() {
 	// the server listens on port 8080
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		server.Log.Error("listen failed", "err", err)
+		server.Srv().Error("listen failed", "err", err)
 		os.Exit(1)
 	}
 
@@ -23,9 +23,9 @@ func main() {
 	var once sync.Once
 	shutdown := func(reason string) {
 		once.Do(func() {
-			server.Log.Info("shutdown requested", "reason", reason)
+			server.Srv().Info("shutdown requested", "reason", reason)
 			if err := listener.Close(); err != nil {
-				server.Log.Error("listener closure failed", "err", err)
+				server.Srv().Error("listener closure failed", "err", err)
 			}
 		})
 	}
@@ -50,12 +50,12 @@ func main() {
 			case "":
 				continue
 			default:
-				server.Log.Warn("unknown server command", "cmd", cmd,
-								"hint", "use quit, stop or exit")
+				server.Srv().Warn("unknown server command", "cmd", cmd,
+					"hint", "use quit, stop or exit")
 			}
 		}
 		if err := scanner.Err(); err != nil {
-			server.Log.Error("stdin read failed", "err", err)
+			server.Srv().Error("stdin read failed", "err", err)
 		}
 	}()
 	server.Server(listener)

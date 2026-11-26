@@ -330,7 +330,7 @@ The server logs with the standard `log/slog` package (`server/log.go`). Every lo
 |---|---|
 | `time` | Date and time of the event (`YYYY/MM/DD HH:MM:SS`) |
 | `level` | `INFO`, `WARN` or `ERROR` (`DEBUG` is available, see below) |
-| `source` | Always `SERVER` |
+| `source` | Who **caused** the event: the player name (or its address before `CONNECT`) for client actions, an NPC id for NPC actions, `SERVER` for what the server itself does (responses, events, start/stop, errors) |
 | `msg` | Type of event |
 | `ip` | Address of the **client** (`ip:port`), never the server's |
 | `player` | The player who **did** the action |
@@ -399,9 +399,10 @@ grep '"level":"ERROR"' server.log                    # server failures
 grep '"msg":"abuse' server.log                       # abuse patterns only
 grep '"code":"18"' server.log                        # all spam errors
 grep '"msg":"quest' server.log                       # quest activity
+grep '"source":"SERVER"' server.log                  # what the server said or did
 
 # with jq
-jq 'select(.player=="bob" or .to=="bob")' server.log                 # everything about bob
+jq 'select(.player=="bob" or .source=="bob")' server.log                 # everything about bob
 jq -r 'select(.msg=="client connected") | .ip' server.log | sort | uniq -c | sort -rn   # connections per address
 ```
 

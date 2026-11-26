@@ -49,7 +49,7 @@ func (c *Client) write(msg string) error {
 func (c *Client) Send(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
 	if err := c.write(msg); err != nil {
-		Log.Error("send failed", "to", c.label(), "err", err)
+		Srv().Error("send failed", "to", c.label(), "err", err)
 		return
 	}
 
@@ -58,14 +58,14 @@ func (c *Client) Send(format string, a ...any) {
 	case "ERR":
 		code, _, _ := strings.Cut(rest, " ")
 		if code == "500" {
-			Log.Error("error sent", "to", c.label(), "code", code, "message", msg)
+			Srv().Error("error sent", "to", c.label(), "code", code, "message", msg)
 		} else {
-			Log.Warn("error sent", "to", c.label(), "code", code, "message", msg)
+			Srv().Warn("error sent", "to", c.label(), "code", code, "message", msg)
 		}
 	case "EVT":
-		Log.Info("event sent", "event", msg, "recipients", []string{c.label()}, "count", 1)
+		Srv().Info("event sent", "event", msg, "recipients", []string{c.label()}, "count", 1)
 	default:
-		Log.Info("response sent", "to", c.label(), "message", msg)
+		Srv().Info("response sent", "to", c.label(), "message", msg)
 	}
 }
 

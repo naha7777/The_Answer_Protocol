@@ -55,6 +55,8 @@ func RemoveItemInventory(client *Client, item_id string, d *Dispatcher,
 			found = true
 			if context == "drop" {
 				client.room.Items = append(client.room.Items, i.Id)
+				client.log().Info("item dropped", "item", i.Id, "room",
+								  client.room.Id)
 			} else if context == "quest" {
 				client.Send("OK gave=%s", item_id)
 			}

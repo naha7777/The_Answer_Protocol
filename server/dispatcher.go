@@ -70,7 +70,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var args []string
 	first := strings.ToUpper(parts[0])
 
-	Log.Info("command", "player", client.name, "ip", client.conn.RemoteAddr().String(), "cmd", first, "args", parts[1:])
+	client.log().Info("command", "cmd", first, "args", parts[1:])
 
 	// spam protection
 	if first == "CHAT" {

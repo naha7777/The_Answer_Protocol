@@ -25,8 +25,13 @@ var (
 	conns   = map[net.Conn]struct{}{}
 )
 
-func trackConn(c net.Conn)   { connsMu.Lock(); conns[c] = struct{}{}; connsMu.Unlock() }
-func untrackConn(c net.Conn) { connsMu.Lock(); delete(conns, c); connsMu.Unlock() }
+func trackConn(c net.Conn) {
+	connsMu.Lock(); conns[c] = struct{}{}; connsMu.Unlock()
+}
+
+func untrackConn(c net.Conn) {
+	connsMu.Lock(); delete(conns, c); connsMu.Unlock()
+}
 
 func closeAllConns() {
 	connsMu.Lock()
@@ -68,7 +73,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 
 	// limit the number of connections
 	if conn_nb.Add(1) > connection_limit {
-		Log.Warn("connection refused: server full", "ip", ip)
+		Srv().Warn("connection refused: server full", "ip", ip)
 		client.Send("ERR 19 SERVER_FULL")
 		conn_nb.Add(-1)
 		return
@@ -76,9 +81,9 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	defer conn_nb.Add(-1)
 
 	// Server log for client connection
-	Log.Info("client connected", "ip", ip)
+	Srv().Info("client connected", "ip", ip)
 	defer func() {
-		Log.Info("client disconnected", "ip", ip)
+		Srv().Info("client disconnected", "ip", ip)
 		dispatcher.removeClient(client)
 		dispatcher.displayRoomStats()
 		dispatcher.displayStats()
@@ -87,7 +92,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	// avoid panic
 	defer func() {
 		if r := recover(); r != nil {
-			Log.Error("panic recovered", "player", client.name, "ip", ip,
+			Srv().Error("panic recovered", "player", client.name, "ip", ip,
 				"panic", fmt.Sprint(r), "stack", string(debug.Stack()))
 			client.Send("ERR 500 INTERNAL")
 		}
@@ -162,7 +167,7 @@ func Server(listener net.Listener) {
 	// dispatcher creation
 	dispatcher := NewDispatcher(world)
 
-	Log.Info("server started", "addr", listener.Addr().String())
+	Srv().Info("server started", "addr", listener.Addr().String())
 
 	for {
 		connection, err := listener.Accept()
@@ -170,13 +175,13 @@ func Server(listener net.Listener) {
 			// verrification vu que listener.Close est appele listenner.Accept
 			// retourne une net.ErrClosed donc on a ferme le listenner volontairement
 			if errors.Is(err, net.ErrClosed) {
-				Log.Info("server shutting down")
+				Srv().Info("server shutting down")
 				closeAllConns()
 				wg.Wait()
-				Log.Info("server stopped")
+				Srv().Info("server stopped")
 				return
 			}
-			Log.Error("accept failed", "err", err)
+			Srv().Error("accept failed", "err", err)
 			continue
 		}
 		// one goroutine for one connection

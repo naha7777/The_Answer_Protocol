@@ -25,6 +25,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 							client.quests = append(client.quests, q)
 							client.Send(`OK quest={"quest_npc": "%s", "quest_id": "%s", "description": "%s", "reward": "%s", "status": "%s"}`, q.NPC, q.Id, q.Description, q.Reward, q.Status)
 							SendAll(d, client, `EVT QUEST took=%s`, q.Id)
+							client.log().Info("quest taken", "quest", q.Id)
 							q.Status = "active"
 							find = true
 							return
@@ -98,6 +99,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 					success := CompleteObjective(quest, client, d)
 					if success {
 						SendAll(d, client, `EVT QUEST completed=%s`, quest.Id)
+						client.log().Info("quest completed", "quest", quest.Id)
 					}
 					return
 				} else {
@@ -132,6 +134,7 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 		if quest.Id == args[0] {
 			client.Send("OK abandon_quest=%s", quest.Id)
 			SendAll(d, client, `EVT QUEST abandoned=%s`, quest.Id)
+			client.log().Info("quest abandoned", "quest", quest.Id)
 			quest.Status = "available"
 		} else {
 			final_quests = append(final_quests, quest)
