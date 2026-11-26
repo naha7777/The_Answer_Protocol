@@ -34,6 +34,7 @@ type Client struct {
     cmdTimes      []time.Time
     floodLogged   bool
 	dead		  atomic.Bool
+	nb_death	  int
 }
 
 func (c *Client) label() string {
@@ -81,6 +82,7 @@ func (c *Client) Send(format string, a ...any) {
 func (client *Client) Death(d *Dispatcher) {
 	// handle client death : reset his status, inventory, quests, target
 	RemoveItemInventory(client, "false_item", d, false, "drop")
+	client.nb_death += 1
 
 	client.Send(`EVT DEATH`)
 	Srv().Info("death", "player", client.name)
@@ -91,6 +93,18 @@ func (client *Client) Death(d *Dispatcher) {
 	// Send an EVT to the players
 	SendAll(d, client, `EVT dead=%s`, client.name)
 
+	// reset client HP
+	if client.hp_max - (client.nb_death * 5) <= 0 {
+		client.hp_max -= 5
+		client.hp = client.hp_max
+		if client.hp_max <= 0 {
+			client.Send("GAME OVER")
+			client.quit = true
+		}
+	} else {
+		client.hp = client.hp_max - (client.nb_death * 5)
+	}
+
 	// handle respawn
 	for _, val := range d.world.Rooms {
 		if d.world.Respawn == val.Id {
@@ -98,13 +112,11 @@ func (client *Client) Death(d *Dispatcher) {
 			client.room.Players = Remove(client.name, client.room.Players)
 			client.room = val
 			client.room.Players = append(client.room.Players, client.name)
-			client.Send(`OK room=%s`, d.world.Respawn)
-			Srv().Info("respawn", "player", client.name, "room", client.room.Name)
+			client.Send(`OK room=%s, player_hp=%d, player_max_hp=%d`, d.world.Respawn, client.hp, client.hp_max)
+			Srv().Info("respawn", "player", client.name, "room", client.room.Name, "player_hp", client.hp)
 			SendRoom(d, client, `EVT ROOM PRESENCE ENTER %s`, client.name)
 		}
 	}
-	// reset client HP
-	client.hp = client.hp_max
 }
 
 func (c *Client) tooManyCommands(limit int, window time.Duration) bool {
