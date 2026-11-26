@@ -12,12 +12,20 @@ import (
 	"sync/atomic"
 	"the_answer_protocol/game"
 	"unicode"
+	"time"
 	"unicode/utf8"
 )
 
 var conn_nb atomic.Int32
 
 const connection_limit = 30
+
+type connTracker struct {
+	mu   sync.Mutex
+	seen map[string][]time.Time
+}
+
+var tracker = &connTracker{seen: map[string][]time.Time{}}
 
 var (
 	wg      sync.WaitGroup
@@ -50,11 +58,40 @@ func hasControlChars(s string) bool {
 	return false
 }
 
+func (t *connTracker) count(host string, window time.Duration) int {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	now := time.Now()
+
+	kept := t.seen[host][:0]
+	for _, ts := range t.seen[host] {
+		if now.Sub(ts) < window {
+			kept = append(kept, ts)
+		}
+	}
+	kept = append(kept, now)
+	t.seen[host] = kept
+
+	if len(t.seen) > 1000 {
+		for h, l := range t.seen {
+			if now.Sub(l[len(l)-1]) > window {
+				delete(t.seen, h)
+			}
+		}
+	}
+	return len(kept)
+}
+
 func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	world *game.World) {
 
 	defer connection.Close()
 	ip := connection.RemoteAddr().String()
+
+	host, _, _ := net.SplitHostPort(ip)
+	if n := tracker.count(host, 10*time.Second); n == 6 {
+		Srv().Warn("abuse: rapid connections", "ip", host, "limit", "5 per 10s")
+	}
 
 	// client creation
 	client := &Client{conn: connection}
@@ -83,7 +120,8 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	// Server log for client connection
 	Srv().Info("client connected", "ip", ip)
 	defer func() {
-		Srv().Info("client disconnected", "ip", ip)
+		Srv().Info("client disconnected", "ip", ip, "player", client.name)
+		client.dead.Store(true)
 		dispatcher.removeClient(client)
 		dispatcher.displayRoomStats()
 		dispatcher.displayStats()
@@ -113,6 +151,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			if err != nil {
 				break
 			}
+			client.log().Warn("abuse: line too long")
 			client.Send("ERR 16 LINE_TOO_LONG")
 			continue
 		}
@@ -148,7 +187,7 @@ func Server(listener net.Listener) {
 	// world generation
 	world, err := game.LoadWorld("data/world.json")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "fatal:", err)
+		Srv().Error("cannot load world", "err", err)
 		os.Exit(1)
 	}
 

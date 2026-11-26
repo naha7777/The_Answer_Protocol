@@ -379,7 +379,7 @@ Events sent to several players (presence, stats, chat, group) produce **one** lo
 Logs are written on the **standard output** (`stdout`) of the server. To keep a copy in a file:
 
 ```bash
-make server | tee server.log
+make server
 ```
 
 The log level can be changed with an environment variable:

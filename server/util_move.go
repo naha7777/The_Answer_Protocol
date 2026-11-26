@@ -10,6 +10,7 @@ func Move(direction string, client *Client, d *Dispatcher) {
 			for _, val := range d.world.Rooms {
 				if v == val.Id {
 					// Change player's room and send an EVT to the rooms' players
+					client.log().Info("move", "from", client.room.Name, "to", val.Name)
 					SendRoom(d, client, "EVT ROOM PRESENCE LEAVE %s",
 							 client.name)
 					client.room.Players = Remove(client.name,

@@ -45,6 +45,7 @@ func (d *Dispatcher) handleTalk(client *Client, args []string) {
 		npc := FindNPC(d, client, npcs)
 		if strings.ToUpper(npcs) == str || str == strings.ToUpper(npc.Name) {
 			client.Send("OK talk=%s: %v", npcs, npc.Dialogue[0])
+			client.log().Info("talk", "npc", npcs, "dialogue", npc.Dialogue[0])
 			return
 		}
 	}

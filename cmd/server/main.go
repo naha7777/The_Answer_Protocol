@@ -12,6 +12,13 @@ import (
 )
 
 func main() {
+	closeLog, err := server.InitLogger("server.log")
+	if err != nil {
+		server.Log.Error("cannot open log file", "err", err)
+		os.Exit(1)
+	}
+	defer closeLog()
+
 	// the server listens on port 8080
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {

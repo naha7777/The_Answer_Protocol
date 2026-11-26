@@ -15,7 +15,7 @@ func UseBeer(client *Client, time int, d *Dispatcher) int {
 	client.debuff = "poison"
 	client.time_debuff = time - 1
 	client.Send(`EVT BEER : -5 player hp during %d turns`, client.time_debuff)
-	client.log().Info("use item", "item", "beer")
+	client.log().Info("item used", "item", "beer")
 	return 5
 }
 
@@ -24,7 +24,7 @@ func UseSword(client *Client, time int, d *Dispatcher) int {
 	UseBuff(client, "item.sword", "strength", time, d)
 	client.Send(`EVT SWORD : +5 player strength during %d turns`,
 				client.time_buff)
-	client.log().Info("use item", "item", "sword")
+	client.log().Info("item used", "item", "sword")
 	return 5
 }
 
@@ -33,7 +33,7 @@ func UsePoisonPotion(client *Client, time int, d *Dispatcher) int {
 	UseBuff(client, "item.poison_potion", "poison", time, d)
 	client.Send(`EVT POISON POTION : -5 npc hp during %d turns`,
 				client.time_buff)
-	client.log().Info("use item", "item", "poison potion")
+	client.log().Info("item used", "item", "poison potion")
 	return 5
 }
 
@@ -42,7 +42,7 @@ func UseStrengthPotion(client *Client, time int, d *Dispatcher) int {
 	UseBuff(client, "item.strength_potion", "strength", time, d)
 	client.Send(`EVT Strength POTION : +5 player strength during %d turns`,
 				client.time_buff)
-	client.log().Info("use item", "item", "strength potion")
+	client.log().Info("item used", "item", "strength potion")
 	return 5
 }
 
@@ -51,6 +51,6 @@ func UseHealthPotion(client *Client, time int, d *Dispatcher) int {
 	UseBuff(client, "item.health_potion", "health", time, d)
 	client.Send(`EVT HEALTH POTION : +5 player hp during %d turns`,
 				client.time_buff)
-	client.log().Info("use item", "item", "health potion")
+	client.log().Info("item used", "item", "health potion")
 	return 5
 }

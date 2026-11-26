@@ -99,14 +99,14 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 		if rand.Float64() < 0.4 {
 			client.status = "exploration"
 			client.Send(`OK flee=succed, "status"="%s"`, client.status)
-			client.log().Info("flee", "player", client.name, "hp", client.hp, "hp_max", client.hp_max, "status", client.status, "room", client.room)
+			client.log().Info("flee", "player", client.name, "hp", client.hp, "hp_max", client.hp_max, "status", client.status, "room", client.room.Name)
 			d.world.NPCs[client.target].Fighter = ""
 			client.target = ""
 			return
 		} else {
 			npc := FindNPC(d, client, client.target)
 			client.Send(`OK flee=fail, "status"="combat"`)
-			client.log().Info("flee failed", "player", client.name, "hp", client.hp, "hp_max", client.hp_max, "status", client.status, "room", client.room, "npc", npc.Name)
+			client.log().Info("flee failed", "player", client.name, "hp", client.hp, "hp_max", client.hp_max, "status", client.status, "room", client.room.Name, "npc", npc.Name)
 			CheckBuffDebuff(client, d)
 			// if the player fail his flee, the NPC has an action
 			npc.Hp += NPCsAction("FLEE", client, npc.Strength, npc.Hp,
