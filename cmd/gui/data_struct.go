@@ -39,13 +39,14 @@ type Data struct {
 }
 
 type Player struct {
-	health int
-	room   Room
-	move   bool
-	avatar string
-	gender string
-	name   string
-	group  GroupInfo
+	maxHP		int
+	currentHP	int
+	room		Room
+	move		bool
+	avatar		string
+	gender		string
+	name		string
+	group		GroupInfo
 }
 
 type GameState struct {

@@ -118,7 +118,7 @@ func (b *InfoBox) Update(d Data) {
 		b.bgImg.File = p.avatar
 		b.bgImg.Refresh()
 	}
-	b.healthBar.SetValue(float64(b.player.health))
+	b.healthBar.SetValue(float64(b.player.currentHP))
 	b.name.SetText("NAME: " + p.name)
 		b.playerOnline.SetText("PLAYERS ONLINE: " + strconv.Itoa(d.nb_players))
 	b.playerInRoom.SetText("PLAYERS IN ROOM: " + strconv.Itoa(b.player.room.nb_players))
