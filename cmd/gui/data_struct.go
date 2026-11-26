@@ -19,46 +19,47 @@ import (
 // \===========================================/
 
 type Room struct {
-	nb_players	int
-	id			string
-	name		string
-	description	string
-	npc			[]string
-	players		[]string
-	items		[]string
-	exits		map[string]bool
+	nb_players  int
+	id          string
+	name        string
+	description string
+	npc         []string
+	players     []string
+	items       []string
+	exits       map[string]bool
 }
 
 type Data struct {
-	nb_players	int
-	chat		*Chat
-	g			*GameState
-	w			fyne.Window
-	conn		*client.Conn
-	cb			*CardinalButtons
+	nb_players int
+	chat       *Chat
+	g          *GameState
+	w          fyne.Window
+	conn       *client.Conn
+	cb         *CardinalButtons
 }
 
 type Player struct {
-	health	int
-	room	Room
-	move	bool
-	avatar	string
-	gender	string
-	name	string
-	group	GroupInfo
+	health int
+	room   Room
+	move   bool
+	avatar string
+	gender string
+	name   string
+	group  GroupInfo
 }
 
 type GameState struct {
-	player		*Player
-	npc			[]string
-	inventory	*Inventory
-	popup		*widget.PopUp
+	player    *Player
+	npc       []string
+	inventory *Inventory
+	popup     *widget.PopUp
 }
 
 // /===========================================\
 // |				   Method				   |
 // \===========================================/
 
+// Update data after an inventory or a look server response
 func (g *GameState) Update(str string) {
 	if strings.HasPrefix(str, "inventory=") {
 		g.inventory.Update(str)

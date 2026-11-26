@@ -39,6 +39,7 @@ var (
 
 func main() {
 
+	// CLient connection
 	conn, err := client.Dial()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
@@ -46,6 +47,7 @@ func main() {
 	}
 	defer conn.Close()
 
+	// Application and Windows init
 	a := app.New()
 	w := a.NewWindow("TAP")
 	player := Player{health: 100, move: false}
@@ -59,6 +61,7 @@ func main() {
 	})
 
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
+
 	// Struct info
 	chat := NewChat(w, &player, conn)
 	inv := NewInv(w, &player, conn)
@@ -71,7 +74,7 @@ func main() {
 	logLabel.Wrapping = fyne.TextWrapWord
 	logView := container.NewVScroll(logLabel)
 
-	// ajouter conn en parametre de la fonction
+	// Widgets init for base layout
 	btnContainer := newButtonContainer(background, &player, &data)
 	playerinfo := showPlayerInfo(&player, data)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
@@ -82,9 +85,10 @@ func main() {
 		container.NewVBox(container.NewHBox(playerinfo.Content())),
 	)
 
+	// Widgets init for combat layout
 	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
 	arenaBg.FillMode = canvas.ImageFillStretch
-	
+
 	battleUI := NewBattleUI(&player, &data)
 	battleContent := container.NewStack(
 		arenaBg,
@@ -201,7 +205,7 @@ func main() {
 							battleUI.EndFight()
 							playerinfo.Update(data)
 							w.SetContent(gameContent)
-							Popup(w, IDToName(npcID) + " is dead!")
+							Popup(w, IDToName(npcID)+" is dead!")
 							conn.Send("LOOK")
 							break
 						}
@@ -244,7 +248,7 @@ func main() {
 						Popup(data.w, "You are DEAD !!!")
 						battleUI.EndFight()
 						battleUI.SetButtonsEnabled(false)
-						time.AfterFunc(3*time.Second, func (){
+						time.AfterFunc(3*time.Second, func() {
 							fyne.Do(func() {
 								w.SetContent(gameContent)
 								conn.Send("LOOK")
@@ -252,12 +256,12 @@ func main() {
 						})
 					}
 					if len(m) >= 3 && m[2] == "CHAT" {
-							parts := strings.SplitN(msg.Rest, " ", 4)
-							if len(parts) == 4 {
-								scope, username, message := parts[0], parts[2], parts[3]
-								chat.Receive(scope, username, message)
-							}
+						parts := strings.SplitN(msg.Rest, " ", 4)
+						if len(parts) == 4 {
+							scope, username, message := parts[0], parts[2], parts[3]
+							chat.Receive(scope, username, message)
 						}
+					}
 					if len(m) >= 3 {
 						switch m[1] {
 						case "GROUP":

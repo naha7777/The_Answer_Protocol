@@ -37,6 +37,8 @@ type Chat struct {
 // |				Constructor 			   |
 // \===========================================/
 
+// Init chat struct
+// Base channel is set to global
 func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	c := &Chat{
 		window:   w,
@@ -83,6 +85,7 @@ func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 // |				   Method				   |
 // \===========================================/
 
+// Return chat content ob
 func (c *Chat) Content() fyne.CanvasObject {
 	return c.root
 }
