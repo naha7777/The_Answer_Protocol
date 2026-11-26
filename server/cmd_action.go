@@ -37,6 +37,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 		client.inventory = append(client.inventory, item)
 		client.Send("OK taken=%s", id)
 		SendRoom(d, client, "EVT PLAYER TOOK %s", id)
+		client.log().Info("item taken", "item", item.Id, "room", client.room.Id)
 		return
 	}
 	client.Send("ERR 404 ITEM_NOT_FOUND")

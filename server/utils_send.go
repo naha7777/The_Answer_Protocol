@@ -40,13 +40,13 @@ func broadcast(targets []*Client, format string, a ...any) {
 
 	for _, t := range targets {
 		if err := t.write(msg); err != nil {
-			Log.Error("send failed", "to", t.label(), "err", err)
 			continue
 		}
 		recipients = append(recipients, t.label())
 	}
 
 	if len(recipients) > 0 {
-		Log.Info("event sent", "event", msg, "recipients", recipients, "count", len(recipients))
+		Srv().Info("event sent", "event", msg, "recipients", recipients,
+				   "count", len(recipients))
 	}
 }

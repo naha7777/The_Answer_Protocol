@@ -6,7 +6,7 @@ import (
 )
 
 func NPCsAction(player_action string, client *Client, strength int, npc_hp int,
-	NPC_max_hp int, npc_name string, d *Dispatcher) int {
+				NPC_max_hp int, npc_name string, d *Dispatcher) int {
 	initial_strength := strength
 
 	// percentage chance that the NPC will attack, flee, or regenerate depending
@@ -65,11 +65,13 @@ func Attack(client *Client, strength int, d *Dispatcher, npc_name string,
 	// handle player's death
 	if client.hp <= 0 {
 		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
+		Log.Info("npc action", "source", npc_name, "action", "attack", "target", client.name, "damage", strength)
 		client.Death(d)
 		return 0
 	}
 	// print attack's datas
 	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
+	Log.Info("npc action", "source", npc_name, "action", "attack", "target", client.name, "damage", strength)
 	return 0
 }
 
@@ -82,6 +84,7 @@ func Regen(client *Client, strength int, d *Dispatcher, npc_name string,
 		new_hp = NPC_max_hp
 	}
 	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strength, "normal", client.status)
+	Log.Info("npc action", "source", npc_name, "action", "regenerate", "regeneration", 5)
 	return new_hp - npc_hp
 }
 
@@ -89,6 +92,7 @@ func Flee(client *Client, d *Dispatcher) int {
 	// Change the player's status
 	client.status = "exploration"
 	client.Send(`EVT NPC FLEE, "status"="%s"`, client.status)
+	Log.Info("npc action", "source", client.target, "action", "flee", "status", client.status)
 	// reinitialise the NPC's fight and the player's target
 	d.world.NPCs[client.target].Fighter = ""
 	client.target = ""
@@ -113,12 +117,13 @@ func DeadNPC(client *Client, initial_strength int, npcs string, d *Dispatcher) {
 	client.strength = initial_strength
 	// Send an EVT to tell players that an NPC is dead
 	SendRoom(d, client, `EVT NPC DEAD "%s"`, npcs)
+	Srv().Info("death", "dead npc", npcs)
 }
 
 func FindNPC(d *Dispatcher, client *Client, npc_id string) *game.NPC {
 	npc, ok := d.world.NPCs[npc_id]
 	if !ok {
-		Log.Error("world inconsistency", "player", client.name, "npc",
+		Srv().Error("world inconsistency", "player", client.name, "npc",
 			client.target)
 		client.Send("ERR 500 INTERNAL")
 		return nil

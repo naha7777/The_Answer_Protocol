@@ -2,8 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
-	"os"
 	"strings"
 )
 
@@ -30,7 +28,7 @@ func (d *Dispatcher) handleLook(client *Client, args []string) {
 	defer d.mu.Unlock()
 	jsonData, err := json.Marshal(client.room)
 	if err != nil {
-		Log.Error("json marshal failed", "player", client.name, "cmd", "LOOK", "err", err)
+		Srv().Error("json marshal failed", "player", client.name, "cmd", "LOOK", "err", err)
 		client.Send("ERR 500 INTERNAL")
 	}
 	client.Send(`OK look={"room": %s}`, jsonData)
@@ -76,7 +74,8 @@ func (d *Dispatcher) handleFindQuests(client *Client, args []string) {
 	}
 	jsonData, err := json.Marshal(RoomQuest{AllQuests: lst})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		client.log().Error("json marshal failed", "cmd", "LOOK", "err", err)
+		client.Send("ERR 500 INTERNAL")
 		return
 	}
 	client.Send(`OK find_quests=%s`, jsonData)

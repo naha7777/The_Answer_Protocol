@@ -82,7 +82,7 @@
   },
   "npcs": {
     "npc.village_guard":    { "name": "Village Guard", "hp": 40, "max_hp": 40, "strength": 20, "hostile": false, "dialogue": ["Stay safe, traveler."], "quests": [] },
-    "npc.ghost":            { "name": "Rich Ghost", "hp": 1000, "max_hp": 1000, "strength": 0, "hostile": false, "dialogue": ["BOUH."], "quests": [] },
+    "npc.ghost":            { "name": "Ghost", "hp": 1000, "max_hp": 1000, "strength": 0, "hostile": false, "dialogue": ["BOUH."], "quests": [] },
     "npc.woman":            { "name": "Woman", "hp": 20, "max_hp": 20, "strength": 50, "hostile": false, "dialogue": ["This is my favorite place."], "quests": ["flower_mission"] },
     "npc.fisherman":        { "name": "Fisherman", "hp": 50, "max_hp": 50, "strength": 10, "hostile": false, "dialogue": ["There are no fish anymore because of the queen. My life is over..."], "quests": [] },
     "npc.royal_guard":      { "name": "Royal Guard", "hp": 120, "max_hp": 120, "strength": 30, "hostile": false, "dialogue": ["The queen is busy."], "quests": ["poor_guard"] },

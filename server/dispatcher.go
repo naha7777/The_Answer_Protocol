@@ -61,6 +61,16 @@ func (d *Dispatcher) registerCommands() {
 }
 
 func (d *Dispatcher) Dispatch(client *Client, line string) {
+	if client.tooManyCommands(20, time.Second) {
+		if !client.floodLogged {
+			client.log().Warn("abuse: command flooding", "limit", "20/s")
+			client.floodLogged = true
+		}
+		client.write("ERR 18 SPAM")
+		return
+	}
+	client.floodLogged = false
+
 	line = strings.TrimSpace(line)
 	if line == "" {
 		return
@@ -70,12 +80,13 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 	var args []string
 	first := strings.ToUpper(parts[0])
 
-	Log.Info("command", "player", client.name, "ip", client.conn.RemoteAddr().String(), "cmd", first, "args", parts[1:])
+	client.log().Info("command", "cmd", first, "args", parts[1:])
 
 	// spam protection
 	if first == "CHAT" {
 		now := time.Now()
 		if !client.lastChat.IsZero() && now.Sub(client.lastChat) < time.Second*2 {
+			client.log().Warn("abuse: chat spam")
 			client.Send("ERR 18 SPAM")
 			return
 		}

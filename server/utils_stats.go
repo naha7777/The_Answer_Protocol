@@ -1,23 +1,29 @@
 package server
 
+import "the_answer_protocol/game"
+
 func (d *Dispatcher) displayStats() {
-	// Send an EVT with the number of players connected to the server
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	var targets []*Client
 	for _, c := range d.clients {
-		c.Send("EVT STATS players=%d", len(d.clients))
+		if c.name != "" && !c.dead.Load() {
+			targets = append(targets, c)
+		}
 	}
+	broadcast(targets, "EVT STATS players=%d", len(targets))
 }
 
 func (d *Dispatcher) displayRoomStats() {
-	// // Send an EVT with the number of players in the client room
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	byRoom := map[*game.Room][]*Client{}
 	for _, c := range d.clients {
-		for _, str := range c.room.Players {
-			if c.name == str {
-				c.Send("EVT STATS players_in_room=%d", len(c.room.Players))
-			}
+		if c.name != "" && !c.dead.Load() {
+			byRoom[c.room] = append(byRoom[c.room], c)
 		}
+	}
+	for _, targets := range byRoom {
+		broadcast(targets, "EVT STATS players_in_room=%d", len(targets))
 	}
 }
