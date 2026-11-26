@@ -94,15 +94,10 @@ func (client *Client) Death(d *Dispatcher) {
 	SendAll(d, client, `EVT dead=%s`, client.name)
 
 	// reset client HP
-	if client.hp_max - (client.nb_death * 5) <= 0 {
-		client.hp_max -= 5
-		client.hp = client.hp_max
-		if client.hp_max <= 0 {
-			client.Send("GAME OVER")
-			client.quit = true
-		}
-	} else {
-		client.hp = client.hp_max - (client.nb_death * 5)
+	client.hp = client.hp_max - (client.nb_death * 5)
+	if client.hp <= 0 {
+		client.Send("GAME OVER")
+		client.quit = true
 	}
 
 	// handle respawn
