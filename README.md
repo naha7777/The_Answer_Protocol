@@ -213,6 +213,10 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | A player complete a quest | `EVT QUEST completed=<quest_id>` | **custom (not in RFC)** |
 | A player take a quest | `EVT QUEST took=<quest_id>` | **custom (not in RFC)** |
 
+### Game Over
+If a player die, he respawn with less hp. If he dies too many times that we can't take off his HP, he is GAME OVER.\
+He is disconnected from the server.
+
 ## Combat System
 
 To attack an NPC, it has to be hostile and in the same room as the player.\
