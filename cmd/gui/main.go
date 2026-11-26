@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"the_answer_protocol/client"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -38,6 +39,7 @@ var (
 
 func main() {
 
+	// CLient connection
 	conn, err := client.Dial()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERR 900 CONNECTION_FAILED")
@@ -45,9 +47,10 @@ func main() {
 	}
 	defer conn.Close()
 
+	// Application and Windows init
 	a := app.New()
 	w := a.NewWindow("TAP")
-	player := Player{health: 100, move: false}
+	player := Player{maxHP: 100, currentHP: 100, move: false}
 	w.Resize(fyne.NewSize(1920, 1080))
 
 	// Key hook for esc to close the app
@@ -58,19 +61,20 @@ func main() {
 	})
 
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
+
 	// Struct info
 	chat := NewChat(w, &player, conn)
 	inv := NewInv(w, &player, conn)
 	game := GameState{inventory: inv, player: &player}
 	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game, chat: chat}
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
-	background.FillMode = canvas.ImageFillStretch
+	background.FillMode = canvas.ImageFillCover
 
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
 	logView := container.NewVScroll(logLabel)
 
-	// ajouter conn en parametre de la fonction
+	// Widgets init for base layout
 	btnContainer := newButtonContainer(background, &player, &data)
 	playerinfo := showPlayerInfo(&player, data)
 	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
@@ -79,6 +83,17 @@ func main() {
 		overlay,
 		hudContent,
 		container.NewVBox(container.NewHBox(playerinfo.Content())),
+	)
+
+	// Widgets init for combat layout
+	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
+	arenaBg.FillMode = canvas.ImageFillStretch
+
+	battleUI := NewBattleUI(&player, &data)
+	battleContent := container.NewStack(
+		arenaBg,
+		overlay,
+		battleUI.Content(),
 	)
 
 	loggedIn := false
@@ -102,7 +117,6 @@ func main() {
 				}
 				switch msg.Kind {
 				case "OK":
-					// fmt.Println(msg.Rest)
 					switch {
 
 					// MOVE
@@ -177,10 +191,50 @@ func main() {
 						chat.Receive("NPC", author, message)
 
 					// ATTACK
+					case strings.HasPrefix(msg.Rest, "flee="):
+						if strings.Contains(msg.Rest, "=succed") {
+							battleUI.EndFight()
+							playerinfo.Update(data)
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+						}
 					case strings.HasPrefix(msg.Rest, "attack="):
-						background.File = "./data/arena.jpeg"
-						background.Refresh()
-						fmt.Println(background.File)
+						raw := strings.TrimPrefix(msg.Rest, "attack=")
+						if npcID, _, ok := strings.Cut(raw, "=dead"); ok {
+							npcID = strings.Trim(npcID, `"`)
+							Popup(w, IDToName(npcID)+" is dead!")
+							battleUI.EndFight()
+							battleUI.SetButtonsEnabled(false)
+							playerinfo.Update(data)
+							time.AfterFunc(3*time.Second, func() {
+								fyne.Do(func() {
+									player.currentHP = player.maxHP
+									w.SetContent(gameContent)
+									conn.Send("LOOK")
+								})
+							})
+							break
+						}
+						var atk AttackData
+						if err := atk.parse(strings.TrimPrefix(msg.Rest, "attack=")); err != nil {
+							break
+						}
+						if !battleUI.inFight {
+							battleUI.InitFight(atk)
+							w.SetContent(battleContent)
+						} else {
+							battleUI.Update(atk)
+						}
+					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+						status := strings.TrimPrefix(msg.Rest, `"status"=`)
+						status = strings.TrimPrefix(status, "status=")
+						status = strings.Trim(status, `"`)
+						if status != "combat" && battleUI.inFight {
+							battleUI.EndFight()
+							playerinfo.Update(data)
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+						}
 
 					// QUEST
 					case strings.HasPrefix(msg.Rest, "quest="):
@@ -196,13 +250,38 @@ func main() {
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
+					if len(m) == 2 && m[1] == "DEATH" {
+						Popup(data.w, "You are DEAD !!!")
+						battleUI.EndFight()
+						battleUI.SetButtonsEnabled(false)
+						game.inventory.Clear()
+						time.AfterFunc(3*time.Second, func() {
+							fyne.Do(func() {
+								player.currentHP = player.maxHP
+								Popup(data.w, "You are respawned")
+								w.SetContent(gameContent)
+								conn.Send("LOOK")
+							})
+						})
+					}
+					if len(m) == 2 && strings.HasPrefix(m[1], "dead=") {
+						deathName := strings.TrimPrefix(m[1], "dead=")
+						chat.Receive("Global", "Game", deathName+" is dead !")
+					}
+					if len(m) >= 5 && m[2] == "CHAT" {
+						parts := strings.SplitN(msg.Rest, " ", 4)
+						if len(parts) == 4 {
+							scope, username, message := parts[0], parts[2], parts[3]
+							chat.Receive(scope, username, message)
+						}
+					}
 					if len(m) >= 3 {
 						switch m[1] {
 						case "GROUP":
 							switch m[2] {
 							case "INVITE":
-								if len(m) >= 5 {
-									confirmGroup(w, []string{m[4], m[3]}, func() {
+								if len(m) >= 4 {
+									confirmGroup(w, []string{m[3], m[2]}, func() {
 										conn.Send("GROUP JOIN " + m[3])
 									})
 								}
@@ -216,22 +295,30 @@ func main() {
 							case "LEAVE":
 								player.room.nb_players -= 1
 							}
-
-						case "CHAT":
-							parts := strings.SplitN(msg.Rest, " ", 4)
-							scope, username, message := parts[0], parts[2], parts[3]
-							chat.Receive(scope, username, message)
-
 						case "NPC":
 							switch m[2] {
 							case "DEAD":
 								conn.Send("LOOK")
 							case "FLEE":
-								// npc flee
+								npcID := strings.Split(msg.Rest, "=")
+								npcMsg := ""
+								if len(npcID) >= 2 {
+									npcMsg = npcID[1] + " fled"
+									Popup(data.w, npcMsg)
+								}
+								battleUI.EndFight()
+								battleUI.SetButtonsEnabled(false)
+								game.inventory.Clear()
+								time.AfterFunc(3*time.Second, func() {
+									fyne.Do(func() {
+										w.SetContent(gameContent)
+										conn.Send("LOOK")
+									})
+								})
 							case "ATTACK":
-								// npc attack
+								Popup(data.w, "NPC attacks you")
 							case "REGENERATION":
-								// npc + 5hp
+								Popup(data.w, "NPC is regenerated")
 							}
 						case "BEER":
 							// -5hp pour le player juste pendant le combat ?
@@ -274,7 +361,8 @@ func main() {
 				case "ERR":
 					Popup(w, msg.Rest)
 				}
-			})
+			},
+			)
 		}
 
 		fyne.Do(func() {

@@ -19,6 +19,7 @@ import (
 // |				 Function				   |
 // \===========================================/
 
+// Put popup that disappear after 3 seconds
 func Popup(w fyne.Window, txt string) {
 	width := w.Canvas().Size().Width
 	height := w.Canvas().Size().Height
@@ -33,11 +34,13 @@ func Popup(w fyne.Window, txt string) {
 	})
 }
 
+// Return time as 24h:min format
 func get_time() string {
 	formatted := time.Now().Format("15:04")
 	return formatted
 }
 
+// Pop a string from a string slice
 func Pop(name string, place []string) []string {
 	var new []string
 	find := false
@@ -53,35 +56,64 @@ func Pop(name string, place []string) []string {
 	return new
 }
 
+// Generate a container with all the strings in options with appropriate button
 func Generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
 	cont := container.NewVBox()
 	for _, option := range options {
-		var label string
-		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" {
+		label := option
+		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" || action == "USE_ITEM" {
 			label = IDToName(option)
-		} else {
-			label = option
 		}
 		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
+
+		if res := loadIcon(option); res != nil {
+			but.SetIcon(res)
+		}
 		cont.Add(but)
 	}
 	return cont
 }
 
+// Load the asset from the id
+func loadIcon(id string) fyne.Resource {
+	var path string
+	switch {
+	case strings.HasPrefix(id, "item."):
+		path = "data/items/" + strings.TrimPrefix(id, "item.") + ".png"
+	case strings.HasPrefix(id, "npc."):
+		path = "data/npc/" + strings.TrimPrefix(id, "npc.") + ".png"
+	default:
+		return nil
+	}
+	res, err := fyne.LoadResourceFromPath(path)
+	if err != nil {
+		return nil
+	}
+	return res
+}
+
+// Put popup at item position displaying all objects
 func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
 	var pop *widget.PopUp
 
-	for _, o := range objects {
-		if btn, ok := o.(*widget.Button); ok {
-			action := btn.OnTapped
-			btn.OnTapped = func() {
-				pop.Hide()
-				if action != nil {
-					action()
+	var hookButtons func(objs []fyne.CanvasObject)
+	hookButtons = func(objs []fyne.CanvasObject) {
+		for _, o := range objs {
+			switch v := o.(type) {
+			case *widget.Button:
+				action := v.OnTapped
+				v.OnTapped = func() {
+					pop.Hide()
+					if action != nil {
+						action()
+					}
 				}
+			case *fyne.Container:
+				hookButtons(v.Objects)
 			}
 		}
 	}
+	hookButtons(objects)
 
 	menu := container.NewVBox(
 		objects...,
@@ -91,6 +123,7 @@ func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasO
 	return pop
 }
 
+// Convert id string to its name
 func IDToName(id string) string {
 
 	id = strings.TrimPrefix(id, "item.")
@@ -102,6 +135,7 @@ func IDToName(id string) string {
 	return id
 }
 
+// Put confirm box
 func confirmAction(w fyne.Window, title, message string, onYes func()) {
 	d := dialog.NewConfirm(title, message, func(confirmed bool) {
 		if confirmed {
