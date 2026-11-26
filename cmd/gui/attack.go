@@ -59,7 +59,7 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	b := &BattleUI{
 		playerImg:			playerImg,
 		npcImg:				npcImg,
-		playerHealth:		NewHealthBar(float64(player.health)),
+		playerHealth:		NewHealthBar(float64(player.currentHP)),
 		npcHealth:			NewHealthBar(0),
 		playerNameLabel:	widget.NewLabel(player.name),
 		npcNameLabel:		widget.NewLabel("enemy"),
@@ -130,7 +130,8 @@ func (b *BattleUI) Content() fyne.CanvasObject {
 // Update refreshes the player and NPC health bars and updates the combat log
 // with the latest turn's damage details.
 func (b *BattleUI) Update(atk AttackData) {
-	b.player.health = atk.PlayerHP
+	b.player.currentHP = atk.PlayerHP
+	b.player.maxHP = atk.PlayerMax_HP
 
 	b.playerHealth.SetMax(float64(atk.PlayerMax_HP))
 	b.playerHealth.SetValue(float64(atk.PlayerHP))

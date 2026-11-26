@@ -205,3 +205,14 @@ func (i *Inventory) Update(str string) {
 	// fmt.Println(i.objects)
 	// fmt.Println(i.items)
 }
+
+// Clear empties the inventory (used on death). The accessible items are
+// refreshed by the next LOOK, once the player has respawned
+func (i *Inventory) Clear() {
+	i.objects = nil
+	i.accessible = nil
+	i.items.RemoveAll()
+	if i.pop != nil {
+		i.pop.Hide()
+	}
+}
