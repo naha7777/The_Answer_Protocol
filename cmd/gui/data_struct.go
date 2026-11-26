@@ -19,38 +19,40 @@ import (
 // \===========================================/
 
 type Room struct {
-	id          string
-	name        string
-	description string
-	exits       map[string]bool
-	npc         []string
-	players     []string
-	nb_players  int
-	items       []string
+	nb_players	int
+	id			string
+	name		string
+	description	string
+	npc			[]string
+	players		[]string
+	items		[]string
+	exits		map[string]bool
 }
 
 type Data struct {
-	w          fyne.Window
-	conn       *client.Conn
-	cb         *CardinalButtons
-	g          *GameState
-	chat       *Chat
-	nb_players int
+	nb_players	int
+	chat		*Chat
+	g			*GameState
+	w			fyne.Window
+	conn		*client.Conn
+	cb			*CardinalButtons
 }
 
 type Player struct {
-	name   string
-	health int
-	group  GroupInfo
-	room   Room
-	move   bool
+	health	int
+	room	Room
+	move	bool
+	avatar	string
+	gender	string
+	name	string
+	group	GroupInfo
 }
 
 type GameState struct {
-	inventory *Inventory
-	player    *Player
-	npc       []string
-	popup     *widget.PopUp
+	player		*Player
+	npc			[]string
+	inventory	*Inventory
+	popup		*widget.PopUp
 }
 
 // /===========================================\

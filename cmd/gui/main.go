@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"the_answer_protocol/client"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -64,7 +65,7 @@ func main() {
 	game := GameState{inventory: inv, player: &player}
 	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game, chat: chat}
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
-	background.FillMode = canvas.ImageFillStretch
+	background.FillMode = canvas.ImageFillCover
 
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
@@ -79,6 +80,16 @@ func main() {
 		overlay,
 		hudContent,
 		container.NewVBox(container.NewHBox(playerinfo.Content())),
+	)
+
+	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
+	arenaBg.FillMode = canvas.ImageFillStretch
+	
+	battleUI := NewBattleUI(&player, &data)
+	battleContent := container.NewStack(
+		arenaBg,
+		overlay,
+		battleUI.Content(),
 	)
 
 	loggedIn := false
@@ -102,7 +113,6 @@ func main() {
 				}
 				switch msg.Kind {
 				case "OK":
-					// fmt.Println(msg.Rest)
 					switch {
 
 					// MOVE
@@ -177,10 +187,44 @@ func main() {
 						chat.Receive("NPC", author, message)
 
 					// ATTACK
+					case strings.HasPrefix(msg.Rest, "flee="):
+						if strings.Contains(msg.Rest, "=succed") {
+							battleUI.EndFight()
+							playerinfo.Update(data)
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+						}
 					case strings.HasPrefix(msg.Rest, "attack="):
-						background.File = "./data/arena.jpeg"
-						background.Refresh()
-						fmt.Println(background.File)
+						raw := strings.TrimPrefix(msg.Rest, "attack=")
+						if strings.HasSuffix(raw, "=dead") {
+							npcID := strings.TrimSuffix(raw, "=dead")
+							battleUI.EndFight()
+							playerinfo.Update(data)
+							w.SetContent(gameContent)
+							Popup(w, IDToName(npcID) + " is dead!")
+							conn.Send("LOOK")
+							break
+						}
+						var atk AttackData
+						if err := atk.parse(strings.TrimPrefix(msg.Rest, "attack=")); err != nil {
+							break
+						}
+						if !battleUI.inFight {
+							battleUI.InitFight(atk)
+							w.SetContent(battleContent)
+						} else {
+							battleUI.Update(atk)
+						}
+					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+						status := strings.TrimPrefix(msg.Rest, `"status"=`)
+						status = strings.TrimPrefix(status, "status=")
+						status = strings.Trim(status, `"`)
+						if status != "combat" && battleUI.inFight {
+							battleUI.EndFight()
+							playerinfo.Update(data)
+							w.SetContent(gameContent)
+							conn.Send("LOOK")
+						}
 
 					// QUEST
 					case strings.HasPrefix(msg.Rest, "quest="):
@@ -196,13 +240,31 @@ func main() {
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
+					if len(m) == 2 && m[1] == "DEATH" {
+						Popup(data.w, "You are DEAD !!!")
+						battleUI.EndFight()
+						battleUI.SetButtonsEnabled(false)
+						time.AfterFunc(3*time.Second, func (){
+							fyne.Do(func() {
+								w.SetContent(gameContent)
+								conn.Send("LOOK")
+							})
+						})
+					}
+					if len(m) >= 3 && m[2] == "CHAT" {
+							parts := strings.SplitN(msg.Rest, " ", 4)
+							if len(parts) == 4 {
+								scope, username, message := parts[0], parts[2], parts[3]
+								chat.Receive(scope, username, message)
+							}
+						}
 					if len(m) >= 3 {
 						switch m[1] {
 						case "GROUP":
 							switch m[2] {
 							case "INVITE":
-								if len(m) >= 5 {
-									confirmGroup(w, []string{m[4], m[3]}, func() {
+								if len(m) >= 4 {
+									confirmGroup(w, []string{m[3], m[2]}, func() {
 										conn.Send("GROUP JOIN " + m[3])
 									})
 								}
@@ -216,12 +278,6 @@ func main() {
 							case "LEAVE":
 								player.room.nb_players -= 1
 							}
-
-						case "CHAT":
-							parts := strings.SplitN(msg.Rest, " ", 4)
-							scope, username, message := parts[0], parts[2], parts[3]
-							chat.Receive(scope, username, message)
-
 						case "NPC":
 							switch m[2] {
 							case "DEAD":

@@ -56,32 +56,58 @@ func Pop(name string, place []string) []string {
 func Generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
 	cont := container.NewVBox()
 	for _, option := range options {
-		var label string
-		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" {
+		label := option
+		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" || action == "USE_ITEM" {
 			label = IDToName(option)
-		} else {
-			label = option
 		}
 		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
+
+		if res := loadIcon(option); res != nil {
+			but.SetIcon(res)
+		}
 		cont.Add(but)
 	}
 	return cont
 }
 
+func loadIcon(id string) fyne.Resource {
+	var path string
+	switch {
+	case strings.HasPrefix(id, "item."):
+		path = "data/items/" + strings.TrimPrefix(id, "item.") + ".png"
+	case strings.HasPrefix(id, "npc."):
+		path = "data/npc/" + strings.TrimPrefix(id, "npc.") + ".png"
+	default:
+		return nil
+	}
+	res, err := fyne.LoadResourceFromPath(path)
+	if err != nil {
+		return nil
+	}
+	return res
+}
+
 func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
 	var pop *widget.PopUp
 
-	for _, o := range objects {
-		if btn, ok := o.(*widget.Button); ok {
-			action := btn.OnTapped
-			btn.OnTapped = func() {
-				pop.Hide()
-				if action != nil {
-					action()
+	var hookButtons func(objs []fyne.CanvasObject)
+	hookButtons = func(objs []fyne.CanvasObject) {
+		for _, o := range objs {
+			switch v := o.(type) {
+			case *widget.Button:
+				action := v.OnTapped
+				v.OnTapped = func() {
+					pop.Hide()
+					if action != nil {
+						action()
+					}
 				}
+			case *fyne.Container:
+				hookButtons(v.Objects)
 			}
 		}
 	}
+	hookButtons(objects)
 
 	menu := container.NewVBox(
 		objects...,

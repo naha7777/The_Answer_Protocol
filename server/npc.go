@@ -64,12 +64,12 @@ func Attack(client *Client, strength int, d *Dispatcher, npc_name string,
 	client.hp -= strength
 	// handle player's death
 	if client.hp <= 0 {
-		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d,  "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
+		client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, 0, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
 		client.Death(d)
 		return 0
 	}
 	// print attack's datas
-	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
+	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, npc_hp, NPC_max_hp, strength, damage_type, client.status)
 	return 0
 }
 

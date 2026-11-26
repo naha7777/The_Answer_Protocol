@@ -43,9 +43,11 @@ type InfoBox struct {
 	playerInRoom *widget.Label
 	group        *widget.Label
 	members      *widget.Label
-	npc          *widget.Label
-	items        *widget.Label
+	npcList		*fyne.Container
+	itemList	*fyne.Container
 	content      fyne.CanvasObject
+	bgImg		*canvas.Image
+	healthBar	*HealthBar
 }
 
 // /===========================================\
@@ -55,30 +57,50 @@ type InfoBox struct {
 func showPlayerInfo(p *Player, data Data) *InfoBox {
 
 	b := &InfoBox{
-		player:       p,
-		name:         widget.NewLabel(""),
-		room:         widget.NewLabel(""),
-		playerOnline: widget.NewLabel(""),
-		playerInRoom: widget.NewLabel(""),
-		group:        widget.NewLabel(""),
-		members:      widget.NewLabel(""),
-		npc:          widget.NewLabel(""),
-		items:        widget.NewLabel(""),
-		content:      widget.NewLabel(""),
+		player:			p,
+		name:			widget.NewLabel(""),
+		room:			widget.NewLabel(""),
+		playerOnline:	widget.NewLabel(""),
+		playerInRoom:	widget.NewLabel(""),
+		group:			widget.NewLabel(""),
+		members:		widget.NewLabel(""),
+		npcList:		container.NewVBox(),
+		itemList:		container.NewVBox(),
+		content:		widget.NewLabel(""),
+		bgImg:			canvas.NewImageFromFile(""),
+		healthBar:		NewHealthBar(100),
 	}
-	b.members.Wrapping = fyne.TextWrapWord
 
-	frame := canvas.NewRectangle(color.NRGBA{R: 20, G: 20, B: 20, A: 200})
+	for _, lbl := range []*widget.Label{b.members, b.name, b.room, b.group, b.members} {
+		lbl.Wrapping = fyne.TextWrapWord
+	}
+
+	frame := canvas.NewRectangle(color.NRGBA{R: 15, G: 15, B: 15, A: 110})
 	frame.StrokeColor = color.White
 	frame.StrokeWidth = 2
 
+	sizer := canvas.NewRectangle(color.Transparent)
+	sizer.SetMinSize(fyne.NewSize(280, 250))
+
+
+	b.bgImg.FillMode = canvas.ImageFillCover
+
+	header := container.NewVBox(
+		widget.NewSeparator(),
+	)
+
+	scrollContent := container.NewVScroll(
+		container.NewVBox(b.name, b.room, b.group, b.members, b.npcList, b.itemList),
+	)
+
+	body := container.NewBorder(header, nil, nil, nil, scrollContent)
+
 	b.content = container.NewStack(
+		sizer,
+		b.healthBar.Content(),
+		b.bgImg,
 		frame,
-		container.NewPadded(container.NewVBox(
-			widget.NewLabelWithStyle("PLAYER INFO", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-			widget.NewSeparator(),
-			b.name, b.room, b.playerOnline, b.playerInRoom, b.group, b.members, b.npc, b.items,
-		)),
+		container.NewPadded(body),
 	)
 	b.Update(data)
 	return b
@@ -92,19 +114,47 @@ func (b *InfoBox) Content() fyne.CanvasObject { return b.content }
 
 func (b *InfoBox) Update(d Data) {
 	p := b.player
-	b.name.SetText("Name: " + p.name)
-	b.room.SetText("Room: " + p.room.name)
-	if p.group.Id == "" {
-		b.group.SetText("Group: -")
-		b.members.SetText("")
-		// return
+	if p.avatar != "" && b.bgImg.File != p.avatar {
+		b.bgImg.File = p.avatar
+		b.bgImg.Refresh()
 	}
-	b.playerOnline.SetText("Players online: " + strconv.Itoa(d.nb_players))
-	b.playerInRoom.SetText("Players in room: " + strconv.Itoa(b.player.room.nb_players))
-	b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.Id, p.group.Leader))
-	b.members.SetText("Members: " + strings.Join(p.group.Members, ", "))
-	b.npc.SetText("NPC: " + strings.Join(p.room.npc, ", "))
-	b.items.SetText("Items: " + strings.Join(p.room.items, ", "))
+	b.healthBar.SetValue(float64(b.player.health))
+	b.name.SetText("NAME: " + p.name)
+		b.playerOnline.SetText("PLAYERS ONLINE: " + strconv.Itoa(d.nb_players))
+	b.playerInRoom.SetText("PLAYERS IN ROOM: " + strconv.Itoa(b.player.room.nb_players))
+	b.room.SetText("ROOM: " + p.room.name)
+	if p.group.Id == "" {
+		b.group.SetText("GROUP: -")
+		b.members.SetText("")
+	} else {
+		b.group.SetText(fmt.Sprintf("Group: %s (leader %s)", p.group.Id, p.group.Leader))
+		b.members.SetText("MEMBERS: " + strings.Join(p.group.Members, ", "))
+	}
+	b.npcList.RemoveAll()
+	if len(p.room.npc) == 0 {
+		b.npcList.Add(widget.NewLabel("NPC: -"))
+	} else {
+		b.npcList.Add(widget.NewLabel("NPC:"))
+		for _, npcName := range p.room.npc {
+			lbl := widget.NewLabel("	" + npcName)
+			lbl.Wrapping = fyne.TextWrapWord
+			b.npcList.Add(lbl)
+		}
+	}
+	b.npcList.Refresh()
+
+	b.itemList.RemoveAll()
+	if len(p.room.items) == 0 {
+		b.itemList.Add(widget.NewLabel("ITEMS: -"))
+	} else {
+		b.itemList.Add(widget.NewLabel("ITEMS:"))
+		for _, itemName := range p.room.items {
+			lbl := widget.NewLabel("	" + itemName)
+			lbl.Wrapping = fyne.TextWrapWord
+			b.itemList.Add(lbl)
+		}
+	}
+	b.itemList.Refresh()
 }
 
 func (player *Player) PlayerRoomUpdate(msg string) {
