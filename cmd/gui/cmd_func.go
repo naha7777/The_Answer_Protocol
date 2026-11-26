@@ -31,7 +31,7 @@ func Str_to_quests(str string, d Data) {
 	// parse
 	var quests []map[string]string
 	if err := json.Unmarshal([]byte(str), &quests); err != nil {
-		fmt.Println("erreur de parsing:", err)
+		fmt.Println("Parsing error:", err)
 		return
 	}
 
@@ -83,7 +83,7 @@ func HandleQuest(str string, d Data) {
 	str = strings.TrimPrefix(str, "quest=")
 	var q map[string]string
 	if err := json.Unmarshal([]byte(str), &q); err != nil {
-		fmt.Println("erreur de parsing:", err)
+		fmt.Println("Parsing error:", err)
 		return
 	}
 
@@ -91,4 +91,19 @@ func HandleQuest(str string, d Data) {
 	author := IDToName(q["quest_npc"])
 	desc := q["description"]
 	d.chat.Receive("NPC", author, desc)
+}
+
+func HandleStatus(str string, p *Player) {
+	// parse
+	// fmt.Println(str)
+	var status map[string]any
+	if err := json.Unmarshal([]byte(str), &status); err != nil {
+		fmt.Println("Parsing error:", err)
+		return
+	}
+
+	if hp, ok := status["hp"].(float64); ok {
+		val := int(hp)
+		p.currentHP = val
+	}
 }

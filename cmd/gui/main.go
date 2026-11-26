@@ -211,6 +211,8 @@ func main() {
 									player.currentHP = player.maxHP
 									w.SetContent(gameContent)
 									conn.Send("LOOK")
+									conn.Send("INVENTORY")
+									conn.Send("STATUS")
 								})
 							})
 							break
@@ -228,13 +230,16 @@ func main() {
 					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
 						status := strings.TrimPrefix(msg.Rest, `"status"=`)
 						status = strings.TrimPrefix(status, "status=")
-						status = strings.Trim(status, `"`)
+						// status = strings.Trim(status, `"`)
+
 						if status != "combat" && battleUI.inFight {
 							battleUI.EndFight()
 							playerinfo.Update(data)
 							w.SetContent(gameContent)
 							conn.Send("LOOK")
 						}
+						HandleStatus(status, &player)
+						playerinfo.Update(data)
 
 					// QUEST
 					case strings.HasPrefix(msg.Rest, "quest="):
@@ -254,13 +259,14 @@ func main() {
 						Popup(data.w, "You are DEAD !!!")
 						battleUI.EndFight()
 						battleUI.SetButtonsEnabled(false)
-						game.inventory.Clear()
 						time.AfterFunc(3*time.Second, func() {
 							fyne.Do(func() {
 								player.currentHP = player.maxHP
-								Popup(data.w, "You are respawned")
+								Popup(data.w, "You had respawned")
 								w.SetContent(gameContent)
 								conn.Send("LOOK")
+								conn.Send("INVENTORY")
+								conn.Send("STATUS")
 							})
 						})
 					}
