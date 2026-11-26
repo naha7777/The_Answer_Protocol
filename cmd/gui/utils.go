@@ -19,6 +19,7 @@ import (
 // |				 Function				   |
 // \===========================================/
 
+// Put popup that disappear after 3 seconds
 func Popup(w fyne.Window, txt string) {
 	width := w.Canvas().Size().Width
 	height := w.Canvas().Size().Height
@@ -33,11 +34,13 @@ func Popup(w fyne.Window, txt string) {
 	})
 }
 
+// Return time as 24h:min format
 func get_time() string {
 	formatted := time.Now().Format("15:04")
 	return formatted
 }
 
+// Pop a string from a string slice
 func Pop(name string, place []string) []string {
 	var new []string
 	find := false
@@ -53,6 +56,7 @@ func Pop(name string, place []string) []string {
 	return new
 }
 
+// Generate a container with all the strings in options with appropriate button
 func Generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
 	cont := container.NewVBox()
 	for _, option := range options {
@@ -70,6 +74,7 @@ func Generate_option(options []string, action string, conn *client.Conn) *fyne.C
 	return cont
 }
 
+// Load the asset from the id
 func loadIcon(id string) fyne.Resource {
 	var path string
 	switch {
@@ -87,6 +92,7 @@ func loadIcon(id string) fyne.Resource {
 	return res
 }
 
+// Put popup at item position displaying all objects
 func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasObject) *widget.PopUp {
 	var pop *widget.PopUp
 
@@ -117,6 +123,7 @@ func Option_popup(item fyne.CanvasObject, w fyne.Window, objects ...fyne.CanvasO
 	return pop
 }
 
+// Convert id string to its name
 func IDToName(id string) string {
 
 	id = strings.TrimPrefix(id, "item.")
@@ -128,6 +135,7 @@ func IDToName(id string) string {
 	return id
 }
 
+// Put confirm box
 func confirmAction(w fyne.Window, title, message string, onYes func()) {
 	d := dialog.NewConfirm(title, message, func(confirmed bool) {
 		if confirmed {

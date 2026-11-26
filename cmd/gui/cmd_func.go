@@ -21,7 +21,9 @@ import (
 // |				 Function				   |
 // \===========================================/
 
-// QUESTS
+// Put the quests showing container
+// Each quest have it completion status with a tick asset when completed or the requirement
+// A complete quest button is available if the quest isnt already complete
 func Str_to_quests(str string, d Data) {
 	// width := w.Canvas().Size().Width
 	height := d.w.Canvas().Size().Height
@@ -75,6 +77,7 @@ func Str_to_quests(str string, d Data) {
 	}
 }
 
+// Show its description in chat when accepting a quest
 func HandleQuest(str string, d Data) {
 	// parse
 	str = strings.TrimPrefix(str, "quest=")
@@ -88,5 +91,4 @@ func HandleQuest(str string, d Data) {
 	author := IDToName(q["quest_npc"])
 	desc := q["description"]
 	d.chat.Receive("NPC", author, desc)
-	// OK quest={"quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}
 }

@@ -73,14 +73,16 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 
 	// Chat
 	chatX := btnX + btnMin.Width + margin
-	chatWidth := max(chatMin.Width, (w - chatX - margin) / 2)
+	// chatWidth := max(chatMin.Width, (w-chatX-margin)/2)
+	var chatWidth float32
+	chatWidth = 7 * ((w - btnMin.Width) / 12)
 
 	objects[1].Resize(fyne.NewSize(chatWidth, hudHeight))
 	objects[1].Move(fyne.NewPos(chatX, Y))
 
 	// Inventory
 	invX := chatX + chatWidth + margin
-	invWidth := max(invMin.Width, (w - invX - margin) / 3)
+	invWidth := max(invMin.Width, (w-invX-margin)/3)
 
 	objects[2].Resize(fyne.NewSize(invWidth, hudHeight))
 	objects[2].Move(fyne.NewPos(invX, Y))
@@ -112,6 +114,7 @@ func (cb *CardinalButtons) Update(exits map[string]bool) {
 // |				 Function				   |
 // \===========================================/
 
+// Init the bottom left button container with every buttons
 func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Container {
 
 	mapImg := "./data/map.jpeg"
