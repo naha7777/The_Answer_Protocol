@@ -5,7 +5,6 @@ package main
 // \===========================================/
 
 import (
-	"fmt"
 	"image/color"
 	"strings"
 	"the_answer_protocol/client"
@@ -118,7 +117,7 @@ func Generate_option(options []string, action string, conn *client.Conn) *fyne.C
 		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" || action == "USE_ITEM" {
 			label = IDToName(option)
 		}
-		but := widget.NewButton(label, func() { conn.Send(action + " " + option); fmt.Println(action + " " + option) })
+		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
 
 		if res := loadIcon(option); res != nil {
 			but.SetIcon(res)
