@@ -203,7 +203,8 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | Group leave | `EVT GROUP LEAVE <username>` | RFC |
 | Chat | `EVT <SCOPE> CHAT <username> <message>` | RFC |
 | Room presence | `EVT ROOM PRESENCE ENTER/LEAVE <username>` | RFC |
-| Stats | `EVT STATS players= <nb_player>` | RFC |
+| Stats | `EVT STATS players=<nb_player>` | RFC |
+| Stats | `EVT STATS players_in_room=<nb_player>` | **custom (not in RFC)** |
 | NPC Death | `EVT NPC DEAD <npc_id>` | **custom (not in RFC)** |
 | NPC Flee | `EVT NPC FLEE, "status"="<npc_id>"` | **custom (not in RFC)** |
 | NPC Attack | `EVT NPC ATTACK` | **custom (not in RFC)** |
@@ -436,14 +437,7 @@ The Makefile provides one target per component:
 ```bash
 make server   # starts the server on :8080
 make cli      # starts the CLI client
-```
-
-Without `make`:
-
-```bash
-go build -o bin/server ./cmd/server && ./bin/server
-go build -o bin/cli    ./cmd/cli    && ./bin/cli
-go build -o bin/gui    ./cmd/gui    && ./bin/gui
+make gui      # starts the GUI
 ```
 
 Always start the server first. The server and the clients must be started from the root of the repository (the server loads `data/world.json`).
@@ -467,11 +461,12 @@ go run -race ./cmd/server
 1. Start the server.
 2. Open two or more terminals and run `go run ./cmd/cli` in each.
 3. `CONNECT alice` in the first one, `CONNECT bob` in the second.
-4. Check the events: `EVT STATS players=2`, `EVT ROOM PRESENCE ENTER bob`.
+4. Check the events: `EVT STATS players=2`, `EVT STATS players_in_room=2`, `EVT ROOM PRESENCE ENTER bob`.
 5. Test `WHO`, `LOOK` (both players are listed), `CHAT GLOBAL`, `CHAT ROOM`.
 6. Groups: `GROUP CREATE team`, `GROUP INVITE bob`, then `GROUP JOIN alice` on bob's side, `INFO_GROUP`, `CHAT GROUP`, `GROUP LEAVE`.
 7. Check the errors: same name twice (`ERR 201`), two `CHAT` in less than 2 seconds (`ERR 018`).
 8. Quit one client with `QUIT`, then by closing its terminal: the other one must receive the updated stats.
+
 ### Combat
 
 1. Go to a room with a hostile NPC (pirate, captain) and `ATTACK <npc>`.
@@ -481,12 +476,13 @@ go run -race ./cmd/server
 5. Let the player die: inventory dropped in the room, respawn in the tavern.
 ### Quests
 
-1. `FIND_QUESTS` near an NPC, then `QUEST <npc>`.
+1. `FIND_QUESTS`, then `QUEST <npc>`.
 2. `QUESTS` shows the quest as `active` with its progress.
 3. With a second player, check that the quest is no longer available.
 4. `ABANDON_QUEST <id>`, then check that it is available again.
 5. Collect the required items, return to the NPC and `COMPLETE_QUEST <id>`: items consumed, rewards received.
 6. `COMPLETE_QUEST` without the items: `ERR 011`.
+
 ### Protocol (TCP stream)
 
 These tests use `nc` and `printf` because the CLI always sends complete lines.

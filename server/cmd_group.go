@@ -101,6 +101,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	}
 	current_group := client.group
 	delete(current_group.members, client.name)
+	client.group = nil
 	client.Send("OK group_leaved=%s", current_group.id)
 	SendGroup(d, client, "EVT GROUP LEAVE %s", client.name)
 	if len(current_group.members) > 0 {
