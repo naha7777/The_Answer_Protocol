@@ -3,10 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"golang.org/x/term"
 	"os"
 	"strings"
 	"the_answer_protocol/client"
-	"golang.org/x/term"
 )
 
 func main() {

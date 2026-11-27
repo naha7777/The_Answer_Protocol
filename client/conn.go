@@ -2,21 +2,21 @@ package client
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
+	"github.com/joho/godotenv"
 	"net"
+	"os"
 	"strings"
 	"sync"
-	"time"
-	"os"
-	"fmt"
-	"errors"
 	"sync/atomic"
-	"github.com/joho/godotenv"
+	"time"
 )
 
 type Message struct {
-	Kind	string
-	Raw		string
-	Rest	string
+	Kind string
+	Raw  string
+	Rest string
 }
 
 type Conn struct {
@@ -26,8 +26,8 @@ type Conn struct {
 	done      chan struct{}
 	closeOnce sync.Once
 	closed    atomic.Bool
-	errMu	  sync.Mutex
-	err		  error
+	errMu     sync.Mutex
+	err       error
 }
 
 func Dial() (*Conn, error) {
@@ -38,15 +38,15 @@ func Dial() (*Conn, error) {
 	}
 
 	// try TCP connection, stop after waiting for 5 secondes
-	conn, err := net.DialTimeout("tcp", addr, 5 * time.Second)
+	conn, err := net.DialTimeout("tcp", addr, 5*time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("cannot reach %s: %w", addr, err)
 	}
 
 	c := &Conn{
-		conn: 		conn,
-		messages: 	make(chan Message, 64), // until 64 messages in wait
-		done: 		make(chan struct{}),
+		conn:     conn,
+		messages: make(chan Message, 64), // until 64 messages in wait
+		done:     make(chan struct{}),
 	}
 
 	// reading goroutine
@@ -76,8 +76,8 @@ func scan(c *Conn) {
 	if err := scanner.Err(); err != nil &&
 		!c.closed.Load() && !errors.Is(err, net.ErrClosed) {
 		c.errMu.Lock()
-        c.err = err
-        c.errMu.Unlock()
+		c.err = err
+		c.errMu.Unlock()
 	}
 }
 
@@ -90,21 +90,21 @@ func (c *Conn) Err() error {
 const writeTimeout = 5 * time.Second
 
 func (c *Conn) Send(line string) error {
-    c.mu.Lock()
-    defer c.mu.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-    if err := c.conn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
-        return err
-    }
+	if err := c.conn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
+		return err
+	}
 
-    if _, err := c.conn.Write([]byte(line + "\n")); err != nil {
-        c.Close()
-        return err
-    }
-    return nil
+	if _, err := c.conn.Write([]byte(line + "\n")); err != nil {
+		c.Close()
+		return err
+	}
+	return nil
 }
 
-func (c *Conn) Messages() <- chan Message{
+func (c *Conn) Messages() <-chan Message {
 	// return the channel in a reading only mode
 	return c.messages
 }

@@ -1,18 +1,18 @@
 package server
 
 import (
-	"strings"
-	"strconv"
-	"maps"
 	"encoding/json"
+	"maps"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 type groupInfo struct {
-	Id		string		`json:"Id"`
-	Leader	string		`json:"Leader"`
-	Members	[]string	`json:"Members"`
-	Invited	[]string	`json:"Invited"`
+	Id      string   `json:"Id"`
+	Leader  string   `json:"Leader"`
+	Members []string `json:"Members"`
+	Invited []string `json:"Invited"`
 }
 
 type Group struct {
@@ -165,10 +165,10 @@ func (d *Dispatcher) handleInfoGroup(client *Client, args []string) {
 	g := client.group
 	b, err := json.Marshal(map[string]groupInfo{
 		"group": {
-			Id:			g.id,
-			Leader:		g.leader,
-			Members:	slices.Sorted(maps.Keys(g.members)),
-			Invited:	slices.Sorted(maps.Keys(g.invited)),
+			Id:      g.id,
+			Leader:  g.leader,
+			Members: slices.Sorted(maps.Keys(g.members)),
+			Invited: slices.Sorted(maps.Keys(g.invited)),
 		},
 	})
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 )
 
 func NPCsAction(player_action string, client *Client, strength int, npc_hp int,
-				NPC_max_hp int, npc_name string, d *Dispatcher) int {
+	NPC_max_hp int, npc_name string, d *Dispatcher) int {
 	initial_strength := strength
 
 	// percentage chance that the NPC will attack, flee, or regenerate depending

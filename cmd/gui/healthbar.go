@@ -13,11 +13,11 @@ import (
 // its width and interpolates its fill color from green to orange to red based
 // on the remaining health percentage.
 type HealthBar struct {
-	content	fyne.CanvasObject
-	fill	*canvas.Rectangle
-	label	*canvas.Text
-	max		float64
-	current	float64
+	content fyne.CanvasObject
+	fill    *canvas.Rectangle
+	label   *canvas.Text
+	max     float64
+	current float64
 }
 
 // NewHealthBar creates and initializes a new HealthBar with the specified
@@ -41,10 +41,10 @@ func NewHealthBar(max float64) *HealthBar {
 	barArea := container.NewWithoutLayout(bg, fill, lbl)
 
 	hb := &HealthBar{
-		fill:		fill,
-		label:		lbl,
-		max:		max,
-		current:	max,
+		fill:    fill,
+		label:   lbl,
+		max:     max,
+		current: max,
 	}
 
 	sizer := canvas.NewRectangle(color.Transparent)

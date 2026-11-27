@@ -11,8 +11,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"the_answer_protocol/game"
-	"unicode"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -34,11 +34,15 @@ var (
 )
 
 func trackConn(c net.Conn) {
-	connsMu.Lock(); conns[c] = struct{}{}; connsMu.Unlock()
+	connsMu.Lock()
+	conns[c] = struct{}{}
+	connsMu.Unlock()
 }
 
 func untrackConn(c net.Conn) {
-	connsMu.Lock(); delete(conns, c); connsMu.Unlock()
+	connsMu.Lock()
+	delete(conns, c)
+	connsMu.Unlock()
 }
 
 func closeAllConns() {
@@ -103,7 +107,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 			// inv = append(inv, item)
 			client = &Client{conn: connection, name: "", group: nil, room: room,
 				inventory: nil, hp: 100, hp_max: 100,
-				status: "very healthy", strength: 10, target: "",
+				status: "exploration", strength: 10, target: "",
 				real_strength: 10, quit: false}
 		}
 	}

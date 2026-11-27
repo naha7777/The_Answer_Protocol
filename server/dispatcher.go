@@ -10,11 +10,11 @@ import (
 type CommandFunc func(client *Client, args []string)
 
 type Dispatcher struct {
-	mu			sync.Mutex
-	commands	map[string]CommandFunc
-	clients		map[string]*Client
-	groups		map[string]*Group
-	world		*game.World
+	mu       sync.Mutex
+	commands map[string]CommandFunc
+	clients  map[string]*Client
+	groups   map[string]*Group
+	world    *game.World
 }
 
 func NewDispatcher(w *game.World) *Dispatcher {
@@ -113,7 +113,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 		}
 	} else {
 		if first == "ATTACK" || first == "DEFEND" || first == "FLEE" ||
-		first == "STATUS" || first == "USE_ITEM" || first == "INVENTORY" {
+			first == "STATUS" || first == "USE_ITEM" || first == "INVENTORY" {
 			cmd = strings.ToUpper(parts[0])
 			args = parts[1:]
 		} else {

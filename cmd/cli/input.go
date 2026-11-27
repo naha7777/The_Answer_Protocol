@@ -10,10 +10,10 @@ import (
 )
 
 type Input struct {
-    mu      sync.Mutex
-    buf     []rune
-    history []string
-    idx     int
+	mu      sync.Mutex
+	buf     []rune
+	history []string
+	idx     int
 }
 
 const prompt = "> "

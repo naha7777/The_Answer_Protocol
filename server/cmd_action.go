@@ -80,4 +80,3 @@ func (d *Dispatcher) handleMove(client *Client, args []string) {
 		return
 	}
 }
-

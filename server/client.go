@@ -5,9 +5,9 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"the_answer_protocol/game"
 	"time"
-	"sync/atomic"
 )
 
 type Client struct {
@@ -31,10 +31,10 @@ type Client struct {
 	kills         []string
 	lastChat      time.Time
 	wmu           sync.Mutex
-    cmdTimes      []time.Time
-    floodLogged   bool
-	dead		  atomic.Bool
-	nb_death	  int
+	cmdTimes      []time.Time
+	floodLogged   bool
+	dead          atomic.Bool
+	nb_death      int
 }
 
 func (c *Client) label() string {

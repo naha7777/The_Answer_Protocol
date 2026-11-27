@@ -17,32 +17,32 @@ import (
 // combat turn, including current and maximum health points, damage dealt,
 // damage type, and combat status.
 type AttackData struct {
-	PlayerHP		int		`json:"player_hp"`
-	PlayerMax_HP	int		`json:"player_max_hp"`
-	NPCHP			int		`json:"NPC_hp"`
-	NPCMaxHP		int		`json:"NPC_max_hp"`
-	Damage			int		`json:"damage"`
-	NPCName			string	`json:"NPC_name"`
-	DamageType		string	`json:"damage_type"`
-	Status			string	`json:"status"`
+	PlayerHP     int    `json:"player_hp"`
+	PlayerMax_HP int    `json:"player_max_hp"`
+	NPCHP        int    `json:"NPC_hp"`
+	NPCMaxHP     int    `json:"NPC_max_hp"`
+	Damage       int    `json:"damage"`
+	NPCName      string `json:"NPC_name"`
+	DamageType   string `json:"damage_type"`
+	Status       string `json:"status"`
 }
 
 // BattleUI manages the arena combat interface, including fighter avatars,
 // health bars, action buttons, and the combat log.
 type BattleUI struct {
-	inFight			bool
-	targetNPC		string
-	data			*Data
-	player			*Player
-	playerImg		*canvas.Image
-	npcImg			*canvas.Image
-	playerNameLabel	*widget.Label
-	npcNameLabel	*widget.Label
-	battleLog		*widget.Label
-	content			fyne.CanvasObject
-	npcHealth		*HealthBar
-	playerHealth	*HealthBar
-	buttons			[]*widget.Button
+	inFight         bool
+	targetNPC       string
+	data            *Data
+	player          *Player
+	playerImg       *canvas.Image
+	npcImg          *canvas.Image
+	playerNameLabel *widget.Label
+	npcNameLabel    *widget.Label
+	battleLog       *widget.Label
+	content         fyne.CanvasObject
+	npcHealth       *HealthBar
+	playerHealth    *HealthBar
+	buttons         []*widget.Button
 }
 
 // NewBattleUI builds and initializes the arena combat layout with player and
@@ -57,15 +57,15 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	npcImg.SetMinSize(fyne.NewSize(300, 400))
 
 	b := &BattleUI{
-		playerImg:			playerImg,
-		npcImg:				npcImg,
-		playerHealth:		NewHealthBar(float64(player.currentHP)),
-		npcHealth:			NewHealthBar(0),
-		playerNameLabel:	widget.NewLabel(player.name),
-		npcNameLabel:		widget.NewLabel("enemy"),
-		battleLog:			widget.NewLabel(""),
-		player:				player,
-		data:				data,
+		playerImg:       playerImg,
+		npcImg:          npcImg,
+		playerHealth:    NewHealthBar(float64(player.currentHP)),
+		npcHealth:       NewHealthBar(0),
+		playerNameLabel: widget.NewLabel(player.name),
+		npcNameLabel:    widget.NewLabel("enemy"),
+		battleLog:       widget.NewLabel(""),
+		player:          player,
+		data:            data,
 	}
 
 	playerSide := container.NewVBox(
@@ -93,8 +93,8 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 			b.data.conn.Send("ATTACK " + b.targetNPC)
 		}
 	})
-	fleeBtn := widget.NewButton("FLEE", func() {b.data.conn.Send("FLEE")})
-	defendBtn := widget.NewButton("DEFEND", func() {b.data.conn.Send("DEFEND")})
+	fleeBtn := widget.NewButton("FLEE", func() { b.data.conn.Send("FLEE") })
+	defendBtn := widget.NewButton("DEFEND", func() { b.data.conn.Send("DEFEND") })
 
 	var itemsBtn *widget.Button
 	itemsBtn = widget.NewButton("USE ITEM", func() {
@@ -102,7 +102,7 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 			itemsBtn,
 			data.w,
 			Generate_option(data.g.inventory.objects, "USE_ITEM", data.conn))
-		})
+	})
 
 	b.buttons = []*widget.Button{attackBtn, fleeBtn, defendBtn, itemsBtn}
 

@@ -61,7 +61,7 @@ func askText(w fyne.Window, title, label string, onSubmit func(text string)) {
 				onSubmit(strings.TrimSpace(entry.Text))
 			}
 		}, w)
-	entry.OnSubmitted = func(string) { d.Submit()}
+	entry.OnSubmitted = func(string) { d.Submit() }
 	d.Resize(fyne.NewSize(400, d.MinSize().Height))
 	d.Show()
 	w.Canvas().Focus(entry)

@@ -1,26 +1,26 @@
 package server
 
 import (
-	"io"
-	"log/slog"
-	"os"
 	"bytes"
 	"fmt"
 	"golang.org/x/term"
+	"io"
+	"log/slog"
+	"os"
 )
 
 const (
-    reset  = "\033[0m"
-    red    = "\033[31m"
-    yellow = "\033[33m"
-	RED    = "\033[41m"
-    gray   = "\033[90m"
-    green   = "\033[32m"
-    cyan    = "\033[36m"
-    magenta = "\033[35m"
+	reset   = "\033[0m"
+	red     = "\033[31m"
+	yellow  = "\033[33m"
+	RED     = "\033[41m"
+	gray    = "\033[90m"
+	green   = "\033[32m"
+	cyan    = "\033[36m"
+	magenta = "\033[35m"
 )
 
-type colorWriter struct{
+type colorWriter struct {
 	w io.Writer
 }
 
@@ -30,9 +30,9 @@ func (c colorWriter) Write(p []byte) (int, error) {
 	case bytes.Contains(p, []byte(`client disconnected`)), bytes.Contains(p, []byte(`client connected`)):
 		color = yellow
 	case bytes.Contains(p, []byte(`server shutting down`)),
-		 bytes.Contains(p, []byte(`server started`)),
-		 bytes.Contains(p, []byte(`server stopped`)),
-		 bytes.Contains(p, []byte(`shutdown requested`)):
+		bytes.Contains(p, []byte(`server started`)),
+		bytes.Contains(p, []byte(`server stopped`)),
+		bytes.Contains(p, []byte(`shutdown requested`)):
 		color = magenta
 	case !bytes.Contains(p, []byte(`,"source":"SERVER"`)):
 		color = cyan

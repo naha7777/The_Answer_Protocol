@@ -47,6 +47,6 @@ func broadcast(targets []*Client, format string, a ...any) {
 
 	if len(recipients) > 0 {
 		Srv().Info("event sent", "event", msg, "recipients", recipients,
-				   "count", len(recipients))
+			"count", len(recipients))
 	}
 }

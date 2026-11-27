@@ -1,8 +1,8 @@
 package server
 
 import (
-	"strings"
 	"slices"
+	"strings"
 	"the_answer_protocol/game"
 )
 
@@ -59,7 +59,7 @@ func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) bool {
 			obj_it = append(obj_it, obj)
 		}
 	}
-	if len(client.inventory) - len(obj_it) + len(quest.Reward) > 100 {
+	if len(client.inventory)-len(obj_it)+len(quest.Reward) > 100 {
 		client.Send("ERR 17 FULL_INVENTORY")
 		return false
 	}

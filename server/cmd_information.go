@@ -6,12 +6,12 @@ import (
 )
 
 type RoomQuest struct {
-	AllQuests	[]*NPCQuest	`json:"quests"`
+	AllQuests []*NPCQuest `json:"quests"`
 }
 
 type NPCQuest struct {
-	Npc		string		`json:"npc"`
-	Quests	[]string	`json:"quests"`
+	Npc    string   `json:"npc"`
+	Quests []string `json:"quests"`
 }
 
 func (d *Dispatcher) handleWho(client *Client, args []string) {

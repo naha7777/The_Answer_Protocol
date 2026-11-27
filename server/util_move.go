@@ -12,16 +12,16 @@ func Move(direction string, client *Client, d *Dispatcher) {
 					// Change player's room and send an EVT to the rooms' players
 					client.log().Info("move", "from", client.room.Name, "to", val.Name)
 					SendRoom(d, client, "EVT ROOM PRESENCE LEAVE %s",
-							 client.name)
+						client.name)
 					client.room.Players = Remove(client.name,
-												 client.room.Players)
+						client.room.Players)
 					client.room = val
 					client.room.Players = append(client.room.Players,
-												 client.name)
+						client.name)
 					client.Send("OK room=%s", v)
 					find = true
 					SendRoom(d, client, "EVT ROOM PRESENCE ENTER %s",
-							 client.name)
+						client.name)
 					return
 				}
 			}
