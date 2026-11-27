@@ -97,8 +97,8 @@ This design was chosen over inline handling in the connection loop because addin
 
 TCP is a stream of bytes, not a stream of messages. The server reads with a `bufio.Reader` and only processes a command once the terminating `\n` has arrived:
 
-- **Fragmentation**: a command split across several packets is buffered until the full line is received. Test with `(printf 'CONNECT bob\n'; printf 'lo'; sleep 2; printf 'ok\n') | nc localhost 8080`
-- **Coalescence**: several commands received in one packet are processed one by one. Test with `printf 'CONNECT bob\nlook\nwho\n' | nc localhost 8080`
+- **Fragmentation**: a command split across several packets is buffered until the full line is received.
+- **Coalescence**: several commands received in one packet are processed one by one.
 - **Line limit**: lines longer than 1024 bytes are discarded and answered with `ERR 016 LINE_TOO_LONG`, without closing the connection.
 ### Resource limits
 

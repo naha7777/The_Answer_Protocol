@@ -15,7 +15,7 @@
       "name": "Haunted Forest",
       "description": "A scary forest.",
       "exits": { "north": "loc.castle", "south": "loc.tavern", "west": "loc.lake" },
-      "items": ["item.spirit", "item.herbs", "item.herbs"],
+      "items": ["item.spirit", "item.herbs", "item.herbs", "item.health_potion"],
       "npcs": ["npc.ghost", "npc.witch"]
     },
     "loc.market": {
