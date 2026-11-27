@@ -27,7 +27,8 @@ type colorWriter struct {
 func (c colorWriter) Write(p []byte) (int, error) {
 	color := ""
 	switch {
-	case bytes.Contains(p, []byte(`client disconnected`)), bytes.Contains(p, []byte(`client connected`)):
+	case bytes.Contains(p, []byte(`client disconnected`)),
+		bytes.Contains(p, []byte(`client connected`)):
 		color = yellow
 	case bytes.Contains(p, []byte(`server shutting down`)),
 		bytes.Contains(p, []byte(`server started`)),

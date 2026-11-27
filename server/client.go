@@ -68,12 +68,15 @@ func (c *Client) Send(format string, a ...any) {
 	case "ERR":
 		code, _, _ := strings.Cut(rest, " ")
 		if code == "500" {
-			Srv().Error("error sent", "to", c.label(), "code", code, "message", msg)
+			Srv().Error("error sent", "to", c.label(), "code", code, "message",
+				msg)
 		} else {
-			Srv().Warn("error sent", "to", c.label(), "code", code, "message", msg)
+			Srv().Warn("error sent", "to", c.label(), "code", code, "message",
+				msg)
 		}
 	case "EVT":
-		Srv().Info("event sent", "event", msg, "recipients", []string{c.label()}, "count", 1)
+		Srv().Info("event sent", "event", msg, "recipients",
+			[]string{c.label()}, "count", 1)
 	default:
 		Srv().Info("response sent", "to", c.label(), "message", msg)
 	}
@@ -107,8 +110,10 @@ func (client *Client) Death(d *Dispatcher) {
 			client.room.Players = Remove(client.name, client.room.Players)
 			client.room = val
 			client.room.Players = append(client.room.Players, client.name)
-			client.Send(`OK room=%s, player_hp=%d, player_max_hp=%d`, d.world.Respawn, client.hp, client.hp_max)
-			Srv().Info("respawn", "player", client.name, "room", client.room.Name, "player_hp", client.hp)
+			client.Send(`OK room=%s, player_hp=%d, player_max_hp=%d`,
+				d.world.Respawn, client.hp, client.hp_max)
+			Srv().Info("respawn", "player", client.name, "room",
+				client.room.Name, "player_hp", client.hp)
 			SendRoom(d, client, `EVT ROOM PRESENCE ENTER %s`, client.name)
 		}
 	}

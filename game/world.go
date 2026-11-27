@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"os"
 )
 
 type World struct {
@@ -55,14 +54,15 @@ func LoadWorld(path string) (*World, error) {
 
 	w, err := extractor(path)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
 		return nil, err
 	}
 
 	for id, room := range w.Rooms {
 		for dir, target := range room.Exits {
 			if _, ok := w.Rooms[target]; !ok {
-				return nil, fmt.Errorf("room %s: exit %s leads to unknown room %q", id, dir, target)
+				return nil, fmt.Errorf(
+					"room %s: exit %s leads to unknown room %q", id, dir,
+					target)
 			}
 		}
 	}

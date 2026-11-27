@@ -39,8 +39,15 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 								if npc.Hp < 0 {
 									npc.Hp = 0
 								}
-								client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc.Name, npc.Hp, npc.Max_hp, client.strength, damage_type, client.status)
-								client.log().Info("combat", "npc", npcs, "damage", client.strength, "npc_hp", npc.Hp)
+								client.Send(`OK attack={"player_hp": %d, `+
+									`"player_max_hp": %d, "NPC_name": "%s", `+
+									`"NPC_hp": %d, "NPC_max_hp": %d, "damage": %d,`+
+									` "damage_type": "%s", "status": "%s"}`,
+									client.hp, client.hp_max, npc.Name, npc.Hp,
+									npc.Max_hp, client.strength, damage_type,
+									client.status)
+								client.log().Info("combat", "npc", npcs,
+									"damage", client.strength, "npc_hp", npc.Hp)
 								CheckBuffDebuff(client, d)
 								// if the hit kill the NPC
 								if npc.Hp <= 0 {
@@ -98,14 +105,18 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 		if rand.Float64() < 0.4 {
 			client.status = "exploration"
 			client.Send(`OK flee=succed, "status"="%s"`, client.status)
-			client.log().Info("flee", "player", client.name, "hp", client.hp, "hp_max", client.hp_max, "status", client.status, "room", client.room.Name)
+			client.log().Info("flee", "player", client.name, "hp", client.hp,
+				"hp_max", client.hp_max, "status", client.status, "room",
+				client.room.Name)
 			d.world.NPCs[client.target].Fighter = ""
 			client.target = ""
 			return
 		} else {
 			npc := FindNPC(d, client, client.target)
 			client.Send(`OK flee=fail, "status"="combat"`)
-			client.log().Info("flee failed", "player", client.name, "hp", client.hp, "hp_max", client.hp_max, "status", client.status, "room", client.room.Name, "npc", npc.Name)
+			client.log().Info("flee failed", "player", client.name, "hp",
+				client.hp, "hp_max", client.hp_max, "status", client.status,
+				"room", client.room.Name, "npc", npc.Name)
 			CheckBuffDebuff(client, d)
 			// if the player fail his flee, the NPC has an action
 			npc.Hp += NPCsAction("FLEE", client, npc.Strength, npc.Hp,

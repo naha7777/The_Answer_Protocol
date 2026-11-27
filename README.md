@@ -97,8 +97,8 @@ This design was chosen over inline handling in the connection loop because addin
 
 TCP is a stream of bytes, not a stream of messages. The server reads with a `bufio.Reader` and only processes a command once the terminating `\n` has arrived:
 
-- **Fragmentation**: a command split across several packets is buffered until the full line is received.
-- **Coalescence**: several commands received in one packet are processed one by one.
+- **Fragmentation**: a command split across several packets is buffered until the full line is received. Test with `(printf 'CONNECT bob\n'; printf 'lo'; sleep 2; printf 'ok\n') | nc localhost 8080`
+- **Coalescence**: several commands received in one packet are processed one by one. Test with `printf 'CONNECT bob\nlook\nwho\n' | nc localhost 8080`
 - **Line limit**: lines longer than 1024 bytes are discarded and answered with `ERR 016 LINE_TOO_LONG`, without closing the connection.
 ### Resource limits
 
@@ -108,7 +108,7 @@ TCP is a stream of bytes, not a stream of messages. The server reads with a `buf
 | Simultaneous connections | 30 |
 | Inventory size | 100 items |
 | Chat frequency | 1 message per 2 seconds per player |
-| Username lenght | 20 char |
+| Username length | 20 char |
 
 ### Client side
 
@@ -153,7 +153,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 015 NO_QUEST_AVAILABLE` | none |
 | UNKNOWN COMMAND | | `ERR 001 UNKNOWN_COMMAND`| none |
 | error CLI or GUI connection | | `ERR 900 CONNECTION_FAILED` | none |
-| error CLI or GUI send | | `ERR 900 SEND_FAILED` | none |
+| error CLI or GUI send | | `ERR 901 SEND_FAILED` | none |
 | error line too long | | `ERR 016 LINE_TOO_LONG` | none |
 | error server full | | `ERR 019 SERVER_FULL` | none |
 | invalid input error | | `ERR 020 INVALID_INPUT` | none |
@@ -258,7 +258,7 @@ Depending on the player's action, the probabilities change:
 |---|---|---|---|
 | `ATTACK` | 10% | 80% | 10% |
 | `DEFEND` | 5% | 75% | 20% |
-| failed `FLEE` | 0% | 95% | 5% |
+| `FLEE` | 0% | 95% | 5% |
 | `USE_ITEM` | 5% | 55% | 40% |
 
 Once a player attacks an NPC, no other player can join the fight. The fight ends only when the player or the NPC flees, or when one of them dies. It also ends if the player quit the game.
@@ -333,7 +333,7 @@ An inventory is full at 100 items.
 
 ## Server Logging
 
-The server logs with the standard `log/slog` package (`server/log.go`). Every log line is a **JSON object** written on one line, which makes it easy to parse with `jq` or `grep`.
+The server logs with the standard `log/slog` package (`server/logs.go`). Every log line is a **JSON object** written on one line, which makes it easy to parse with `jq` or `grep`.
 
 ### Format
 
@@ -344,7 +344,7 @@ The server logs with the standard `log/slog` package (`server/log.go`). Every lo
 | Field | Meaning |
 |---|---|
 | `time` | Date and time of the event (`YYYY/MM/DD HH:MM:SS`) |
-| `level` | `INFO`, `WARN` or `ERROR` (`DEBUG` is available, see below) |
+| `level` | `INFO`, `WARN` or `ERROR` |
 | `source` | Who **caused** the event: the player name (or its address before `CONNECT`) for client actions, an NPC id for NPC actions, `SERVER` for what the server itself does (responses, events, start/stop, errors) |
 | `msg` | Type of event |
 | `ip` | Address of the **client** (`ip:port`), never the server's |
@@ -358,7 +358,6 @@ The server logs with the standard `log/slog` package (`server/log.go`). Every lo
 | `INFO` | Normal activity | connection, command, response, event, quest, combat |
 | `WARN` | A mistake or abuse from the client, handled by the server | `ERR 404`, `ERR 018 SPAM`, line too long, server full |
 | `ERROR` | A failure of the **server** itself | `ERR 500 INTERNAL`, recovered panic, send failure, `accept` failure |
-| `DEBUG` | Very verbose details (off by default) | enabled with `LOG_LEVEL=debug` |
 
 A player typing a wrong command can only cause a `WARN`. An `ERROR` always means a bug or a failure on the server side.
 
@@ -397,12 +396,6 @@ Logs are written on the **standard output** (`stdout`) of the server. To keep a 
 make server
 ```
 
-The log level can be changed with an environment variable:
-
-```bash
-LOG_LEVEL=debug make server
-```
-
 JSON encoding escapes control characters, so a player name containing terminal escape sequences cannot alter the terminal of the person reading the logs.
 
 ### Monitoring and abuse detection
@@ -412,7 +405,7 @@ tail -f server.log                                   # follow the server live
 grep '"level":"WARN"'  server.log                    # client mistakes and abuse
 grep '"level":"ERROR"' server.log                    # server failures
 grep '"msg":"abuse' server.log                       # abuse patterns only
-grep '"code":"018"' server.log                        # all spam errors
+grep '"code":"018"' server.log                       # all spam errors
 grep '"msg":"quest' server.log                       # quest activity
 grep '"source":"SERVER"' server.log                  # what the server said or did
 

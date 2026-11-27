@@ -28,7 +28,8 @@ func (d *Dispatcher) handleLook(client *Client, args []string) {
 	defer d.mu.Unlock()
 	jsonData, err := json.Marshal(client.room)
 	if err != nil {
-		Srv().Error("json marshal failed", "player", client.name, "cmd", "LOOK", "err", err)
+		Srv().Error("json marshal failed", "player", client.name, "cmd",
+			"LOOK", "err", err)
 		client.Send("ERR 500 INTERNAL")
 	}
 	client.Send(`OK look={"room": %s}`, jsonData)

@@ -23,7 +23,10 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 						if q.Status == "available" && q.Description != "" {
 							// give the quest to the player
 							client.quests = append(client.quests, q)
-							client.Send(`OK quest={"quest_npc": "%s", "quest_id": "%s", "description": "%s", "reward": "%s", "status": "%s"}`, q.NPC, q.Id, q.Description, q.Reward, q.Status)
+							client.Send(`OK quest={"quest_npc": "%s", `+
+								`"quest_id": "%s", "description": "%s", `+
+								`"reward": "%s", "status": "%s"}`, q.NPC, q.Id,
+								q.Description, q.Reward, q.Status)
 							SendAll(d, client, `EVT QUEST took=%s`, q.Id)
 							client.log().Info("quest taken", "quest", q.Id)
 							q.Status = "active"

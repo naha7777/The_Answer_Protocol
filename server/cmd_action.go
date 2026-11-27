@@ -25,7 +25,8 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 		if !ok {
 			continue
 		}
-		if !strings.EqualFold(id, query) && !strings.EqualFold(item.Name, query) {
+		if !strings.EqualFold(id, query) &&
+			!strings.EqualFold(item.Name, query) {
 			continue
 		}
 		if !item.Obtainable {
