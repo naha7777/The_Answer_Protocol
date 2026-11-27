@@ -38,16 +38,17 @@ type CardinalButtons struct {
 
 func (ui *Hud) MinSize(objects []fyne.CanvasObject) fyne.Size {
 
-	if len(objects) < 3 {
+	if len(objects) < 4 {
 		return fyne.NewSize(0, 0)
 	}
 	btnMin := objects[0].MinSize()
 	chatMin := objects[1].MinSize()
 	invMin := objects[2].MinSize()
+	playerMin := objects[3].MinSize()
 
 	margin := float32(10)
 	minW := btnMin.Width + chatMin.Width + invMin.Width + 4*margin
-	minH := btnMin.Height + 2*margin
+	minH := btnMin.Height + playerMin.Height + 3*margin
 	return fyne.NewSize(minW, minH)
 }
 

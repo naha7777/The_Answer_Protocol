@@ -79,7 +79,7 @@ func main() {
 	// Widgets init for base layout
 	btnContainer := newButtonContainer(background, &player, &data)
 	data.playerInfo = showPlayerInfo(&player, data)
-	hudContent := container.New(&Hud{}, btnContainer, data.chat.Content(), data.g.inventory.Content())
+	hudContent := container.New(&Hud{}, btnContainer, data.chat.Content(), data.g.inventory.Content(), data.playerInfo.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,

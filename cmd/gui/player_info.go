@@ -68,7 +68,7 @@ func showPlayerInfo(p *Player, data Data) *InfoBox {
 		items:        widget.NewLabel(""),
 		content:      widget.NewLabel(""),
 		bgImg:        canvas.NewImageFromFile(""),
-		healthBar:    NewHealthBar(float64(p.maxHP)),
+		healthBar:    NewHealthBar(0),
 	}
 
 	for _, lbl := range []*widget.Label{b.members, b.name, b.room, b.group, b.npc, b.items} {
