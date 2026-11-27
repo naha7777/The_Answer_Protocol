@@ -67,7 +67,7 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 
 	// INVENTORY
 	case strings.HasPrefix(msg.Rest, "inventory="):
-		data.g.inventory.BuildInv(msg.Rest)
+		// data.g.inventory.BuildInv(msg.Rest)
 		data.g.Update(msg.Rest)
 
 	// LOOK
