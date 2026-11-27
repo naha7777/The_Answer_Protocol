@@ -68,7 +68,7 @@ func showPlayerInfo(p *Player, data Data) *InfoBox {
 		items:        widget.NewLabel(""),
 		content:      widget.NewLabel(""),
 		bgImg:        canvas.NewImageFromFile(""),
-		healthBar:    NewHealthBar(100),
+		healthBar:    NewHealthBar(float64(p.maxHP)),
 	}
 
 	for _, lbl := range []*widget.Label{b.members, b.name, b.room, b.group, b.npc, b.items} {
@@ -109,6 +109,8 @@ func (b *InfoBox) Content() fyne.CanvasObject { return b.content }
 
 func (b *InfoBox) Update(d Data) {
 	p := b.player
+	b.healthBar.SetMax(float64(p.maxHP))
+	b.healthBar.SetValue(float64(p.currentHP))
 	if p.avatar != "" && b.bgImg.File != p.avatar {
 		b.bgImg.File = p.avatar
 		b.bgImg.Refresh()

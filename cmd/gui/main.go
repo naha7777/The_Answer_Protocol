@@ -47,7 +47,7 @@ func main() {
 	// Application and Windows init
 	a := app.New()
 	w := a.NewWindow("TAP")
-	player := Player{maxHP: 100, currentHP: 100, move: false}
+	player := Player{maxHP: 0, currentHP: 0, move: false}
 	w.Resize(fyne.NewSize(1920, 1080))
 
 	// Key hook for esc to close the app
@@ -100,15 +100,16 @@ func main() {
 	)
 
 	loggedIn := false
+	gameOver := false
 	loginView, onLoginMsg := LoginScreen(conn, &player, func(name string) {
 		loggedIn = true
-		data.playerInfo.Update(data)
 		data.cb.Update(player.room.exits)
-		w.SetContent(gameContent)
 		conn.Send("WHO")
 		conn.Send("STATUS")
 		conn.Send("INVENTORY")
 		conn.Send("LOOK")
+		data.playerInfo.Update(data)
+		w.SetContent(gameContent)
 	})
 
 	data.gameContent = gameContent
@@ -124,8 +125,11 @@ func main() {
 				}
 				fmt.Println(msg.Raw)
 				if msg.Raw == "GAME OVER" {
-					PopupGameOver(data.w)
-					a.Quit()
+					gameOver = true
+					PopupGameOver(data.w, func() {
+						a.Quit()
+					})
+					return
 				}
 				switch msg.Kind {
 				case "OK":
@@ -140,13 +144,12 @@ func main() {
 		}
 
 		fyne.Do(func() {
-			logLabel.SetText(logLabel.Text + "-- lost connection --\n")
-			logView.ScrollToBottom()
-			a.Quit()
-		})
-		fmt.Fprintln(os.Stderr, "-- lost connection --")
-		fyne.Do(func() {
-			a.Quit()
+			if !gameOver {
+				logLabel.SetText(logLabel.Text + "-- lost connection --\n")
+				logView.ScrollToBottom()
+				fmt.Fprintln(os.Stderr, "-- lost connection --")
+				a.Quit()
+			}
 		})
 	}()
 

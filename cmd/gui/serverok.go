@@ -127,10 +127,8 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 		} else {
 			data.battleUI.Update(atk)
 		}
-	case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
-		status := strings.TrimPrefix(msg.Rest, `"status"=`)
-		status = strings.TrimPrefix(status, "status=")
-
+	case strings.HasPrefix(msg.Rest, "status="):
+		status := strings.TrimPrefix(msg.Rest, "status=")
 		if status != "combat" && data.battleUI.inFight {
 			data.battleUI.EndFight()
 			data.playerInfo.Update(*data)
