@@ -70,7 +70,7 @@ func (d *Dispatcher) handleFindQuests(client *Client, args []string) {
 		}
 	}
 	if len(lst) == 0 {
-		client.Send("ERR 15 NO_QUEST_AVAILABLE")
+		client.Send("ERR 015 NO_QUEST_AVAILABLE")
 	}
 	jsonData, err := json.Marshal(RoomQuest{AllQuests: lst})
 	if err != nil {

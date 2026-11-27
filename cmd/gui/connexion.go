@@ -38,7 +38,7 @@ func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string))
 		}
 		errorLabel.SetText("")
 		if err := conn.Send("CONNECT " + name); err != nil {
-			errorLabel.SetText("901 SEND_FAILED")
+			errorLabel.SetText("ERR 901 SEND_FAILED")
 		}
 		pendingName = name
 	}

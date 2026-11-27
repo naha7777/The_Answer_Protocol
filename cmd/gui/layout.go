@@ -142,7 +142,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 				p.move = true
 			}
 			if err := d.conn.Send(cmd); err != nil {
-				fyne.Do(func() { Popup(d.w, "901 SEND_FAILED") })
+				fyne.Do(func() { Popup(d.w, "ERR 901 SEND_FAILED") })
 			}
 		}
 	}

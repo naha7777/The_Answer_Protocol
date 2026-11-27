@@ -62,12 +62,12 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 								return
 							}
 						} else {
-							client.Send("ERR 12 IN_FIGHT")
+							client.Send("ERR 012 IN_FIGHT")
 							client.strength = client.real_strength
 							return
 						}
 					} else {
-						client.Send("ERR 14 NPC_IN_FIGHT")
+						client.Send("ERR 014 NPC_IN_FIGHT")
 						client.strength = client.real_strength
 						return
 					}
@@ -113,7 +113,7 @@ func (d *Dispatcher) handleFlee(client *Client, args []string) {
 			return
 		}
 	} else {
-		client.Send("ERR 13 NOT_IN_FIGHT")
+		client.Send("ERR 013 NOT_IN_FIGHT")
 		return
 	}
 }
@@ -131,7 +131,7 @@ func (d *Dispatcher) handleDefend(client *Client, args []string) {
 			npc.Name, d)
 		return
 	} else {
-		client.Send("ERR 13 NOT_IN_FIGHT")
+		client.Send("ERR 013 NOT_IN_FIGHT")
 		return
 	}
 }
@@ -194,14 +194,14 @@ func (d *Dispatcher) handleUseItem(client *Client, args []string) {
 					npc.Max_hp, npc.Name, d)
 				return
 			default:
-				client.Send("ERR 12 IN_FIGHT")
+				client.Send("ERR 012 IN_FIGHT")
 				return
 			}
 		}
 		client.Send("ERR 404 ITEM_NOT_FOUND")
 		return
 	} else {
-		client.Send("ERR 13 NOT_IN_FIGHT")
+		client.Send("ERR 013 NOT_IN_FIGHT")
 		return
 	}
 }

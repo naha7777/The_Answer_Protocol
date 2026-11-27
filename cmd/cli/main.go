@@ -61,7 +61,7 @@ func main() {
 				continue
 			}
 			if err := c.Send(line); err != nil {
-				in.Println("901 SEND_FAILED")
+				in.Println("ERR 901 SEND_FAILED")
 				return
 			}
 		}

@@ -21,6 +21,14 @@ The protocol is line-based: every message is a single UTF-8 line terminated by `
 - Go (see `go.mod` for the version)
 - `make`
 - GUI only: the dependencies required by [Fyne](https://docs.fyne.io/)
+
+### Installation
+
+Install `go.mod` depedencies:
+```bash
+make install
+```
+
 ### Run
 
 Server (listens on `:8080`):
@@ -82,7 +90,7 @@ This design was chosen over inline handling in the connection loop because addin
 
 - **One goroutine per connection** (`HandleConnection`), started by the accept loop in `Server`.
 - The shared state (clients, groups, world) is protected by a single mutex, `Dispatcher.mu`. Handlers that read or modify the world lock it.
-- The number of connections is tracked with a counter and limited to 30 (`ERR 19 SERVER_FULL` beyond that).
+- The number of connections is tracked with a counter and limited to 30 (`ERR 019 SERVER_FULL` beyond that).
 - Cleanup (removing the player from the room, dropping the inventory, updating stats) is done in one place: a `defer` in `HandleConnection`. It runs whether the player typed `QUIT`, closed the terminal, or lost the connection.
 - Graceful shutdown: `Ctrl+C` / `SIGTERM` / the `stop` command close the listener, which makes the accept loop return.
 ### TCP stream handling
@@ -91,7 +99,7 @@ TCP is a stream of bytes, not a stream of messages. The server reads with a `buf
 
 - **Fragmentation**: a command split across several packets is buffered until the full line is received.
 - **Coalescence**: several commands received in one packet are processed one by one.
-- **Line limit**: lines longer than 1024 bytes are discarded and answered with `ERR 16 LINE_TOO_LONG`, without closing the connection.
+- **Line limit**: lines longer than 1024 bytes are discarded and answered with `ERR 016 LINE_TOO_LONG`, without closing the connection.
 ### Resource limits
 
 | Limit | Value |
@@ -115,40 +123,40 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | Command | Success response | Error responses | Events pushed |
 |---|---|---|---|
 | *(on connect)* | `OK hello proto=1` | none | none |
-| any command before `CONNECT` | | `ERR 02 YOU_MUST_BE_CONNECTED` | |
-| `CONNECT <name>` | `OK connected` | `ERR 10 YOU_HAVE_A_NAME`, `ERR 09 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE` | none |
+| any command before `CONNECT` | | `ERR 002 YOU_MUST_BE_CONNECTED` | |
+| `CONNECT <name>` | `OK connected` | `ERR 010 YOU_HAVE_A_NAME`, `ERR 009 THIS_IS_NOT_A_NAME`, `ERR 201 NAME_IN_USE`, `ERR 021 NAME_TOO_LONG` | none |
 | `QUIT` | `OK bye` | | none |
 | `LOOK` | `OK look={"room": {"Id":"loc.square","Name":"Village Square","Description":"A bustling square.","Exits":{"east":"loc.market","north":"loc.forest"},"Players":["arbre"],"Items":["item.herbs","item.herbs"],"NPCs":["npc.village_guard"]}}` | | |
 | `MOVE <direction>` | `OK room=<room-id>` | `ERR 301 NO_EXIT` | none |
-| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 07 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `"EVT PLAYER TOOK <item_id>` |
+| `TAKE <item id or name>` | `OK taken=<item-id>` | `ERR 007 ITEM_NOT_OBTAINABLE`, `ERR 404 ITEM_NOT_FOUND`, `ERR 017 FULL_INVENTORY` | `"EVT PLAYER TOOK <item_id>` |
 | `DROP <item id or name>` | `OK dropped=<item-id>` | `ERR 404 ITEM_NOT_FOUND` | `"EVT PLAYER DROPPED <item_id>` |
 | `INVENTORY` | `OK inventory=[item.a item.b]` | | |
 | `TALK <npc id or name>` | `OK talk=<npc_id>: <dialogue line>` | `ERR 404 NPC_NOT_FOUND` | |
 | `STATUS` | `OK status={"hp": <client_hp>, "max_hp": <client_maxp_hp>, "status": "<client_status>"}` | | none |
-| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"`, `GAME OVER` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 14 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT Strength : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"`, `GAME OVER` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT Strength : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `GAME OVER` | `ERR 13 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT Strength : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
-| `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 12 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 13 NOT_IN_FIGHT`, `GAME OVER` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strength during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT Strength POTION : +5 player strength during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
+| `ATTACK <npc id or name>` | `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `OK attack=<ncp_id>=dead, "status"="<client_status>"`, `GAME OVER` | `ERR 404 NPC_NOT_FOUND`, `ERR 405 NPC_NOT_HOSTILE`, `ERR 014 NPC_IN_FIGHT` | `EVT NPC <npc_id> DEAD`, `EVT NPC FLEE, "status"="<player_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT Strength : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `FLEE` | `OK flee=succed, "status"="<client_status>"`, `OK flee=fail, "status"="combat"`, `GAME OVER` | `ERR 013 NOT_IN_FIGHT` | `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT Strength : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `DEFEND` | `OK defend, "status"="combat"`, `OK attack={"player_hp": 36, "player_max_hp": 100, "NPC_name": "Robber", "NPC_hp": 1, "NPC_max_hp": 100, "damage": 8, "damage_type": "normal", "status": "combat"}`, `GAME OVER` | `ERR 013 NOT_IN_FIGHT` | `EVT NPC FLEE, "status"="<client_status>"`, `EVT NPC ATTACK`, `EVT NPC REGENERATION : +5 hp`, `EVT POISON : -5 npc hp during <nb_turns> turns`, `EVT Strength : +5 player strength during <nb_turns> turns`, `EVT HEALTH : +5 player hp during <nb_turns> turns`, `EVT POISON : -5 player hp during <nb_turns> turns` |
+| `USE_ITEM <item>` | `OK use=<item_id>` | `ERR 012 IN_FIGHT`, `ERR 404 ITEM_NOT_FOUND`, `ERR 013 NOT_IN_FIGHT`, `GAME OVER` | `EVT BEER : -5 player hp during <nb_turns> turns`, `EVT SWORD : +5 player strength during <nb_turns> turns`, `EVT POISON POTION : -5 npc hp during <nb_turns> turns`, `EVT Strength POTION : +5 player strength during <nb_turns> turns`, `EVT HEALTH POTION : +5 player hp during <nb_turns> turns` |
 | `WHO` | `OK players=<n>` | | |
-| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
-| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
-| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
+| `CHAT GLOBAL <msg>` | `OK` (sender) | `ERR 006 NO_CHAT_SPECIFIED`, `ERR 008 MISSING_MESSAGE`, `ERR 0 SPAM` | `EVT GLOBAL CHAT <username> <message>` to others |
+| `CHAT ROOM <msg>` | `OK` (sender) | `ERR 006 NO_CHAT_SPECIFIED`, `ERR 008 MISSING_MESSAGE`, `ERR 018 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
+| `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 006 NO_CHAT_SPECIFIED`, `ERR 008 MISSING_MESSAGE`, `ERR 018 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
 | `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none |
-| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT group_invite=<leadername>` to the invited user |
-| `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT group_join=<username>` to members |
-| `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT group_leave=<username>` to remaining members |
+| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 003 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE <leadername>` to the invited user |
+| `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 003 CANT_FIND_LEADER`, `ERR 004 THIS_USER_IS_NOT_A_LEADER`, `ERR 005 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
+| `GROUP LEAVE` | `OK GROUP LEAVE <group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT group_leave=<username>` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
-| `QUEST <npc name or npc id>` | `OK quest={"quest_npc": "jewelry_merchant", "quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 15 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
+| `QUEST <npc name or npc id>` | `OK quest={"quest_npc": "jewelry_merchant", "quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 015 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
 | `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_npc": "princess", "quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id": "example", "status": "completed"}]` | none | none |
-| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion`, `"OK gave=<item_id>"` | `ERR 15 NO_QUEST_AVAILABLE`, `ERR 11 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 17 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
-| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `15 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
-| `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 15 NO_QUEST_AVAILABLE` | none |
-| UNKNOWN COMMAND | | `ERR 01 UNKNOWN_COMMAND`| none |
-| error CLI or GUI connection | | `900 CONNECTION_FAILED` | none |
-| error CLI or GUI send | | `900 SEND_FAILED` | none |
-| error line too long | | `ERR 16 LINE_TOO_LONG` | none |
-| error server full | | `ERR 19 SERVER_FULL` | none |
-| invalid input error | | `ERR 20 INVALID_INPUT` | none |
+| `COMPLETE_QUEST <quest_id>` | `OK complete_quest=quest_id: completed`, `OK taken=item.potion`, `"OK gave=<item_id>"` | `ERR 015 NO_QUEST_AVAILABLE`, `ERR 011 INCOMPLETE_QUEST_REQUIREMENTS`, `ERR 404 NPC_NOT_FOUND`, `ERR 017 FULL_INVENTORY` | `EVT QUEST completed=<quest_id>` |
+| `ABANDON_QUEST <quest_id>` | `OK abandoned=<quest_id>` | `ERR 015 NO_QUEST_AVAILABLE` | `EVT QUEST abandoned=<quest_id>` |
+| `FIND_QUESTS` | `OK find_quests={"quests":[{"npc":"Bartender","quests":["kill_pirate","kill_captain"]}]}` | `ERR 015 NO_QUEST_AVAILABLE` | none |
+| UNKNOWN COMMAND | | `ERR 001 UNKNOWN_COMMAND`| none |
+| error CLI or GUI connection | | `ERR 900 CONNECTION_FAILED` | none |
+| error CLI or GUI send | | `ERR 900 SEND_FAILED` | none |
+| error line too long | | `ERR 016 LINE_TOO_LONG` | none |
+| error server full | | `ERR 019 SERVER_FULL` | none |
+| invalid input error | | `ERR 020 INVALID_INPUT` | none |
 | when someone CONNECT himself or QUIT | | | everyone receive `EVT STATS players=nb_players_in_game` and `EVT STATS players_in_room=nb_players_in_his_room` |
 
 ### Error codes
@@ -163,27 +171,27 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | 405 | NPC_NOT_HOSTILE | RFC |
 | 900 | CONNECTION_FAILED | RFC |
 | 901 | SEND_FAILED | RFC |
-| 01  | UNKNOWN_COMMAND | **custom (not in RFC)** |
-| 02 | YOU_MUST_BE_CONNECTED | **custom (not in RFC)** |
-| 03 | CANT_FIND_USER | **custom (not in RFC)** |
-| 04 | THIS_USER_IS_NOT_A_LEADER | **custom (not in RFC)** |
-| 05 | REQUIRE_INVITATION | **custom (not in RFC)** |
-| 06 | NO_CHAT_SPECIFIED | **custom (not in RFC)** |
-| 07 | ITEM_NOT_OBTAINABLE | **custom (not in RFC)** |
-| 08 | MISSING_MESSAGE | **custom (not in RFC)** |
-| 09 | THIS_IS_NOT_A_NAME | **custom (not in RFC)** |
-| 10 | YOU_HAVE_A_NAME | **custom (not in RFC)** |
-| 11 | INCOMPLETE_QUEST_REQUIREMENTS | **custom (not in RFC)** |
-| 12 | IN_FIGHT | **custom (not in RFC)** |
-| 13 | NOT_IN_FIGHT | **custom (not in RFC)** |
-| 14 | NPC_IN_FIGHT | **custom (not in RFC)** |
-| 15 | NO_QUEST_AVAILABLE | **custom (not in RFC)** |
-| 16 | LINE_TOO_LONG | **custom (not in RFC)** |
-| 17 | FULL_INVENTORY | **custom (not in RFC)** |
-| 18 | SPAM | **custom (not in RFC)** |
-| 19 | SERVER_FULL | **custom (not in RFC)** |
-| 20 | INVALID_INPUT | **custom (not in RFC)** |
-| 21 | NAME_TOO_LONG | **custom (not in RFC)** |
+| 001  | UNKNOWN_COMMAND | **custom (not in RFC)** |
+| 002 | YOU_MUST_BE_CONNECTED | **custom (not in RFC)** |
+| 003 | CANT_FIND_USER | **custom (not in RFC)** |
+| 004 | THIS_USER_IS_NOT_A_LEADER | **custom (not in RFC)** |
+| 005 | REQUIRE_INVITATION | **custom (not in RFC)** |
+| 006 | NO_CHAT_SPECIFIED | **custom (not in RFC)** |
+| 007 | ITEM_NOT_OBTAINABLE | **custom (not in RFC)** |
+| 008 | MISSING_MESSAGE | **custom (not in RFC)** |
+| 009 | THIS_IS_NOT_A_NAME | **custom (not in RFC)** |
+| 010 | YOU_HAVE_A_NAME | **custom (not in RFC)** |
+| 011 | INCOMPLETE_QUEST_REQUIREMENTS | **custom (not in RFC)** |
+| 012 | IN_FIGHT | **custom (not in RFC)** |
+| 013 | NOT_IN_FIGHT | **custom (not in RFC)** |
+| 014 | NPC_IN_FIGHT | **custom (not in RFC)** |
+| 015 | NO_QUEST_AVAILABLE | **custom (not in RFC)** |
+| 016 | LINE_TOO_LONG | **custom (not in RFC)** |
+| 017 | FULL_INVENTORY | **custom (not in RFC)** |
+| 018 | SPAM | **custom (not in RFC)** |
+| 019 | SERVER_FULL | **custom (not in RFC)** |
+| 020 | INVALID_INPUT | **custom (not in RFC)** |
+| 021 | NAME_TOO_LONG | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
@@ -200,8 +208,8 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | NPC Flee | `EVT NPC FLEE, "status"="<npc_id>"` | **custom (not in RFC)** |
 | NPC Attack | `EVT NPC ATTACK` | **custom (not in RFC)** |
 | NPC Regeneration | `EVT NPC REGENERATION : +5 hp` | **custom (not in RFC)** |
-| I am dead | `EVT DEATH` | **custom (not in RFC)** |
-| A player is dead | `EVT dead=<player_name>` | **custom (not in RFC)** |
+| I am dead | `EVT PLAYER DEATH` | **custom (not in RFC)** |
+| A player is dead | `EVT PLAYER DEAD <player_name>` | **custom (not in RFC)** |
 | Use_item beer | `EVT BEER : -5 player hp during <nb_turns> turns` | **custom (not in RFC)** |
 | Use_item sword | `EVT SWORD : +5 player strength during <nb_turns> turns` | **custom (not in RFC)** |
 | Use_item poison potion | `EVT POISON POTION : -5 npc hp during <nb_turns> turns` | **custom (not in RFC)** |
@@ -225,7 +233,7 @@ He is disconnected from the server.
 To attack an NPC, it has to be hostile and in the same room as the player.\
 The player uses `ATTACK <NPC_id>` to start a fight, and is always the first to strike.\
 Fighting an NPC changes the player's status from `exploration` to `combat`.\
-While in combat, the player can only use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS` and `USE_ITEM <item_id>`. Any other command is refused with `ERR 12 IN_FIGHT`.
+While in combat, the player can only use `DEFEND`, `FLEE`, `INVENTORY`, `STATUS` and `USE_ITEM <item_id>`. Any other command is refused with `ERR 012 IN_FIGHT`.
 
 - `ATTACK`: hits the NPC and reduces its HP. There is a 10% chance of a critical hit, which increases the player's strength by 40% for that hit.
 - `DEFEND`: protects the player from the NPC's action. If the NPC hits back, its strength is reduced by 40%.
@@ -289,17 +297,17 @@ Hostile:
 - Captain
 
 Others:
-- Witch: gives a quest
+- Witch: gives a quest : 'make_potion' with 'Poison Potion' for reward
 - Ghost
-- Woman: gives a quest
+- Woman: gives a quest : 'flower_mission' with 'Health Potion' for reward
 - Fisherman
-- Bartender: gives quests
-- Princess: gives quests
+- Bartender: gives quests : 'kill_pirate' with 'Gold'x2 for reward and 'kill_captain' with 'Gold'x4 for reward
+- Princess: gives quests : 'princess_necklace' with 'Strength Potion' for reward and 'sad_princess' with 'Health Potion' for reward
 - Village guard
-- Royal guard: gives a quest
-- Jewelry merchant: gives a quest
-- Food merchant: gives a quest
-- Weapon merchant: gives a quest
+- Royal guard: gives a quest : 'poor_guard' with 'Strength Potion' for reward
+- Jewelry merchant: gives a quest : 'get_necklace' with 'Necklace' for reward
+- Food merchant: gives a quest : 'get_fish' with 'Fish' for reward
+- Weapon merchant: gives a quest : 'get_sword' with 'Sword' for reward
 
 ### Item Distribution
 
@@ -317,9 +325,9 @@ An inventory is full at 100 items.
 
 ## Security
 
-- **Input size**: lines over 1024 bytes are rejected (`ERR 16 LINE_TOO_LONG`).
-- **Anti-spam**: one `CHAT` message every 2 seconds per player (`ERR 18 SPAM`).
-- **Connection limit**: 30 players at the same time (`ERR 19 SERVER_FULL`).
+- **Input size**: lines over 1024 bytes are rejected (`ERR 016 LINE_TOO_LONG`).
+- **Anti-spam**: one `CHAT` message every 2 seconds per player (`ERR 018 SPAM`).
+- **Connection limit**: 30 players at the same time (`ERR 019 SERVER_FULL`).
 - **Unique names**: two players cannot have the same name (`ERR 201 NAME_IN_USE`).
 - **Encoding**: messages are UTF-8.
 
@@ -348,7 +356,7 @@ The server logs with the standard `log/slog` package (`server/log.go`). Every lo
 | Level | Used for | Examples |
 |---|---|---|
 | `INFO` | Normal activity | connection, command, response, event, quest, combat |
-| `WARN` | A mistake or abuse from the client, handled by the server | `ERR 404`, `ERR 18 SPAM`, line too long, server full |
+| `WARN` | A mistake or abuse from the client, handled by the server | `ERR 404`, `ERR 018 SPAM`, line too long, server full |
 | `ERROR` | A failure of the **server** itself | `ERR 500 INTERNAL`, recovered panic, send failure, `accept` failure |
 | `DEBUG` | Very verbose details (off by default) | enabled with `LOG_LEVEL=debug` |
 
@@ -404,7 +412,7 @@ tail -f server.log                                   # follow the server live
 grep '"level":"WARN"'  server.log                    # client mistakes and abuse
 grep '"level":"ERROR"' server.log                    # server failures
 grep '"msg":"abuse' server.log                       # abuse patterns only
-grep '"code":"18"' server.log                        # all spam errors
+grep '"code":"018"' server.log                        # all spam errors
 grep '"msg":"quest' server.log                       # quest activity
 grep '"source":"SERVER"' server.log                  # what the server said or did
 
@@ -469,13 +477,13 @@ go run -race ./cmd/server
 4. Check the events: `EVT STATS players=2`, `EVT ROOM PRESENCE ENTER bob`.
 5. Test `WHO`, `LOOK` (both players are listed), `CHAT GLOBAL`, `CHAT ROOM`.
 6. Groups: `GROUP CREATE team`, `GROUP INVITE bob`, then `GROUP JOIN alice` on bob's side, `INFO_GROUP`, `CHAT GROUP`, `GROUP LEAVE`.
-7. Check the errors: same name twice (`ERR 201`), two `CHAT` in less than 2 seconds (`ERR 18`).
+7. Check the errors: same name twice (`ERR 201`), two `CHAT` in less than 2 seconds (`ERR 018`).
 8. Quit one client with `QUIT`, then by closing its terminal: the other one must receive the updated stats.
 ### Combat
 
 1. Go to a room with a hostile NPC (pirate, captain) and `ATTACK <npc>`.
-2. Check that other commands are refused (`ERR 12 IN_FIGHT`) and that `DEFEND`, `FLEE`, `STATUS`, `INVENTORY` and `USE_ITEM` are accepted.
-3. Attack a non-hostile NPC: `ERR 405`. Attack an NPC already in a fight: `ERR 14`.
+2. Check that other commands are refused (`ERR 012 IN_FIGHT`) and that `DEFEND`, `FLEE`, `STATUS`, `INVENTORY` and `USE_ITEM` are accepted.
+3. Attack a non-hostile NPC: `ERR 405`. Attack an NPC already in a fight: `ERR 014`.
 4. Use each consumable and check the buff/debuff events.
 5. Let the player die: inventory dropped in the room, respawn in the tavern.
 ### Quests
@@ -485,7 +493,7 @@ go run -race ./cmd/server
 3. With a second player, check that the quest is no longer available.
 4. `ABANDON_QUEST <id>`, then check that it is available again.
 5. Collect the required items, return to the NPC and `COMPLETE_QUEST <id>`: items consumed, rewards received.
-6. `COMPLETE_QUEST` without the items: `ERR 11`.
+6. `COMPLETE_QUEST` without the items: `ERR 011`.
 ### Protocol (TCP stream)
 
 These tests use `nc` and `printf` because the CLI always sends complete lines.
@@ -500,7 +508,7 @@ Coalescence (two commands in one packet, two answers expected):
 (printf 'CONNECT bob\n'; sleep 1; printf 'look\nwho\n'; sleep 1) | nc localhost 8080
 ```
 
-Line too long (answer `ERR 16 LINE_TOO_LONG`, connection kept open):
+Line too long (answer `ERR 016 LINE_TOO_LONG`, connection kept open):
 ```bash
 (printf 'CONNECT bob\n'; sleep 1; head -c 2000 /dev/zero | tr '\0' 'a'; printf '\n'; sleep 1) | nc localhost 8080
 ```

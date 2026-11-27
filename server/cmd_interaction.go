@@ -7,7 +7,7 @@ import (
 func (d *Dispatcher) handleChat(client *Client, args []string) {
 	// Send a global message, a group message or a room message
 	if len(args) <= 1 {
-		client.Send("ERR 08 MISSING_MESSAGE")
+		client.Send("ERR 008 MISSING_MESSAGE")
 		return
 	}
 	message := strings.Join(args[1:], " ")
@@ -33,7 +33,7 @@ func (d *Dispatcher) handleChat(client *Client, args []string) {
 			client.Send("ERR 401 NOT_IN_GROUP")
 		}
 	default:
-		client.Send("ERR 06 NO_CHAT_SPECIFIED")
+		client.Send("ERR 006 NO_CHAT_SPECIFIED")
 		return
 	}
 }

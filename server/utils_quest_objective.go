@@ -60,7 +60,7 @@ func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) bool {
 		}
 	}
 	if len(client.inventory)-len(obj_it)+len(quest.Reward) > 100 {
-		client.Send("ERR 17 FULL_INVENTORY")
+		client.Send("ERR 017 FULL_INVENTORY")
 		return false
 	}
 

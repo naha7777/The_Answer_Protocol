@@ -84,14 +84,14 @@ func (client *Client) Death(d *Dispatcher) {
 	RemoveItemInventory(client, "false_item", d, false, "drop")
 	client.nb_death += 1
 
-	client.Send(`EVT DEATH`)
+	client.Send(`EVT PLAYER DEATH`)
 	Srv().Info("death", "player", client.name)
 	client.status = "exploration"
 	npc := FindNPC(d, client, client.target)
 	npc.Fighter = ""
 	client.target = ""
 	// Send an EVT to the players
-	SendAll(d, client, `EVT dead=%s`, client.name)
+	SendAll(d, client, `EVT PLAYER DEAD %s`, client.name)
 
 	// reset client HP
 	client.hp = client.hp_max - (client.nb_death * 5)

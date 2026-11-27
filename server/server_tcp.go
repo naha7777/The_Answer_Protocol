@@ -115,7 +115,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 	// limit the number of connections
 	if conn_nb.Add(1) > connection_limit {
 		Srv().Warn("connection refused: server full", "ip", ip)
-		client.Send("ERR 19 SERVER_FULL")
+		client.Send("ERR 019 SERVER_FULL")
 		conn_nb.Add(-1)
 		return
 	}
@@ -156,14 +156,14 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 				break
 			}
 			client.log().Warn("abuse: line too long")
-			client.Send("ERR 16 LINE_TOO_LONG")
+			client.Send("ERR 016 LINE_TOO_LONG")
 			continue
 		}
 
 		// manipulation attacks prevention
 		text := string(line)
 		if !utf8.ValidString(text) || hasControlChars(text) {
-			client.Send("ERR 20 INVALID_INPUT")
+			client.Send("ERR 020 INVALID_INPUT")
 			continue
 		}
 		upper := strings.ToUpper(text)
@@ -179,7 +179,7 @@ func HandleConnection(connection net.Conn, dispatcher *Dispatcher,
 		} else if client.name != "" {
 			dispatcher.Dispatch(client, text)
 		} else {
-			client.Send("ERR 02 YOU_MUST_BE_CONNECTED")
+			client.Send("ERR 002 YOU_MUST_BE_CONNECTED")
 		}
 		if client.quit {
 			break

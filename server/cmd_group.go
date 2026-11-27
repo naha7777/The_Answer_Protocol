@@ -36,7 +36,7 @@ func (d *Dispatcher) handleGroupCreate(client *Client, args []string) {
 	}
 	for _, g := range d.groups {
 		if g.id == id && len(g.members) > 0 {
-			client.Send("ERR 11 GROUP_NAME_IN_USE")
+			client.Send("ERR 011 GROUP_NAME_IN_USE")
 			return
 		}
 	}
@@ -55,7 +55,7 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	// a player can join a group if he received an invitation from the leader
 	// of the group
 	if len(args) == 0 {
-		client.Send("ERR 03 CANT_FIND_LEADER")
+		client.Send("ERR 003 CANT_FIND_LEADER")
 		return
 	}
 	d.mu.Lock()
@@ -66,27 +66,27 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 	}
 	leader := strings.Join(args, " ")
 	if _, exists := d.clients[leader]; !exists {
-		client.Send("ERR 03 CANT_FIND_LEADER")
+		client.Send("ERR 003 CANT_FIND_LEADER")
 		return
 	}
 	if d.groups[leader] == nil {
-		client.Send("ERR 04 THIS_USER_IS_NOT_A_LEADER")
+		client.Send("ERR 004 THIS_USER_IS_NOT_A_LEADER")
 		return
 	}
 	l_group := d.groups[leader]
 	if l_group.leader != leader {
-		client.Send("ERR 04 THIS_USER_IS_NOT_A_LEADER")
+		client.Send("ERR 004 THIS_USER_IS_NOT_A_LEADER")
 		return
 	}
 	if !l_group.invited[client.name] {
-		client.Send("ERR 05 REQUIRE_INVITATION")
+		client.Send("ERR 005 REQUIRE_INVITATION")
 		return
 	}
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
 	client.group = l_group
 	client.Send("OK group_joined=%s", l_group.id)
-	SendGroup(d, client, "EVT group_join=%s", client.name)
+	SendGroup(d, client, "EVT GROUP JOIN %s", client.name)
 	delete(l_group.invited, client.name)
 }
 
@@ -101,7 +101,7 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	current_group := client.group
 	delete(current_group.members, client.name)
 	client.Send("OK group_leaved=%s", current_group.id)
-	SendGroup(d, client, "EVT group_leave=%s", client.name)
+	SendGroup(d, client, "EVT GROUP LEAVE %s", client.name)
 	client.group = nil
 	if len(current_group.members) > 0 {
 		// if this player is the leader of the group, the new leader will be
@@ -122,7 +122,7 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	// he needs to be on a group, and a valid username of a player not in the
 	// group
 	if len(args) == 0 {
-		client.Send("ERR 03 CANT_FIND_USER")
+		client.Send("ERR 003 CANT_FIND_USER")
 		return
 	}
 	d.mu.Lock()
@@ -133,7 +133,7 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	}
 	username := strings.Join(args, " ")
 	if _, exists := d.clients[username]; !exists {
-		client.Send("ERR 03 CANT_FIND_USER")
+		client.Send("ERR 003 CANT_FIND_USER")
 		return
 	}
 	for _, m := range client.group.members {
@@ -147,7 +147,7 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	client.Send("OK group_invited=%s", username)
 	for _, c := range d.clients {
 		if c.name == username {
-			c.Send("EVT group_invite=%s %s", client.name, client.group.id)
+			c.Send("EVT GROUP INVITE %s %s", client.name, client.group.id)
 		}
 	}
 }

@@ -105,7 +105,7 @@ func (c *Chat) send() {
 		return
 	}
 	if err := c.conn.Send("CHAT " + c.scope + " " + text); err != nil {
-		Popup(c.window, "901 SEND_FAILED")
+		Popup(c.window, "ERR 901 SEND_FAILED")
 		return
 	}
 	if c.scope != "GROUP" {

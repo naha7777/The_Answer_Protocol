@@ -12,7 +12,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 		return
 	}
 	if len(client.inventory) > 100 {
-		client.Send("ERR 17 FULL_INVENTORY")
+		client.Send("ERR 017 FULL_INVENTORY")
 		return
 	}
 	query := strings.ToUpper(strings.Join(args, " "))
@@ -29,7 +29,7 @@ func (d *Dispatcher) handleTake(client *Client, args []string) {
 			continue
 		}
 		if !item.Obtainable {
-			client.Send("ERR 07 ITEM_NOT_OBTAINABLE")
+			client.Send("ERR 007 ITEM_NOT_OBTAINABLE")
 			return
 		}
 		// put the item in the client inventory and send msg

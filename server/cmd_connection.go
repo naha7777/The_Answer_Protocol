@@ -9,11 +9,11 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 	defer d.mu.Unlock()
 	// return an error for invalid names
 	if client.name != "" {
-		client.Send("ERR 10 YOU_HAVE_A_NAME")
+		client.Send("ERR 010 YOU_HAVE_A_NAME")
 		return
 	}
 	if len(args) == 0 || len(args) > 1 {
-		client.Send("ERR 09 THIS_IS_NOT_A_NAME")
+		client.Send("ERR 009 THIS_IS_NOT_A_NAME")
 		return
 	}
 	username := strings.Join(args, " ")
@@ -27,7 +27,7 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 
 	// username length limit
 	if len(username) > 20 {
-		client.Send("ERR 21 NAME_TOO_LONG")
+		client.Send("ERR 021 NAME_TOO_LONG")
 		return
 	}
 

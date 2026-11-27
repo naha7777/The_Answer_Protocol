@@ -36,7 +36,7 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 		}
 	}
 	if !find {
-		client.Send("ERR 15 NO_QUEST_AVAILABLE")
+		client.Send("ERR 015 NO_QUEST_AVAILABLE")
 		return
 	}
 	client.Send("ERR 404 NPC_NOT_FOUND")
@@ -78,7 +78,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 	defer d.mu.Unlock()
 	// check if the quest is not an empty string
 	if len(args) == 0 {
-		client.Send("ERR 15 NO_QUEST_AVAILABLE")
+		client.Send("ERR 015 NO_QUEST_AVAILABLE")
 		return
 	}
 	for _, quest := range client.quests {
@@ -89,7 +89,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 			if slices.Contains(client.room.NPCs, quest.NPC) {
 				// check if the quest is still available
 				if quest.Status != "active" {
-					client.Send("ERR 15 NO_QUEST_AVAILABLE")
+					client.Send("ERR 015 NO_QUEST_AVAILABLE")
 					return
 				}
 				// check if the quest's objectives are done
@@ -103,7 +103,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 					}
 					return
 				} else {
-					client.Send("ERR 11 INCOMPLETE_QUEST_REQUIREMENTS")
+					client.Send("ERR 011 INCOMPLETE_QUEST_REQUIREMENTS")
 					return
 				}
 			} else {
@@ -113,7 +113,7 @@ func (d *Dispatcher) handleCompleteQuest(client *Client, args []string) {
 		}
 	}
 	if !find {
-		client.Send("ERR 15 NO_QUEST_AVAILABLE")
+		client.Send("ERR 015 NO_QUEST_AVAILABLE")
 		return
 	}
 }
@@ -123,7 +123,7 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 	defer d.mu.Unlock()
 	// check if the quest is not an empty string
 	if len(args) == 0 {
-		client.Send("ERR 15 NO_QUEST_AVAILABLE")
+		client.Send("ERR 015 NO_QUEST_AVAILABLE")
 		return
 	}
 
@@ -138,7 +138,7 @@ func (d *Dispatcher) handleAbandonQuest(client *Client, args []string) {
 			quest.Status = "available"
 		} else {
 			final_quests = append(final_quests, quest)
-			client.Send("ERR 15 NO_QUEST_AVAILABLE")
+			client.Send("ERR 015 NO_QUEST_AVAILABLE")
 			return
 		}
 	}

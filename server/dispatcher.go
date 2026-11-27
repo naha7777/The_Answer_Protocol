@@ -66,7 +66,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 			client.log().Warn("abuse: command flooding", "limit", "20/s")
 			client.floodLogged = true
 		}
-		client.write("ERR 18 SPAM")
+		client.write("ERR 018 SPAM")
 		return
 	}
 	client.floodLogged = false
@@ -87,7 +87,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 		now := time.Now()
 		if !client.lastChat.IsZero() && now.Sub(client.lastChat) < time.Second*2 {
 			client.log().Warn("abuse: chat spam")
-			client.Send("ERR 18 SPAM")
+			client.Send("ERR 018 SPAM")
 			return
 		}
 		client.lastChat = now
@@ -108,7 +108,7 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 		if function, exists := d.commands[cmd]; exists {
 			function(client, args)
 		} else {
-			client.Send("ERR 01 UNKNOWN_COMMAND: %s", first)
+			client.Send("ERR 001 UNKNOWN_COMMAND: %s", first)
 			return
 		}
 	} else {
@@ -117,13 +117,13 @@ func (d *Dispatcher) Dispatch(client *Client, line string) {
 			cmd = strings.ToUpper(parts[0])
 			args = parts[1:]
 		} else {
-			client.Send("ERR 12 IN_FIGHT")
+			client.Send("ERR 012 IN_FIGHT")
 			return
 		}
 		if function, exists := d.commands[cmd]; exists {
 			function(client, args)
 		} else {
-			client.Send("ERR 12 IN_FIGHT")
+			client.Send("ERR 012 IN_FIGHT")
 			return
 		}
 	}

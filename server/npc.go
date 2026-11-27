@@ -83,7 +83,7 @@ func Regen(client *Client, strength int, d *Dispatcher, npc_name string,
 	if new_hp > NPC_max_hp {
 		new_hp = NPC_max_hp
 	}
-	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strength, "normal", client.status)
+	client.Send(`OK attack={"player_hp": %d, "player_max_hp": %d, "NPC_name": "%s", "NPC_hp": %d, "NPC_max_hp": %d, "damage": %d, "damage_type": "%s", "status": "%s"}`, client.hp, client.hp_max, npc_name, new_hp, NPC_max_hp, strength, "normal", client.status)
 	Log.Info("npc action", "source", npc_name, "action", "regenerate", "regeneration", 5)
 	return new_hp - npc_hp
 }
