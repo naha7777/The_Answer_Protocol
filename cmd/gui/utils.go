@@ -7,7 +7,6 @@ package main
 import (
 	"image/color"
 	"strings"
-	"the_answer_protocol/client"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -114,14 +113,17 @@ func Pop(name string, place []string) []string {
 }
 
 // Generate a container with all the strings in options with appropriate button
-func Generate_option(options []string, action string, conn *client.Conn) *fyne.Container {
+func Generate_option(options []string, action string, d *Data) *fyne.Container {
 	cont := container.NewVBox()
 	for _, option := range options {
 		label := option
 		if action == "TAKE" || action == "DROP" || action == "TALK" || action == "QUEST" || action == "ATTACK" || action == "USE_ITEM" {
 			label = IDToName(option)
 		}
-		but := widget.NewButton(label, func() { conn.Send(action + " " + option) })
+		but := widget.NewButton(label, func() { d.conn.Send(action + " " + option) })
+		if action == "USE_ITEM" {
+			but = widget.NewButton(label, func() { d.conn.Send(action + " " + label); d.conn.Send("INVENTORY") })
+		}
 
 		if res := loadIcon(option); res != nil {
 			but.SetIcon(res)

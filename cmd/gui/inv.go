@@ -11,7 +11,6 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -45,7 +44,7 @@ type Response struct {
 // |				Constructor 			   |
 // \===========================================/
 
-func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
+func NewInv(w fyne.Window, p *Player, d *Data) *Inventory {
 	i := &Inventory{
 		window: w,
 	}
@@ -61,8 +60,8 @@ func NewInv(w fyne.Window, p *Player, conn *client.Conn) *Inventory {
 
 	// Buttons
 	var take_but, drop_but *widget.Button
-	take_but = widget.NewButton("TAKE", func() { i.pop = Option_popup(take_but, w, Generate_option(i.accessible, "TAKE", conn)) })
-	drop_but = widget.NewButton("DROP", func() { i.pop = Option_popup(drop_but, w, Generate_option(i.objects, "DROP", conn)) })
+	take_but = widget.NewButton("TAKE", func() { i.pop = Option_popup(take_but, w, Generate_option(i.accessible, "TAKE", d)) })
+	drop_but = widget.NewButton("DROP", func() { i.pop = Option_popup(drop_but, w, Generate_option(i.objects, "DROP", d)) })
 
 	// Containers on top of each others
 	inv_title := container.NewCenter(widget.NewLabel("Inventory"))
