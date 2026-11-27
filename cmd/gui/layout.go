@@ -155,10 +155,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	var butQuest *widget.Button
 	butQuest = newBtn("QUEST", func() { d.g.popup = Option_popup(butQuest, d.w, Generate_option(d.g.npc, "QUEST", d.conn)) })
 
-	butLook := newBtn("LOOK", send("LOOK"))
-	butStatus := newBtn("STATUS", send("STATUS"))
 	butQuests := newBtn("QUESTS", send("QUESTS"))
-	butWho := newBtn("WHO", send("WHO"))
 	butMap := newBtn("MAP", toggleMap)
 
 	butQuit := widget.NewButton("QUIT", func() {
@@ -190,12 +187,12 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	d.cb.East = newBtn("EAST", send("MOVE EAST"))
 	d.cb.West = newBtn("WEST", send("MOVE WEST"))
 
-	butsActions := container.NewGridWithColumns(3,
-		butLook, butTalk, butAttack,
-		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
-		butStatus, butQuest, butQuests,
-		widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""),
-		butWho, butGroup, butQuit,
+	butsActions := container.NewGridWithColumns(2,
+		butTalk, butAttack,
+		widget.NewLabel(""), widget.NewLabel(""),
+		butQuest, butQuests,
+		widget.NewLabel(""), widget.NewLabel(""),
+		butGroup, butQuit,
 	)
 
 	butsCardinals := container.NewGridWithColumns(3,
