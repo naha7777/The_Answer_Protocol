@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"image/color"
 	"os"
-	"strings"
 
 	// "strconv"
 	"the_answer_protocol/client"
@@ -140,71 +139,7 @@ func main() {
 					ServerResponseEVT(msg, &player, &data)
 
 				case "ERR":
-					e := strings.Split(msg.Raw, " ")
-					switch e[1] {
-					case "201":
-						Popup(w, "This nickname is already taken")
-					case "301":
-						Popup(w, "You can't go that way")
-					case "401":
-						Popup(w, "You are not in a group")
-					case "402":
-						Popup(w, "The player is already in group")
-					case "404":
-						Popup(w, "You can't do that")
-					case "405":
-						Popup(w, "Let's be friendly")
-					case "900":
-						Popup(w, "Failed to connect to the server")
-					case "901":
-						Popup(w, "Failed to reach the server")
-					case "001":
-						Popup(w, "Command didn't exist")
-					case "002":
-						Popup(w, "You must be connected")
-					case "003":
-						Popup(w, "Player not found")
-					case "004":
-						Popup(w, "You are not the leader")
-					case "005":
-						Popup(w, "You need an invitation")
-					case "006":
-						Popup(w, "To who are you talking?")
-					case "007":
-						Popup(w, "You can't get that")
-					case "008":
-						Popup(w, "Try typing something")
-					case "009":
-						Popup(w, "Name is invalid")
-					case "010":
-						Popup(w, "You are already connected")
-					case "011":
-						Popup(w, "You need to be near the npc with all the requirement")
-					case "012":
-						Popup(w, "Let's focus on the fight")
-					case "013":
-						Popup(w, "Why? It's chill right here")
-					case "014":
-						Popup(w, "I respect the 1v1")
-					case "015":
-						Popup(w, "Don't have no quest for you")
-					case "016":
-						Popup(w, "Line too long")
-					case "017":
-						Popup(w, "Inventory is full")
-					case "018":
-						Popup(w, "Stop the spam")
-					case "019":
-						Popup(w, "Server is full try again later")
-					case "020":
-						Popup(w, "Invalid input")
-					case "021":
-						Popup(w, "Name is too long")
-					case "500":
-						Popup(w, "Internal error")
-					default:
-						Popup(w, msg.Rest)
-					}
+					ServerResponseERR(msg, &player, &data)
 				}
 			},
 			)
