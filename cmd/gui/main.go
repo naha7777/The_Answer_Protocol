@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"strings"
+
 	// "strconv"
 	// "strings"
 	"the_answer_protocol/client"
@@ -68,13 +70,13 @@ func main() {
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
 	background.FillMode = canvas.ImageFillCover
 	data := Data{
-		a: a,
-		w: w,
+		a:    a,
+		w:    w,
 		conn: conn,
-		cb: &CardinalButtons{},
-		g: &GameState{inventory: NewInv(w, &player, conn), player: &player},
+		cb:   &CardinalButtons{},
+		g:    &GameState{inventory: NewInv(w, &player, conn), player: &player},
 		chat: NewChat(w, &player, conn),
-		bg: background,
+		bg:   background,
 	}
 
 	logLabel := widget.NewLabel("")
@@ -110,6 +112,7 @@ func main() {
 		data.playerInfo.Update(data)
 		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
+		conn.Send("WHO")
 		conn.Send("STATUS")
 		conn.Send("INVENTORY")
 		conn.Send("LOOK")
@@ -128,6 +131,7 @@ func main() {
 					onLoginMsg(msg)
 					return
 				}
+				fmt.Println(msg.Raw)
 				switch msg.Kind {
 				case "OK":
 					ServerResponseOK(msg, &player, &data)

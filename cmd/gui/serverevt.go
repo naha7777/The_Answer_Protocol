@@ -64,6 +64,7 @@ func ServerResponseEVT(msg client.Message, player *Player, data *Data) {
 			case "LEAVE":
 				player.room.nb_players -= 1
 			}
+			data.conn.Send("LOOK")
 		case "NPC":
 			switch m[2] {
 			case "DEAD":
@@ -123,6 +124,7 @@ func ServerResponseEVT(msg client.Message, player *Player, data *Data) {
 					fmt.Println("Failed to get number of players in room")
 				}
 			}
+			data.playerInfo.Update(*data)
 		case "PLAYER":
 			data.conn.Send("LOOK")
 		}
