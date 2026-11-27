@@ -49,7 +49,7 @@ func NewChat(w fyne.Window, p *Player, conn *client.Conn) *Chat {
 	}
 
 	c.messages = container.NewVBox()
-	c.scroll = container.NewVScroll(c.messages)
+	c.scroll = container.NewScroll(c.messages)
 	c.entry = widget.NewEntry()
 	c.entry.SetPlaceHolder("GLOBAL chat...")
 	// Send with enter key

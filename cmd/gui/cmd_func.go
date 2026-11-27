@@ -25,7 +25,6 @@ import (
 // Each quest have it completion status with a tick asset when completed or the requirement
 // A complete quest button is available if the quest isnt already complete
 func Str_to_quests(str string, d Data) {
-	// width := w.Canvas().Size().Width
 	height := d.w.Canvas().Size().Height
 
 	// parse

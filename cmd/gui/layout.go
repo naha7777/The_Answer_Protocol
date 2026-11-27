@@ -73,7 +73,6 @@ func (ui *Hud) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
 
 	// Chat
 	chatX := btnX + btnMin.Width + margin
-	// chatWidth := max(chatMin.Width, (w-chatX-margin)/2)
 	var chatWidth float32
 	chatWidth = 7 * ((w - btnMin.Width) / 12)
 

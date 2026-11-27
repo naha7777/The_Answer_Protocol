@@ -9,10 +9,7 @@ import (
 	"image/color"
 	"os"
 
-	// "strconv"
 	"the_answer_protocol/client"
-
-	// "time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -94,7 +91,6 @@ func main() {
 	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
 	arenaBg.FillMode = canvas.ImageFillCover
 
-	// battleUI := NewBattleUI(&player, &data)
 	data.battleUI = NewBattleUI(&player, &data)
 	battleContent := container.NewStack(
 		arenaBg,
@@ -117,8 +113,6 @@ func main() {
 	data.gameContent = gameContent
 	data.battleContent = battleContent
 	w.SetContent(loginView)
-	// npc := false
-	// var potion *Potion
 
 	go func() {
 		for msg := range conn.Messages() {

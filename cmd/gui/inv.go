@@ -202,8 +202,6 @@ func (i *Inventory) Update(str string) {
 		}
 		i.accessible = itemsID
 	}
-	// fmt.Println(i.objects)
-	// fmt.Println(i.accessible)
 }
 
 // Clear empties the inventory (used on death). The accessible items are

@@ -84,9 +84,7 @@ func showPlayerInfo(p *Player, data Data) *InfoBox {
 
 	b.bgImg.FillMode = canvas.ImageFillCover
 
-	header := container.NewVBox(
-	// widget.NewSeparator(),
-	)
+	header := container.NewVBox()
 
 	Content := container.NewVBox(widget.NewLabel(""), b.name, b.room, b.playerOnline, b.playerInRoom, b.group, b.members, b.npc, b.items)
 
@@ -120,7 +118,6 @@ func (b *InfoBox) Update(d Data) {
 	if p.group.Id == "" {
 		b.group.SetText("Group: -")
 		b.members.SetText("")
-		// return
 	}
 	b.playerOnline.SetText("Players online: " + strconv.Itoa(d.nb_players))
 	b.playerInRoom.SetText("Players in room: " + strconv.Itoa(b.player.room.nb_players))
