@@ -97,8 +97,8 @@ This design was chosen over inline handling in the connection loop because addin
 
 TCP is a stream of bytes, not a stream of messages. The server reads with a `bufio.Reader` and only processes a command once the terminating `\n` has arrived:
 
-- **Fragmentation**: a command split across several packets is buffered until the full line is received. Test with `(printf 'CONNECT bob\n'; printf 'lo'; sleep 2; printf 'ok\n') | nc localhost 8080`
-- **Coalescence**: several commands received in one packet are processed one by one. Test with `printf 'CONNECT bob\nlook\nwho\n' | nc localhost 8080`
+- **Fragmentation**: a command split across several packets is buffered until the full line is received.
+- **Coalescence**: several commands received in one packet are processed one by one.
 - **Line limit**: lines longer than 1024 bytes are discarded and answered with `ERR 016 LINE_TOO_LONG`, without closing the connection.
 ### Resource limits
 
@@ -274,7 +274,8 @@ If he is in the same room as an NPC that has an available quest, he takes it wit
 A quest can ask to bring items, to kill an NPC, or both.\
 Taking a quest makes it unavailable for the other players, unless it is abandoned with `ABANDON_QUEST <quest_id>`.\
 `QUESTS` shows the progress on the quests taken and the status (`active` or `completed`) of each.\
-When the player has everything required, he goes back to the NPC and uses `COMPLETE_QUEST <quest_id>`. The required items are given to the NPC (they are no longer available in the game) and the rewards go directly into his inventory.\
+The progress is represented with `progress: 0/2`, 2 is the number of tasks, and 0 the completed ones.
+When the player has completed his progress' quest, he goes back to the NPC and uses `COMPLETE_QUEST <quest_id>`. The required items are given to the NPC (they are no longer available in the game) and the rewards go directly into his inventory.\
 For now, a completed quest is not available again for another player: it no longer exists.
 
 ## World Design

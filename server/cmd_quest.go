@@ -12,10 +12,12 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	find := false
+	npc_found := false
 	// check if the NPC is in the actual room
 	for _, npcs := range client.room.NPCs {
 		npc := FindNPC(d, client, npcs)
 		if strings.ToUpper(npcs) == str || str == strings.ToUpper(npc.Name) {
+			npc_found = true
 			for _, q := range d.world.Quests {
 				for _, quest := range npc.Quest {
 					if q.Id == quest {
@@ -38,11 +40,14 @@ func (d *Dispatcher) handleQuest(client *Client, args []string) {
 			}
 		}
 	}
+	if !npc_found {
+		client.Send("ERR 404 NPC_NOT_FOUND")
+		return
+	}
 	if !find {
 		client.Send("ERR 015 NO_QUEST_AVAILABLE")
 		return
 	}
-	client.Send("ERR 404 NPC_NOT_FOUND")
 }
 
 func (d *Dispatcher) handleQuests(client *Client, args []string) {

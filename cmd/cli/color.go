@@ -9,6 +9,7 @@ import (
 const (
 	Reset   = "\033[0m"
 	Red     = "\033[31m"
+	RED     = "\033[41m"
 	Green   = "\033[32m"
 	Cyan    = "\033[36m"
 	Italic  = "\033[3m"
@@ -28,6 +29,9 @@ func sanitize(s string) string {
 
 func Colorize(msg client.Message) string {
 	msg.Raw = sanitize(msg.Raw)
+	if msg.Raw == "GAME OVER" {
+		return RED + msg.Raw + Reset
+	}
 	switch msg.Kind {
 	case "EVT":
 		if strings.HasPrefix(msg.Rest, "DEATH") ||
