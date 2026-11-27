@@ -82,12 +82,11 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 		client.Send("ERR 05 REQUIRE_INVITATION")
 		return
 	}
-	// SendGroup(client, l_group, "EVT GROUP JOIN %s", client.name)
-	SendGroup(d, client, "EVT group_join=%s", client.name)
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
 	client.group = l_group
 	client.Send("OK group_joined=%s", l_group.id)
+	SendGroup(d, client, "EVT group_join=%s", client.name)
 	delete(l_group.invited, client.name)
 }
 
@@ -101,10 +100,9 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	}
 	current_group := client.group
 	delete(current_group.members, client.name)
-	client.group = nil
 	client.Send("OK group_leaved=%s", current_group.id)
-	// SendGroup(client, current_group, "EVT GROUP LEAVE %s", client.name)
 	SendGroup(d, client, "EVT group_leave=%s", client.name)
+	client.group = nil
 	if len(current_group.members) > 0 {
 		// if this player is the leader of the group, the new leader will be
 		// the next who enterred in the group
@@ -149,7 +147,6 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 	client.Send("OK group_invited=%s", username)
 	for _, c := range d.clients {
 		if c.name == username {
-			// c.Send("EVT GROUP INVITE %s %s", client.name, client.group.id)
 			c.Send("EVT group_invite=%s %s", client.name, client.group.id)
 		}
 	}
