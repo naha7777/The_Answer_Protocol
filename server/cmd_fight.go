@@ -41,8 +41,9 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 								}
 								client.Send(`OK attack={"player_hp": %d, `+
 									`"player_max_hp": %d, "NPC_name": "%s", `+
-									`"NPC_hp": %d, "NPC_max_hp": %d, "damage": %d,`+
-									` "damage_type": "%s", "status": "%s"}`,
+									`"NPC_hp": %d, "NPC_max_hp": %d, `+
+									`"damage": %d, "damage_type": "%s", `+
+									`"status": "%s"}`,
 									client.hp, client.hp_max, npc.Name, npc.Hp,
 									npc.Max_hp, client.strength, damage_type,
 									client.status)

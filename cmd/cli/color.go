@@ -28,6 +28,7 @@ func sanitize(s string) string {
 }
 
 func Colorize(msg client.Message) string {
+	// colorize client CLI output
 	msg.Raw = sanitize(msg.Raw)
 	if msg.Raw == "GAME OVER" {
 		return RED + msg.Raw + Reset

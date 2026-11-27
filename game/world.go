@@ -51,7 +51,6 @@ type Quest struct {
 }
 
 func LoadWorld(path string) (*World, error) {
-
 	w, err := extractor(path)
 	if err != nil {
 		return nil, err
@@ -67,6 +66,7 @@ func LoadWorld(path string) (*World, error) {
 		}
 	}
 
+	// put all datas on structs
 	room_lst := make(map[string]*Room, len(w.Rooms))
 	for str, room := range w.Rooms {
 		r := &Room{Id: room.Id, Name: room.Name, Exits: room.Exits,

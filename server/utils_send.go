@@ -5,6 +5,7 @@ import (
 )
 
 func SendAll(d *Dispatcher, sender *Client, format string, a ...any) {
+	// Send an EVT to everyone except the client
 	var targets []*Client
 	for _, c := range d.clients {
 		if c != sender {
@@ -15,6 +16,7 @@ func SendAll(d *Dispatcher, sender *Client, format string, a ...any) {
 }
 
 func SendRoom(d *Dispatcher, sender *Client, format string, a ...any) {
+	// Send an EVT to everyone in the client's room except the client
 	var targets []*Client
 	for _, c := range d.clients {
 		if c != sender && c.room == sender.room {
@@ -25,6 +27,7 @@ func SendRoom(d *Dispatcher, sender *Client, format string, a ...any) {
 }
 
 func SendGroup(d *Dispatcher, sender *Client, format string, a ...any) {
+	// Send an EVT to everyone in the client's group except the client
 	var targets []*Client
 	for _, c := range d.clients {
 		if c != sender && sender.group != nil && c.group == sender.group {
@@ -35,6 +38,7 @@ func SendGroup(d *Dispatcher, sender *Client, format string, a ...any) {
 }
 
 func broadcast(targets []*Client, format string, a ...any) {
+	// Display the message to the targets
 	msg := fmt.Sprintf(format, a...)
 	recipients := make([]string, 0, len(targets))
 

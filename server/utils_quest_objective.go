@@ -7,6 +7,7 @@ import (
 )
 
 func CheckObjective(quest *game.Quest, client *Client) (bool, int) {
+	// manage the progress in quests
 	nb := 0
 	clone_obj := slices.Clone(quest.Objective)
 	clone_it := slices.Clone(client.inventory)
@@ -51,6 +52,8 @@ func CheckObjective(quest *game.Quest, client *Client) (bool, int) {
 }
 
 func CompleteObjective(quest *game.Quest, client *Client, d *Dispatcher) bool {
+	// Quest validation if the npc is in the same room and the objectives are
+	// completed
 	quest.Status = "completed"
 
 	var obj_it []string

@@ -25,18 +25,21 @@ var (
 )
 
 func trackConn(c net.Conn) {
+	// track the connection
 	connsMu.Lock()
 	conns[c] = struct{}{}
 	connsMu.Unlock()
 }
 
 func untrackConn(c net.Conn) {
+	// untrack the connection
 	connsMu.Lock()
 	delete(conns, c)
 	connsMu.Unlock()
 }
 
 func closeAllConns() {
+	// close all the connections
 	connsMu.Lock()
 	defer connsMu.Unlock()
 	for c := range conns {
@@ -57,6 +60,7 @@ func checkWorld() *game.World {
 		os.Exit(1)
 	}
 
+	// world validation
 	errs, warns := world.Validate()
 	for _, w := range warns {
 		Srv().Warn("world validation", "problem", w)
@@ -87,6 +91,7 @@ func checkWorld() *game.World {
 }
 
 func Server(listener net.Listener) {
+	// generate and check the world
 	world := checkWorld()
 
 	// dispatcher creation

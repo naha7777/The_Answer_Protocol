@@ -51,6 +51,7 @@ type QuestData struct {
 }
 
 func extractor(path string) (*WorldData, error) {
+	// extract world data from world.json file
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("opening world file: %w", err)

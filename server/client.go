@@ -38,6 +38,7 @@ type Client struct {
 }
 
 func (c *Client) label() string {
+	// if the client doesn't have a name, the server take his ip for the log
 	if c.name != "" {
 		return c.name
 	}
@@ -58,6 +59,7 @@ func (c *Client) write(msg string) error {
 }
 
 func (c *Client) Send(format string, a ...any) {
+	// server send messages to clients and save it on logs
 	msg := fmt.Sprintf(format, a...)
 	if err := c.write(msg); err != nil {
 		return
@@ -118,16 +120,4 @@ func (client *Client) Death(d *Dispatcher) {
 			SendRoom(d, client, `EVT ROOM PRESENCE ENTER %s`, client.name)
 		}
 	}
-}
-
-func (c *Client) tooManyCommands(limit int, window time.Duration) bool {
-	now := time.Now()
-	kept := c.cmdTimes[:0]
-	for _, t := range c.cmdTimes {
-		if now.Sub(t) < window {
-			kept = append(kept, t)
-		}
-	}
-	c.cmdTimes = append(kept, now)
-	return len(c.cmdTimes) > limit
 }

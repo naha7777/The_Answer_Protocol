@@ -3,6 +3,7 @@ package server
 import "the_answer_protocol/game"
 
 func (d *Dispatcher) displayStats() {
+	// display the number of player connected
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	var targets []*Client
@@ -15,6 +16,7 @@ func (d *Dispatcher) displayStats() {
 }
 
 func (d *Dispatcher) displayRoomStats() {
+	// display the number of player connected in the same room as the client
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	byRoom := map[*game.Room][]*Client{}

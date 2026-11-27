@@ -60,6 +60,19 @@ func (d *Dispatcher) registerCommands() {
 	// }
 }
 
+func (c *Client) tooManyCommands(limit int, window time.Duration) bool {
+	// count commands frequency to avoid spam
+	now := time.Now()
+	kept := c.cmdTimes[:0]
+	for _, t := range c.cmdTimes {
+		if now.Sub(t) < window {
+			kept = append(kept, t)
+		}
+	}
+	c.cmdTimes = append(kept, now)
+	return len(c.cmdTimes) > limit
+}
+
 func (d *Dispatcher) Dispatch(client *Client, line string) {
 	if client.tooManyCommands(20, time.Second) {
 		if !client.floodLogged {

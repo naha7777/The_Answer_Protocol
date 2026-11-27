@@ -68,13 +68,13 @@ func main() {
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
 	background.FillMode = canvas.ImageFillCover
 	data := Data{
-		a: a,
-		w: w,
+		a:    a,
+		w:    w,
 		conn: conn,
-		cb: &CardinalButtons{},
-		g: &GameState{inventory: NewInv(w, &player, conn), player: &player},
+		cb:   &CardinalButtons{},
+		g:    &GameState{inventory: NewInv(w, &player, conn), player: &player},
 		chat: NewChat(w, &player, conn),
-		bg: background,
+		bg:   background,
 	}
 
 	logLabel := widget.NewLabel("")

@@ -98,7 +98,7 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 		raw := strings.TrimPrefix(msg.Rest, "attack=")
 		if npcID, _, ok := strings.Cut(raw, "=dead"); ok {
 			npcID = strings.Trim(npcID, `"`)
-			Popup(data.w, IDToName(npcID) + " is dead!")
+			Popup(data.w, IDToName(npcID)+" is dead!")
 			data.battleUI.EndFight()
 			data.battleUI.SetButtonsEnabled(false)
 			data.playerInfo.Update(*data)
@@ -125,7 +125,7 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 		} else {
 			data.battleUI.Update(atk)
 		}
-		case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+	case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
 		status := strings.TrimPrefix(msg.Rest, `"status"=`)
 		status = strings.TrimPrefix(status, "status=")
 

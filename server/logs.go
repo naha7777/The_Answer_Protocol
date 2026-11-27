@@ -25,6 +25,7 @@ type colorWriter struct {
 }
 
 func (c colorWriter) Write(p []byte) (int, error) {
+	// color server logs
 	color := ""
 	switch {
 	case bytes.Contains(p, []byte(`client disconnected`)),
@@ -57,6 +58,7 @@ func (c colorWriter) Write(p []byte) (int, error) {
 }
 
 func stdoutWriter() io.Writer {
+	// write logs on stdout
 	if term.IsTerminal(int(os.Stdout.Fd())) {
 		return colorWriter{os.Stdout}
 	}
@@ -64,6 +66,7 @@ func stdoutWriter() io.Writer {
 }
 
 func newLogger(w io.Writer) *slog.Logger {
+	// give the logger appropriate format
 	var level slog.Level
 	switch os.Getenv("LOG_LEVEL") {
 	case "debug":
@@ -89,14 +92,17 @@ func newLogger(w io.Writer) *slog.Logger {
 var Log = newLogger(stdoutWriter())
 
 func Srv() *slog.Logger {
+	// Add source SERVER for some logs
 	return Log.With("source", "SERVER")
 }
 
 func (c *Client) log() *slog.Logger {
+	// Add source client name (or ip) for some logs with his ip
 	return Log.With("source", c.label(), "ip", c.conn.RemoteAddr().String())
 }
 
 func InitLogger(path string) (func(), error) {
+	// initialise logger
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
 		return nil, err

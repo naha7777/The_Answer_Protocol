@@ -31,6 +31,7 @@ type Conn struct {
 }
 
 func Dial() (*Conn, error) {
+	// connect the client to the server
 	_ = godotenv.Load()
 	addr := os.Getenv("SERVER_IP")
 	if addr == "" {

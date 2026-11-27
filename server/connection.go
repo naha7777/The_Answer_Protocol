@@ -16,6 +16,7 @@ import (
 var conn_nb atomic.Int32
 
 func hasControlChars(s string) bool {
+	// identify control chars to protect the program against attacks
 	for _, r := range s {
 		if unicode.IsControl(r) {
 			return true
@@ -25,6 +26,7 @@ func hasControlChars(s string) bool {
 }
 
 func (t *connTracker) count(host string, window time.Duration) int {
+	// quick connections protection
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	now := time.Now()
