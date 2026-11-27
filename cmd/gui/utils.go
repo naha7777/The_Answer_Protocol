@@ -36,13 +36,14 @@ func Popup(w fyne.Window, txt string) {
 	})
 }
 
-func PopupGameOver(w fyne.Window) {
+// Put gameoverpopup that disappear after 3 seconds
+func PopupGameOver(w fyne.Window, onDone func()) {
 	title := canvas.NewText("GAME OVER", color.NRGBA{R: 220, G: 20, B: 20, A: 255})
 	title.TextSize = 72
 	title.TextStyle = fyne.TextStyle{Bold: true}
 	title.Alignment = fyne.TextAlignCenter
 
-	subtitle := canvas.NewText("You are dead....", color.NRGBA{R: 230, G: 230, B: 230, A: 255})
+	subtitle := canvas.NewText("You are dead.... BYE!", color.NRGBA{R: 230, G: 230, B: 230, A: 255})
 	subtitle.TextSize = 20
 	subtitle.Alignment = fyne.TextAlignCenter
 
@@ -64,6 +65,9 @@ func PopupGameOver(w fyne.Window) {
 	time.AfterFunc(3*time.Second, func() {
 		fyne.Do(func() {
 			pop.Hide()
+			if onDone != nil {
+				onDone()
+			}
 		})
 	})
 }

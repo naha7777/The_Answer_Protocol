@@ -106,4 +106,9 @@ func HandleStatus(str string, p *Player) {
 		val := int(hp)
 		p.currentHP = val
 	}
+
+	if max_hp, ok := status["max_hp"].(float64); ok {
+		val := int(max_hp)
+		p.maxHP = val
+	}
 }
