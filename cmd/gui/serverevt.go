@@ -68,7 +68,7 @@ func ServerResponseEVT(msg client.Message, player *Player, data *Data) {
 			switch m[2] {
 			case "DEAD":
 				data.conn.Send("LOOK")
-			case "FLEE":
+			case "FLEE,":
 				npcID := strings.Split(msg.Rest, "=")
 				npcMsg := ""
 				if len(npcID) >= 2 {

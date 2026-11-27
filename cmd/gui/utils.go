@@ -122,7 +122,7 @@ func Generate_option(options []string, action string, d *Data) *fyne.Container {
 		}
 		but := widget.NewButton(label, func() { d.conn.Send(action + " " + option) })
 		if action == "USE_ITEM" {
-			but = widget.NewButton(label, func() { d.conn.Send(action + " " + label); d.conn.Send("INVENTORY") })
+			but = widget.NewButton(label, func() { d.conn.Send(action + " " + label); d.g.inventory.remove(option) })
 		}
 
 		if res := loadIcon(option); res != nil {

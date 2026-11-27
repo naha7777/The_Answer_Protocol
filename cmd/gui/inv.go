@@ -183,6 +183,9 @@ func (i *Inventory) Update(str string) {
 		if items[0] != "" {
 			i.objects = items
 		} else if items[0] == "" {
+			for _, item := range i.objects {
+				i.remove(item)
+			}
 			i.objects = obj
 		}
 	} else if strings.HasPrefix(str, "look=") {
