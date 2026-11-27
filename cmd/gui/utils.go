@@ -34,7 +34,7 @@ func Popup(w fyne.Window, txt string) {
 	})
 }
 
-// Put popup that disappear after 3 seconds
+// Put popup that disappear after duration seconds
 func PopupWithDuration(w fyne.Window, txt string, duration time.Duration) {
 	if duration <= 0 {
 		duration = 1

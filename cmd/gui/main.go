@@ -108,7 +108,7 @@ func main() {
 	})
 
 	w.SetContent(loginView)
-
+	npc := false
 	go func() {
 		for msg := range conn.Messages() {
 			fyne.Do(func() {
@@ -225,10 +225,13 @@ func main() {
 						if !battleUI.inFight {
 							battleUI.InitFight(atk)
 							w.SetContent(battleContent)
+						} else if !npc {
+							battleUI.Update(atk, false)
 						} else {
-							battleUI.Update(atk)
+							battleUI.Update(atk, true)
+							npc = false
 						}
-					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+						case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
 						status := strings.TrimPrefix(msg.Rest, `"status"=`)
 						status = strings.TrimPrefix(status, "status=")
 						// status = strings.Trim(status, `"`)
@@ -256,7 +259,7 @@ func main() {
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
-					if len(m) == 3 && msg.R == "EVT PLAYER DEATH" {
+					if len(m) == 3 && msg.Raw == "EVT PLAYER DEATH" {
 						fmt.Println(msg.Rest)
 						Popup(data.w, "You are DEAD !!!")
 						battleUI.EndFight()
@@ -324,9 +327,9 @@ func main() {
 									})
 								})
 							case "ATTACK":
-								PopupWithDuration(data.w, "NPC attacks you", 1)
+								npc = true
 							case "REGENERATION":
-								PopupWithDuration(data.w, "NPC is regenerated", 1)
+								npc = true
 							}
 						case "BEER":
 							// -5hp pour le player juste pendant le combat ?

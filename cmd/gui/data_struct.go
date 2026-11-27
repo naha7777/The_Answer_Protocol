@@ -56,11 +56,6 @@ type GameState struct {
 	popup     *widget.PopUp
 }
 
-type Status struct {
-	Status	string	`json:"status"`
-	HP		int		`json:"hp"`
-	MaxHP	int		`json:"max_hp"`
-}
 
 // /===========================================\
 // |				   Method				   |
