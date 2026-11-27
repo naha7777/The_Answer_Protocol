@@ -81,7 +81,23 @@ func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string))
 			contentBox.Objects = []fyne.CanvasObject{genderForm}
 			contentBox.Refresh()
 		case msg.Kind == "ERR":
-			errorLabel.SetText(msg.Rest)
+			e := strings.Split(msg.Raw, " ")
+			switch e[1] {
+			case "021":
+				errorLabel.SetText("This name is too long")
+			case "019":
+				errorLabel.SetText("The server is full try again later")
+			case "009":
+				errorLabel.SetText("Invalid name")
+			case "010":
+				errorLabel.SetText("Already connected")
+			case "002":
+				errorLabel.SetText("You must be connected")
+			case "201":
+				errorLabel.SetText("This name is taken")
+			default:
+				errorLabel.SetText(msg.Rest)
+			}
 		}
 	}
 	return view, onMessage

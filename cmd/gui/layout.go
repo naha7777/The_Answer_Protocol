@@ -159,7 +159,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	butMap := newBtn("MAP", toggleMap)
 
 	butQuit := widget.NewButton("QUIT", func() {
-		confirmAction(d.w, "QUIT", "YOU REALLY WANT TO QUIT ?", send("QUIT"))
+		confirmAction(d.w, "QUIT", "Are you sure you want to quit?", send("QUIT"))
 	})
 
 	butQuit.Importance = widget.LowImportance
@@ -176,7 +176,7 @@ func newButtonContainer(background *canvas.Image, p *Player, d *Data) *fyne.Cont
 	butGroup = newBtn("GROUP", func() {
 		Option_popup(butGroup, d.w,
 			newBtn("CREATE", askAndSend("GROUP", "Group name", "GROUP CREATE")),
-			newBtn("LEAVE", func() { confirmAction(d.w, "LEAVE", "YOU REALLY WANT TO LEAVE YOUR GROUP ?", send("GROUP LEAVE")) }),
+			newBtn("LEAVE", func() { confirmAction(d.w, "LEAVE", "Are you sure you want to leave?", send("GROUP LEAVE")) }),
 			newBtn("INVITE", askAndSend("GROUP", "Player to invite", "GROUP INVITE")),
 		)
 	})

@@ -67,6 +67,7 @@ func PopupGameOver(w fyne.Window) {
 		})
 	})
 }
+
 // Put popup that disappear after duration seconds
 func PopupWithDuration(w fyne.Window, txt string, duration time.Duration) {
 	if duration <= 0 {

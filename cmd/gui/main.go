@@ -27,10 +27,10 @@ import (
 
 // Colors
 var (
-	lime   = color.RGBA{R: 33, G: 222, B: 20, A: 255}
-	cyan   = color.RGBA{R: 17, G: 233, B: 237, A: 255}
-	orange = color.RGBA{R: 237, G: 123, B: 17, A: 255}
-	yellow = color.RGBA{R: 255, G: 213, B: 28, A: 255}
+	lime   = color.RGBA{R: 33, G: 222, B: 20, A: 255}  // Associated to GLOBAL Chat
+	cyan   = color.RGBA{R: 17, G: 233, B: 237, A: 255} // Associated to ROOM Chat
+	orange = color.RGBA{R: 237, G: 123, B: 17, A: 255} // Associated to GROUP Chat
+	yellow = color.RGBA{R: 255, G: 213, B: 28, A: 255} // Associated to NPC Chat
 )
 
 // /===========================================\
