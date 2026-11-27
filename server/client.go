@@ -101,6 +101,7 @@ func (client *Client) Death(d *Dispatcher) {
 	if client.hp <= 0 {
 		client.Send("GAME OVER")
 		client.quit = true
+		return
 	}
 
 	// handle respawn

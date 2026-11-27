@@ -9,7 +9,7 @@ import (
 	"image/color"
 	"os"
 	// "strconv"
-	// "strings"
+	"strings"
 	"the_answer_protocol/client"
 	// "time"
 
