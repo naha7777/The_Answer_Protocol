@@ -24,6 +24,13 @@ func (d *Dispatcher) handleConnect(client *Client, args []string) {
 			return
 		}
 	}
+
+	// username length limit
+	if len(username) > 20 {
+		client.Send("ERR 21 NAME_TOO_LONG")
+		return
+	}
+
 	// put the actual room on the client struct
 	for _, room := range d.world.Rooms {
 		if room.Id == d.world.Start {

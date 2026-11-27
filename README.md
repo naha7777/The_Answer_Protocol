@@ -95,11 +95,12 @@ TCP is a stream of bytes, not a stream of messages. The server reads with a `buf
 ### Resource limits
 
 | Limit | Value |
-|---|---|
+|-------|-------|
 | Line length | 1024 bytes |
 | Simultaneous connections | 30 |
 | Inventory size | 100 items |
 | Chat frequency | 1 message per 2 seconds per player |
+| Username lenght | 20 char |
 
 ### Client side
 
@@ -133,9 +134,9 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
 | `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 06 NO_CHAT_SPECIFIED`, `ERR 08 MISSING_MESSAGE`, `ERR 18 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
 | `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none |
-| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE <leadername>` to the invited user |
-| `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
-| `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT GROUP LEAVE <username>` to remaining members |
+| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 03 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT group_invite=<leadername>` to the invited user |
+| `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 03 CANT_FIND_LEADER`, `ERR 04 THIS_USER_IS_NOT_A_LEADER`, `ERR 05 REQUIRE_INVITATION` | `EVT group_join=<username>` to members |
+| `GROUP LEAVE` | `OK group_leaved=<group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT group_leave=<username>` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
 | `QUEST <npc name or npc id>` | `OK quest={"quest_npc": "jewelry_merchant", "quest_id": "princess_necklace", "description": "Bring me a beautiful necklace please.", "reward": "Bravery", "status": "available"}` | `ERR 15 NO_QUEST_AVAILABLE`, `ERR 404 NPC_NOT_FOUND` | `EVT QUEST took=<quest_id>` |
 | `QUESTS` | `OK quests=[]`, `OK quests=[{"quest_npc": "princess", "quest_id": "princess_necklace", "status": "active", "progress": "0/1"}, {"quest_id": "example", "status": "completed"}]` | none | none |
@@ -182,6 +183,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | 18 | SPAM | **custom (not in RFC)** |
 | 19 | SERVER_FULL | **custom (not in RFC)** |
 | 20 | INVALID_INPUT | **custom (not in RFC)** |
+| 21 | NAME_TOO_LONG | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
@@ -214,6 +216,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | A player take a quest | `EVT QUEST took=<quest_id>` | **custom (not in RFC)** |
 
 ### Game Over
+`GAME OVER`
 If a player die, he respawn with less hp. If he dies too many times that we can't take off his HP, he is GAME OVER.\
 He is disconnected from the server.
 
