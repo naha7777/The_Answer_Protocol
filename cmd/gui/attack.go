@@ -44,6 +44,7 @@ type BattleUI struct {
 	npcHealth       *HealthBar
 	playerHealth    *HealthBar
 	buttons         []*widget.Button
+	npcAttack       bool
 }
 
 // NewBattleUI builds and initializes the arena combat layout with player and
@@ -68,6 +69,7 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 		npcLog:          widget.NewLabel(""),
 		player:          player,
 		data:            data,
+		npcAttack:       false,
 	}
 
 	playerSide := container.NewVBox(
@@ -132,7 +134,7 @@ func (b *BattleUI) Content() fyne.CanvasObject {
 
 // Update refreshes the player and NPC health bars and updates the combat log
 // with the latest turn's damage details.
-func (b *BattleUI) Update(atk AttackData, npc bool) {
+func (b *BattleUI) Update(atk AttackData) {
 	b.player.currentHP = atk.PlayerHP
 	b.player.maxHP = atk.PlayerMax_HP
 
@@ -141,9 +143,10 @@ func (b *BattleUI) Update(atk AttackData, npc bool) {
 
 	b.npcHealth.SetMax(float64(atk.NPCMaxHP))
 	b.npcHealth.SetValue(float64(atk.NPCHP))
-	if npc {
+	if b.npcAttack {
 		b.npcLog.SetText(fmt.Sprintf("%s deal %d damage (%s) to you !", atk.NPCName, atk.Damage, atk.DamageType))
-		} else {
+		b.npcAttack = false
+	} else {
 		b.playerLog.SetText(fmt.Sprintf("You deal %d damage (%s) to %s !", atk.Damage, atk.DamageType, atk.NPCName))
 	}
 }
@@ -164,7 +167,7 @@ func (b *BattleUI) InitFight(atk AttackData) {
 
 	b.npcNameLabel.SetText(atk.NPCName)
 	b.playerNameLabel.SetText(b.player.name)
-	b.Update(atk, false)
+	b.Update(atk)
 }
 
 // SetButtonsEnabled enables or disables the combat action buttons

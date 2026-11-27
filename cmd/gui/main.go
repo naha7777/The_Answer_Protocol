@@ -5,14 +5,13 @@ package main
 // \===========================================/
 
 import (
-	"encoding/json"
 	"fmt"
 	"image/color"
 	"os"
-	"strconv"
-	"strings"
+	// "strconv"
+	// "strings"
 	"the_answer_protocol/client"
-	"time"
+	// "time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -63,12 +62,20 @@ func main() {
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
 
 	// Struct info
-	chat := NewChat(w, &player, conn)
+	// chat := NewChat(w, &player, conn)
 	inv := NewInv(w, &player, conn)
-	game := GameState{inventory: inv, player: &player}
-	data := Data{w: w, conn: conn, cb: &CardinalButtons{}, g: &game, chat: chat}
+	// game := &GameState{inventory: inv, player: &player}
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
 	background.FillMode = canvas.ImageFillCover
+	data := Data{
+		a: a,
+		w: w,
+		conn: conn,
+		cb: &CardinalButtons{},
+		g: &GameState{inventory: NewInv(w, &player, conn), player: &player},
+		chat: NewChat(w, &player, conn),
+		bg: background,
+	}
 
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
@@ -76,30 +83,31 @@ func main() {
 
 	// Widgets init for base layout
 	btnContainer := newButtonContainer(background, &player, &data)
-	playerinfo := showPlayerInfo(&player, data)
-	hudContent := container.New(&Hud{}, btnContainer, chat.Content(), inv.Content())
+	data.playerInfo = showPlayerInfo(&player, data)
+	hudContent := container.New(&Hud{}, btnContainer, data.chat.Content(), inv.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
 		hudContent,
-		container.NewVBox(container.NewHBox(playerinfo.Content())),
+		container.NewVBox(container.NewHBox(data.playerInfo.Content())),
 	)
 
 	// Widgets init for combat layout
 	arenaBg := canvas.NewImageFromFile("./data/arena.jpeg")
-	arenaBg.FillMode = canvas.ImageFillStretch
+	arenaBg.FillMode = canvas.ImageFillCover
 
-	battleUI := NewBattleUI(&player, &data)
+	// battleUI := NewBattleUI(&player, &data)
+	data.battleUI = NewBattleUI(&player, &data)
 	battleContent := container.NewStack(
 		arenaBg,
 		overlay,
-		battleUI.Content(),
+		data.battleUI.Content(),
 	)
 
 	loggedIn := false
 	loginView, onLoginMsg := LoginScreen(conn, &player, func(name string) {
 		loggedIn = true
-		playerinfo.Update(data)
+		data.playerInfo.Update(data)
 		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
 		conn.Send("STATUS")
@@ -107,8 +115,12 @@ func main() {
 		conn.Send("LOOK")
 	})
 
+	data.gameContent = gameContent
+	data.battleContent = battleContent
 	w.SetContent(loginView)
-	npc := false
+	// npc := false
+	// var potion *Potion
+
 	go func() {
 		for msg := range conn.Messages() {
 			fyne.Do(func() {
@@ -118,257 +130,260 @@ func main() {
 				}
 				switch msg.Kind {
 				case "OK":
-					switch {
+					ServerResponseOK(msg, &player, &data)
+					// switch {
 
-					// MOVE
-					case strings.HasPrefix(msg.Rest, "room=") && player.move:
-						roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
-						player.room.name = strings.ToUpper(roomID)
-						background.File = "./data/" + roomID + ".jpeg"
-						background.Refresh()
-						player.move = false
-						playerinfo.Update(data)
-						data.cb.Update(player.room.exits)
-						data.conn.Send("LOOK")
+					// // MOVE
+					// case strings.HasPrefix(msg.Rest, "room=") && player.move:
+					// 	roomID := strings.TrimPrefix(msg.Rest, "room=loc.")
+					// 	player.room.name = strings.ToUpper(roomID)
+					// 	background.File = "./data/" + roomID + ".jpeg"
+					// 	background.Refresh()
+					// 	player.move = false
+					// 	playerinfo.Update(data)
+					// 	data.cb.Update(player.room.exits)
+					// 	data.conn.Send("LOOK")
 
-					case msg.Rest == "bye":
-						a.Quit()
+					// case msg.Rest == "bye":
+					// 	a.Quit()
 
-					// GROUP
-					case strings.HasPrefix(msg.Rest, "group_created="):
-						conn.Send("INFO_GROUP")
-						Popup(w, strings.TrimPrefix(msg.Rest, "group_created=")+" group was created")
-					case strings.HasPrefix(msg.Rest, "group_leaved="):
-						Popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
-						player.group = GroupInfo{}
-						playerinfo.Update(data)
-					case strings.HasPrefix(msg.Rest, "group_joined="):
-						conn.Send("INFO_GROUP")
-						Popup(w, "You join the "+strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_joined="))+"group")
-					case strings.HasPrefix(msg.Rest, "group_infos="):
-						raw := strings.TrimPrefix(msg.Rest, "group_infos=")
-						var infos groupInfosMsg
-						if err := json.Unmarshal([]byte(raw), &infos); err != nil {
-							Popup(w, "invalid group infos")
-							break
-						}
-						player.group = infos.Group
-						playerinfo.Update(data)
+					// // GROUP
+					// case strings.HasPrefix(msg.Rest, "group_created="):
+					// 	conn.Send("INFO_GROUP")
+					// 	Popup(w, strings.TrimPrefix(msg.Rest, "group_created=")+" group was created")
+					// case strings.HasPrefix(msg.Rest, "group_leaved="):
+					// 	Popup(w, "You leave "+strings.ToUpper(player.group.Id)+" group")
+					// 	player.group = GroupInfo{}
+					// 	playerinfo.Update(data)
+					// case strings.HasPrefix(msg.Rest, "group_joined="):
+					// 	conn.Send("INFO_GROUP")
+					// 	Popup(w, "You join the "+strings.ToUpper(strings.TrimPrefix(msg.Rest, "group_joined="))+"group")
+					// case strings.HasPrefix(msg.Rest, "group_infos="):
+					// 	raw := strings.TrimPrefix(msg.Rest, "group_infos=")
+					// 	var infos groupInfosMsg
+					// 	if err := json.Unmarshal([]byte(raw), &infos); err != nil {
+					// 		Popup(w, "invalid group infos")
+					// 		break
+					// 	}
+					// 	player.group = infos.Group
+					// 	playerinfo.Update(data)
 
-					// TAKE
-					case strings.HasPrefix(msg.Rest, "taken="):
-						item := strings.TrimPrefix(msg.Rest, "taken=")
-						game.inventory.take(item)
-						conn.Send("LOOK")
+					// // TAKE
+					// case strings.HasPrefix(msg.Rest, "taken="):
+					// 	item := strings.TrimPrefix(msg.Rest, "taken=")
+					// 	game.inventory.take(item)
+					// 	conn.Send("LOOK")
 
-					// DROP
-					case strings.HasPrefix(msg.Rest, "dropped="):
-						item := strings.TrimPrefix(msg.Rest, "dropped=")
-						game.inventory.drop(item)
-						conn.Send("LOOK")
+					// // DROP
+					// case strings.HasPrefix(msg.Rest, "dropped="):
+					// 	item := strings.TrimPrefix(msg.Rest, "dropped=")
+					// 	game.inventory.drop(item)
+					// 	conn.Send("LOOK")
 
-					// INVENTORY
-					case strings.HasPrefix(msg.Rest, "inventory="):
-						game.inventory.BuildInv(msg.Rest)
-						game.Update(msg.Rest)
+					// // INVENTORY
+					// case strings.HasPrefix(msg.Rest, "inventory="):
+					// 	game.inventory.BuildInv(msg.Rest)
+					// 	game.Update(msg.Rest)
 
-					// LOOK
-					case strings.HasPrefix(msg.Rest, "look="):
-						game.Update(msg.Rest)
-						player.PlayerRoomUpdate(msg.Rest)
-						playerinfo.Update(data)
-						data.cb.Update(player.room.exits)
+					// // LOOK
+					// case strings.HasPrefix(msg.Rest, "look="):
+					// 	game.Update(msg.Rest)
+					// 	player.PlayerRoomUpdate(msg.Rest)
+					// 	playerinfo.Update(data)
+					// 	data.cb.Update(player.room.exits)
 
-					// QUESTS
-					case strings.HasPrefix(msg.Rest, "quests="):
-						msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
-						Str_to_quests(msg.Rest, data)
+					// // QUESTS
+					// case strings.HasPrefix(msg.Rest, "quests="):
+					// 	msg.Rest = strings.TrimPrefix(msg.Rest, "quests=")
+					// 	Str_to_quests(msg.Rest, data)
 
-					// TALK
-					case strings.HasPrefix(msg.Rest, "talk="):
-						msg.Rest = strings.TrimPrefix(msg.Rest, "talk=")
-						author, message, _ := strings.Cut(msg.Rest, ": ")
-						author = IDToName(author)
-						chat.Receive("NPC", author, message)
+					// // TALK
+					// case strings.HasPrefix(msg.Rest, "talk="):
+					// 	msg.Rest = strings.TrimPrefix(msg.Rest, "talk=")
+					// 	author, message, _ := strings.Cut(msg.Rest, ": ")
+					// 	author = IDToName(author)
+					// 	chat.Receive("NPC", author, message)
 
-					// ATTACK
-					case strings.HasPrefix(msg.Rest, "flee="):
-						if strings.Contains(msg.Rest, "=succed") {
-							battleUI.EndFight()
-							playerinfo.Update(data)
-							w.SetContent(gameContent)
-							conn.Send("LOOK")
-						}
-					case strings.HasPrefix(msg.Rest, "attack="):
-						raw := strings.TrimPrefix(msg.Rest, "attack=")
-						if npcID, _, ok := strings.Cut(raw, "=dead"); ok {
-							npcID = strings.Trim(npcID, `"`)
-							Popup(w, IDToName(npcID)+" is dead!")
-							battleUI.EndFight()
-							battleUI.SetButtonsEnabled(false)
-							playerinfo.Update(data)
-							time.AfterFunc(3*time.Second, func() {
-								fyne.Do(func() {
-									player.currentHP = player.maxHP
-									w.SetContent(gameContent)
-									conn.Send("LOOK")
-									conn.Send("INVENTORY")
-									conn.Send("STATUS")
-								})
-							})
-							break
-						}
-						var atk AttackData
-						if err := atk.parse(strings.TrimPrefix(msg.Rest, "attack=")); err != nil {
-							break
-						}
-						if !battleUI.inFight {
-							battleUI.InitFight(atk)
-							w.SetContent(battleContent)
-						} else if !npc {
-							battleUI.Update(atk, false)
-						} else {
-							battleUI.Update(atk, true)
-							npc = false
-						}
-					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
-						status := strings.TrimPrefix(msg.Rest, `"status"=`)
-						status = strings.TrimPrefix(status, "status=")
-						// status = strings.Trim(status, `"`)
+					// // ATTACK
+					// case strings.HasPrefix(msg.Rest, "flee="):
+					// 	if strings.Contains(msg.Rest, "=succed") {
+					// 		battleUI.EndFight()
+					// 		playerinfo.Update(data)
+					// 		w.SetContent(gameContent)
+					// 		conn.Send("LOOK")
+					// 	}
+					// case strings.HasPrefix(msg.Rest, "attack="):
+					// 	raw := strings.TrimPrefix(msg.Rest, "attack=")
+					// 	if npcID, _, ok := strings.Cut(raw, "=dead"); ok {
+					// 		npcID = strings.Trim(npcID, `"`)
+					// 		Popup(w, IDToName(npcID) + " is dead!")
+					// 		battleUI.EndFight()
+					// 		battleUI.SetButtonsEnabled(false)
+					// 		playerinfo.Update(data)
+					// 		time.AfterFunc(3*time.Second, func() {
+					// 			fyne.Do(func() {
+					// 				player.currentHP = player.maxHP
+					// 				w.SetContent(gameContent)
+					// 				conn.Send("LOOK")
+					// 				conn.Send("INVENTORY")
+					// 				conn.Send("STATUS")
+					// 			})
+					// 		})
+					// 		break
+					// 	}
+					// 	var atk AttackData
+					// 	if err := atk.parse(strings.TrimPrefix(msg.Rest, "attack=")); err != nil {
+					// 		break
+					// 	}
+					// 	if !battleUI.inFight {
+					// 		battleUI.InitFight(atk)
+					// 		w.SetContent(battleContent)
+					// 	} else if !npc {
+					// 		battleUI.npcAttack = false
+					// 		battleUI.Update(atk)
+					// 	} else {
+					// 		battleUI.Update(atk)
+					// 		battleUI.npcAttack = false
+					// 	}
+					// 	case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+					// 	status := strings.TrimPrefix(msg.Rest, `"status"=`)
+					// 	status = strings.TrimPrefix(status, "status=")
+					// 	// status = strings.Trim(status, `"`)
 
-						if status != "combat" && battleUI.inFight {
-							battleUI.EndFight()
-							playerinfo.Update(data)
-							w.SetContent(gameContent)
-							conn.Send("LOOK")
-						}
-						HandleStatus(status, &player)
-						playerinfo.Update(data)
+					// 	if status != "combat" && battleUI.inFight {
+					// 		battleUI.EndFight()
+					// 		playerinfo.Update(data)
+					// 		w.SetContent(gameContent)
+					// 		conn.Send("LOOK")
+					// 	}
+					// 	HandleStatus(status, &player)
+					// 	playerinfo.Update(data)
 
-					// QUEST
-					case strings.HasPrefix(msg.Rest, "quest="):
-						Popup(w, "Quest accepted!")
-						HandleQuest(msg.Rest, data)
+					// // QUEST
+					// case strings.HasPrefix(msg.Rest, "quest="):
+					// 	Popup(w, "Quest accepted!")
+					// 	HandleQuest(msg.Rest, data)
 
-					// ITEM REMOVAL
-					case strings.HasPrefix(msg.Rest, "gave="):
-						item := strings.TrimPrefix(msg.Rest, "gave=")
-						game.inventory.remove(item)
-						conn.Send("LOOK")
-					}
+					// // ITEM REMOVAL
+					// case strings.HasPrefix(msg.Rest, "gave="):
+					// 	item := strings.TrimPrefix(msg.Rest, "gave=")
+					// 	game.inventory.remove(item)
+					// 	conn.Send("LOOK")
+					// }
 
 				case "EVT":
-					m := strings.Split(msg.Raw, " ")
-					if len(m) == 3 && msg.Raw == "EVT PLAYER DEATH" {
-						fmt.Println(msg.Rest)
-						Popup(data.w, "You are DEAD !!!")
-						battleUI.EndFight()
-						battleUI.SetButtonsEnabled(false)
-						time.AfterFunc(3*time.Second, func() {
-							fyne.Do(func() {
-								player.currentHP = player.maxHP
-								Popup(data.w, "You had respawned")
-								w.SetContent(gameContent)
-								conn.Send("LOOK")
-								conn.Send("INVENTORY")
-								conn.Send("STATUS")
-							})
-						})
-					}
-					if len(m) == 2 && strings.HasPrefix(m[1], "dead=") {
-						deathName := strings.TrimPrefix(m[1], "dead=")
-						chat.Receive("Global", "Game", deathName+" is dead !")
-					}
-					if len(m) >= 5 && m[2] == "CHAT" {
-						parts := strings.SplitN(msg.Rest, " ", 4)
-						if len(parts) == 4 {
-							scope, username, message := parts[0], parts[2], parts[3]
-							chat.Receive(scope, username, message)
-						}
-					}
-					if len(m) >= 3 {
-						switch m[1] {
-						case "GROUP":
-							switch m[2] {
-							case "INVITE":
-								if len(m) >= 4 {
-									confirmGroup(w, []string{m[3], m[2]}, func() {
-										conn.Send("GROUP JOIN " + m[3])
-									})
-								}
-							case "JOIN", "LEAVE":
-								conn.Send("INFO_GROUP")
-							}
-						case "ROOM":
-							switch m[2] {
-							case "ENTER":
-								player.room.nb_players += 1
-							case "LEAVE":
-								player.room.nb_players -= 1
-							}
-						case "NPC":
-							switch m[2] {
-							case "DEAD":
-								conn.Send("LOOK")
-							case "FLEE":
-								npcID := strings.Split(msg.Rest, "=")
-								npcMsg := ""
-								if len(npcID) >= 2 {
-									npcMsg = npcID[1] + " fled"
-									Popup(data.w, npcMsg)
-								}
-								battleUI.EndFight()
-								battleUI.SetButtonsEnabled(false)
-								game.inventory.Clear()
-								time.AfterFunc(3*time.Second, func() {
-									fyne.Do(func() {
-										w.SetContent(gameContent)
-										conn.Send("LOOK")
-									})
-								})
-							case "ATTACK":
-								npc = true
-							case "REGENERATION":
-								npc = true
-							}
-						case "BEER":
-							// -5hp pour le player juste pendant le combat ?
-						case "SWORD":
-							// +5 de point de force ou attack pour le joueur
-						case "POISON":
-							if m[3] == "POTION" {
-								// -5 npc hp
-							} else {
-								// -5 player hp
-							}
-						case "STRENGTH":
-							if m[3] == "POTION" {
-								//  +5 de point de force ou attack pour le joueur
-							} else {
-								// +5 de point de force ou attack pour le npc
-							}
-						case "HEALTH":
-							if m[3] == "POTION" {
-								// +5 hp pour le player
-							} else {
-								// +5 hp pour le npc
-							}
-						case "STATS":
-							if strings.HasPrefix(m[2], "players=") {
-								data.nb_players, err = strconv.Atoi(strings.TrimPrefix(m[2], "players="))
-								if err != nil {
-									fmt.Println("Failed to get number of players online")
-								}
-							} else if strings.HasPrefix(m[2], "players_in_room=") {
-								data.g.player.room.nb_players, err = strconv.Atoi(strings.TrimPrefix(m[2], "players_in_room="))
-								if err != nil {
-									fmt.Println("Failed to get number of players in room")
-								}
-							}
-						case "PLAYER":
-							conn.Send("LOOK")
-						}
-					}
+					ServerResponseEVT(msg, &player, &data)
+					// m := strings.Split(msg.Raw, " ")
+					// if len(m) == 3 && msg.Raw == "EVT PLAYER DEATH" {
+					// 	fmt.Println(msg.Rest)
+					// 	Popup(data.w, "You are DEAD !!!")
+					// 	battleUI.EndFight()
+					// 	battleUI.SetButtonsEnabled(false)
+					// 	time.AfterFunc(3*time.Second, func() {
+					// 		fyne.Do(func() {
+					// 			player.currentHP = player.maxHP
+					// 			Popup(data.w, "You had respawned")
+					// 			w.SetContent(gameContent)
+					// 			conn.Send("LOOK")
+					// 			conn.Send("INVENTORY")
+					// 			conn.Send("STATUS")
+					// 		})
+					// 	})
+					// }
+					// if len(m) == 2 && strings.HasPrefix(m[1], "dead=") {
+					// 	deathName := strings.TrimPrefix(m[1], "dead=")
+					// 	data.chat.Receive("Global", "Game", deathName+" is dead !")
+					// }
+					// if len(m) >= 5 && m[2] == "CHAT" {
+					// 	parts := strings.SplitN(msg.Rest, " ", 4)
+					// 	if len(parts) == 4 {
+					// 		scope, username, message := parts[0], parts[2], parts[3]
+					// 		data.chat.Receive(scope, username, message)
+					// 	}
+					// }
+					// if len(m) >= 3 {
+					// 	switch m[1] {
+					// 	case "GROUP":
+					// 		switch m[2] {
+					// 		case "INVITE":
+					// 			if len(m) >= 4 {
+					// 				confirmGroup(w, []string{m[3], m[2]}, func() {
+					// 					conn.Send("GROUP JOIN " + m[3])
+					// 				})
+					// 			}
+					// 		case "JOIN", "LEAVE":
+					// 			conn.Send("INFO_GROUP")
+					// 		}
+					// 	case "ROOM":
+					// 		switch m[2] {
+					// 		case "ENTER":
+					// 			player.room.nb_players += 1
+					// 		case "LEAVE":
+					// 			player.room.nb_players -= 1
+					// 		}
+					// 	case "NPC":
+					// 		switch m[2] {
+					// 		case "DEAD":
+					// 			conn.Send("LOOK")
+					// 		case "FLEE":
+					// 			npcID := strings.Split(msg.Rest, "=")
+					// 			npcMsg := ""
+					// 			if len(npcID) >= 2 {
+					// 				npcMsg = npcID[1] + " fled"
+					// 				Popup(data.w, npcMsg)
+					// 			}
+					// 			battleUI.EndFight()
+					// 			battleUI.SetButtonsEnabled(false)
+					// 			data.g.inventory.Clear()
+					// 			time.AfterFunc(3*time.Second, func() {
+					// 				fyne.Do(func() {
+					// 					w.SetContent(gameContent)
+					// 					conn.Send("LOOK")
+					// 				})
+					// 			})
+					// 		case "ATTACK":
+					// 			battleUI.npcAttack = true
+					// 		case "REGENERATION":
+					// 			battleUI.npcLog.SetText(fmt.Sprintf("%s has regenerated", battleUI.targetNPC))
+					// 		}
+					// 	case "BEER":
+					// 		// -5hp pour le player juste pendant le combat ?
+					// 	case "SWORD":
+					// 		// +5 de point de force ou attack pour le joueur
+					// 	case "POISON":
+					// 		if m[3] == "POTION" {
+					// 			// -5 npc hp
+					// 		} else {
+					// 			// -5 player hp
+					// 		}
+					// 	case "STRENGTH":
+					// 		if m[3] == "POTION" {
+					// 			//  +5 de point de force ou attack pour le joueur
+					// 		} else {
+					// 			// +5 de point de force ou attack pour le npc
+					// 		}
+					// 	case "HEALTH":
+					// 		if m[3] == "POTION" {
+					// 			// +5 hp pour le player
+					// 		} else {
+					// 			// +5 hp pour le npc
+					// 		}
+					// 	case "STATS":
+					// 		if strings.HasPrefix(m[2], "players=") {
+					// 			data.nb_players, err = strconv.Atoi(strings.TrimPrefix(m[2], "players="))
+					// 			if err != nil {
+					// 				fmt.Println("Failed to get number of players online")
+					// 			}
+					// 		} else if strings.HasPrefix(m[2], "players_in_room=") {
+					// 			data.g.player.room.nb_players, err = strconv.Atoi(strings.TrimPrefix(m[2], "players_in_room="))
+					// 			if err != nil {
+					// 				fmt.Println("Failed to get number of players in room")
+					// 			}
+					// 		}
+					// 	case "PLAYER":
+					// 		conn.Send("LOOK")
+					// 	}
+					// }
 				case "ERR":
 					e := strings.Split(msg.Raw, " ")
 					switch e[1] {

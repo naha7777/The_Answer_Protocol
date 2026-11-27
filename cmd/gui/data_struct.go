@@ -11,6 +11,7 @@ import (
 	"the_answer_protocol/client"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -30,12 +31,18 @@ type Room struct {
 }
 
 type Data struct {
-	nb_players int
-	chat       *Chat
-	g          *GameState
-	w          fyne.Window
-	conn       *client.Conn
-	cb         *CardinalButtons
+	nb_players		int
+	chat			*Chat
+	battleUI		*BattleUI
+	playerInfo		*InfoBox
+	a				fyne.App
+	g				*GameState
+	w				fyne.Window
+	conn			*client.Conn
+	bg				*canvas.Image
+	gameContent		*fyne.Container
+	battleContent	*fyne.Container
+	cb				*CardinalButtons
 }
 
 type Player struct {
@@ -56,6 +63,11 @@ type GameState struct {
 	popup     *widget.PopUp
 }
 
+type Potion struct {
+	poison		bool
+	health		bool
+	strenght	bool
+}
 
 // /===========================================\
 // |				   Method				   |

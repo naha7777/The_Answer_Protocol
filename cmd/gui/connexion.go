@@ -69,7 +69,7 @@ func LoginScreen(conn *client.Conn, player *Player, onSuccess func(name string))
 	contentBox.Add(nameForm)
 
 	bg := canvas.NewImageFromFile("./data/welcome.jpeg")
-	bg.FillMode = canvas.ImageFillStretch
+	bg.FillMode = canvas.ImageFillCover
 	overlay := canvas.NewRectangle(color.NRGBA{A: 150})
 
 	view := container.NewStack(bg, overlay, container.NewCenter(contentBox))
