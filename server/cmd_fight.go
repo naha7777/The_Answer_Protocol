@@ -84,7 +84,7 @@ func (d *Dispatcher) handleAttack(client *Client, args []string) {
 }
 
 func (d *Dispatcher) handleStatus(client *Client, args []string) {
-	// displqy client HP, client max HP and client status
+	// display client HP, client max HP and client status
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
