@@ -105,7 +105,7 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 		data.g.popup = Option_popup(
 			itemsBtn,
 			data.w,
-			Generate_option(data.g.inventory.objects, "USE_ITEM", data.conn))
+			Generate_option(data.g.inventory.objects, "USE_ITEM", data))
 	})
 
 	b.buttons = []*widget.Button{attackBtn, fleeBtn, defendBtn, itemsBtn}

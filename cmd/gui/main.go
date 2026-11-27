@@ -67,11 +67,12 @@ func main() {
 		w:    w,
 		conn: conn,
 		cb:   &CardinalButtons{},
-		g:    &GameState{inventory: NewInv(w, &player, conn), player: &player},
+		g:    &GameState{player: &player},
 		chat: NewChat(w, &player, conn),
 		bg:   background,
 	}
-
+	inv := NewInv(w, &player, &data)
+	data.g.inventory = inv
 	logLabel := widget.NewLabel("")
 	logLabel.Wrapping = fyne.TextWrapWord
 	logView := container.NewVScroll(logLabel)
