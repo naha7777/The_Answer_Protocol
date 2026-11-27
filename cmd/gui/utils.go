@@ -5,11 +5,13 @@ package main
 // \===========================================/
 
 import (
+	"image/color"
 	"strings"
 	"the_answer_protocol/client"
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
@@ -34,6 +36,37 @@ func Popup(w fyne.Window, txt string) {
 	})
 }
 
+func PopupGameOver(w fyne.Window) {
+	title := canvas.NewText("GAME OVER", color.NRGBA{R: 220, G: 20, B: 20, A: 255})
+	title.TextSize = 72
+	title.TextStyle = fyne.TextStyle{Bold: true}
+	title.Alignment = fyne.TextAlignCenter
+
+	subtitle := canvas.NewText("You are dead....", color.NRGBA{R: 230, G: 230, B: 230, A: 255})
+	subtitle.TextSize = 20
+	subtitle.Alignment = fyne.TextAlignCenter
+
+	spacer := canvas.NewRectangle(color.Transparent)
+	spacer.SetMinSize(fyne.NewSize(450, 20))
+
+	content := container.NewPadded(
+		container.NewVBox(
+			spacer,
+			container.NewCenter(title),
+			container.NewCenter(subtitle),
+			spacer,
+		),
+	)
+
+	pop := widget.NewModalPopUp(content, w.Canvas())
+	pop.Show()
+
+	time.AfterFunc(3*time.Second, func() {
+		fyne.Do(func() {
+			pop.Hide()
+		})
+	})
+}
 // Put popup that disappear after duration seconds
 func PopupWithDuration(w fyne.Window, txt string, duration time.Duration) {
 	if duration <= 0 {
