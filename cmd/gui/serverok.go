@@ -151,12 +151,12 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 		data.g.inventory.remove(item)
 		data.conn.Send("LOOK")
 
+	// WHO
 	case strings.HasPrefix(msg.Rest, "players="):
 		var err error
 		data.nb_players, err = strconv.Atoi(strings.TrimPrefix(msg.Rest, "players="))
 		if err != nil {
 			fmt.Println("Failed to get number of players online")
 		}
-		fmt.Println(data.nb_players)
 	}
 }

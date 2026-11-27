@@ -64,9 +64,6 @@ func main() {
 	overlay := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 90})
 
 	// Struct info
-	// chat := NewChat(w, &player, conn)
-	inv := NewInv(w, &player, conn)
-	// game := &GameState{inventory: inv, player: &player}
 	background := canvas.NewImageFromFile("./data/tavern.jpeg")
 	background.FillMode = canvas.ImageFillCover
 	data := Data{
@@ -86,7 +83,7 @@ func main() {
 	// Widgets init for base layout
 	btnContainer := newButtonContainer(background, &player, &data)
 	data.playerInfo = showPlayerInfo(&player, data)
-	hudContent := container.New(&Hud{}, btnContainer, data.chat.Content(), inv.Content())
+	hudContent := container.New(&Hud{}, btnContainer, data.chat.Content(), data.g.inventory.Content())
 	gameContent := container.NewStack(
 		background,
 		overlay,
@@ -139,7 +136,6 @@ func main() {
 				switch msg.Kind {
 				case "OK":
 					ServerResponseOK(msg, &player, &data)
-
 				case "EVT":
 					ServerResponseEVT(msg, &player, &data)
 

@@ -18,7 +18,6 @@ func ServerResponseEVT(msg client.Message, player *Player, data *Data) {
 	var err error
 	m := strings.Split(msg.Raw, " ")
 	if len(m) == 3 && msg.Raw == "EVT PLAYER DEATH" {
-		fmt.Println(msg.Rest)
 		Popup(data.w, "You are DEAD !!!")
 		data.battleUI.EndFight()
 		data.battleUI.SetButtonsEnabled(false)

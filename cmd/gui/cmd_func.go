@@ -46,7 +46,7 @@ func Str_to_quests(str string, d Data) {
 		quest := q["quest_id"]
 		quest = strings.ReplaceAll(quest, "_", " ")
 		quest = strings.Title(strings.ToLower(quest))
-		completeBut := widget.NewButton("Complete", func() { d.conn.Send("COMPLETE_QUEST " + q["quest_id"]) })
+		completeBut := widget.NewButton("Complete", func() { d.conn.Send("COMPLETE_QUEST " + q["quest_id"]); d.g.popup.Hide() })
 		label_cont := container.NewHBox(widget.NewLabel(quest), widget.NewLabel(IDToName(q["quest_npc"])))
 		single_cont := container.NewBorder(nil, nil, label_cont, nil, container.NewHBox(container.NewCenter(widget.NewLabel(q["progress"])), completeBut))
 		// img
@@ -75,6 +75,7 @@ func Str_to_quests(str string, d Data) {
 	} else {
 		popup.Resize(fyne.Size{Width: quests_cont.MinSize().Width + 30, Height: 50 * 4})
 	}
+	d.g.popup = popup
 }
 
 // Show its description in chat when accepting a quest
