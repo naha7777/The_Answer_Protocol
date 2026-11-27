@@ -34,6 +34,25 @@ func Popup(w fyne.Window, txt string) {
 	})
 }
 
+// Put popup that disappear after duration seconds
+func PopupWithDuration(w fyne.Window, txt string, duration time.Duration) {
+	if duration <= 0 {
+		duration = 1
+	}
+
+	width := w.Canvas().Size().Width
+	height := w.Canvas().Size().Height
+
+	popup := widget.NewPopUp(widget.NewLabel(txt), w.Canvas())
+	popup.ShowAtPosition(fyne.Position{X: width / 2, Y: 3 * (height / 4)})
+
+	time.AfterFunc(duration*time.Second, func() {
+		fyne.Do(func() {
+			popup.Hide()
+		})
+	})
+}
+
 // Return time as 24h:min format
 func get_time() string {
 	formatted := time.Now().Format("15:04")

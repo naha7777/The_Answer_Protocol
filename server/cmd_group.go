@@ -82,6 +82,7 @@ func (d *Dispatcher) handleGroupJoin(client *Client, args []string) {
 		client.Send("ERR 005 REQUIRE_INVITATION")
 		return
 	}
+	SendGroup(d, client, "EVT GROUP JOIN %s", client.name)
 	l_group.members[client.name] = client
 	d.groups[client.name] = l_group
 	client.group = l_group
@@ -102,7 +103,6 @@ func (d *Dispatcher) handleGroupLeave(client *Client, args []string) {
 	delete(current_group.members, client.name)
 	client.Send("OK group_leaved=%s", current_group.id)
 	SendGroup(d, client, "EVT GROUP LEAVE %s", client.name)
-	client.group = nil
 	if len(current_group.members) > 0 {
 		// if this player is the leader of the group, the new leader will be
 		// the next who enterred in the group

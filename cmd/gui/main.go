@@ -102,12 +102,13 @@ func main() {
 		playerinfo.Update(data)
 		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
+		conn.Send("STATUS")
 		conn.Send("INVENTORY")
 		conn.Send("LOOK")
 	})
 
 	w.SetContent(loginView)
-
+	npc := false
 	go func() {
 		for msg := range conn.Messages() {
 			fyne.Do(func() {
@@ -202,7 +203,7 @@ func main() {
 						raw := strings.TrimPrefix(msg.Rest, "attack=")
 						if npcID, _, ok := strings.Cut(raw, "=dead"); ok {
 							npcID = strings.Trim(npcID, `"`)
-							Popup(w, IDToName(npcID)+" is dead!")
+							Popup(w, IDToName(npcID) + " is dead!")
 							battleUI.EndFight()
 							battleUI.SetButtonsEnabled(false)
 							playerinfo.Update(data)
@@ -224,10 +225,13 @@ func main() {
 						if !battleUI.inFight {
 							battleUI.InitFight(atk)
 							w.SetContent(battleContent)
+						} else if !npc {
+							battleUI.Update(atk, false)
 						} else {
-							battleUI.Update(atk)
+							battleUI.Update(atk, true)
+							npc = false
 						}
-					case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
+						case strings.HasPrefix(msg.Rest, `"status"=`), strings.HasPrefix(msg.Rest, "status="):
 						status := strings.TrimPrefix(msg.Rest, `"status"=`)
 						status = strings.TrimPrefix(status, "status=")
 						// status = strings.Trim(status, `"`)
@@ -255,7 +259,8 @@ func main() {
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
-					if len(m) == 2 && m[1] == "DEATH" {
+					if len(m) == 3 && msg.Raw == "EVT PLAYER DEATH" {
+						fmt.Println(msg.Rest)
 						Popup(data.w, "You are DEAD !!!")
 						battleUI.EndFight()
 						battleUI.SetButtonsEnabled(false)
@@ -322,9 +327,9 @@ func main() {
 									})
 								})
 							case "ATTACK":
-								Popup(data.w, "NPC attacks you")
+								npc = true
 							case "REGENERATION":
-								Popup(data.w, "NPC is regenerated")
+								npc = true
 							}
 						case "BEER":
 							// -5hp pour le player juste pendant le combat ?

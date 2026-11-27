@@ -38,7 +38,8 @@ type BattleUI struct {
 	npcImg          *canvas.Image
 	playerNameLabel *widget.Label
 	npcNameLabel    *widget.Label
-	battleLog       *widget.Label
+	playerLog       *widget.Label
+	npcLog          *widget.Label
 	content         fyne.CanvasObject
 	npcHealth       *HealthBar
 	playerHealth    *HealthBar
@@ -63,7 +64,8 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 		npcHealth:       NewHealthBar(0),
 		playerNameLabel: widget.NewLabel(player.name),
 		npcNameLabel:    widget.NewLabel("enemy"),
-		battleLog:       widget.NewLabel(""),
+		playerLog:       widget.NewLabel(""),
+		npcLog:          widget.NewLabel(""),
 		player:          player,
 		data:            data,
 	}
@@ -107,7 +109,8 @@ func NewBattleUI(player *Player, data *Data) *BattleUI {
 	b.buttons = []*widget.Button{attackBtn, fleeBtn, defendBtn, itemsBtn}
 
 	bottomBar := container.NewVBox(
-		container.NewCenter(b.battleLog),
+		container.NewCenter(b.playerLog),
+		container.NewCenter(b.npcLog),
 		container.NewCenter(container.NewHBox(attackBtn, fleeBtn, defendBtn, itemsBtn)),
 	)
 
@@ -129,7 +132,7 @@ func (b *BattleUI) Content() fyne.CanvasObject {
 
 // Update refreshes the player and NPC health bars and updates the combat log
 // with the latest turn's damage details.
-func (b *BattleUI) Update(atk AttackData) {
+func (b *BattleUI) Update(atk AttackData, npc bool) {
 	b.player.currentHP = atk.PlayerHP
 	b.player.maxHP = atk.PlayerMax_HP
 
@@ -138,7 +141,11 @@ func (b *BattleUI) Update(atk AttackData) {
 
 	b.npcHealth.SetMax(float64(atk.NPCMaxHP))
 	b.npcHealth.SetValue(float64(atk.NPCHP))
-	b.battleLog.SetText(fmt.Sprintf("You deal %d damage (%s) to %s !", atk.Damage, atk.DamageType, atk.NPCName))
+	if npc {
+		b.npcLog.SetText(fmt.Sprintf("%s deal %d damage (%s) to you !", atk.NPCName, atk.Damage, atk.DamageType))
+		} else {
+		b.playerLog.SetText(fmt.Sprintf("You deal %d damage (%s) to %s !", atk.Damage, atk.DamageType, atk.NPCName))
+	}
 }
 
 // InitFight sets the combat state to active, loads the player and enemy
@@ -157,7 +164,7 @@ func (b *BattleUI) InitFight(atk AttackData) {
 
 	b.npcNameLabel.SetText(atk.NPCName)
 	b.playerNameLabel.SetText(b.player.name)
-	b.Update(atk)
+	b.Update(atk, false)
 }
 
 // SetButtonsEnabled enables or disables the combat action buttons
