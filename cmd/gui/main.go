@@ -137,7 +137,6 @@ func main() {
 					ServerResponseOK(msg, &player, &data)
 				case "EVT":
 					ServerResponseEVT(msg, &player, &data)
-
 				case "ERR":
 					ServerResponseERR(msg, &player, &data)
 				}
