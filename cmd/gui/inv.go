@@ -174,6 +174,7 @@ func (i *Inventory) take(item string) {
 }
 
 func (i *Inventory) Update(str string) {
+	obj := []string{}
 	if strings.HasPrefix(str, "inventory=") {
 		str = strings.TrimPrefix(str, "inventory=")
 		str = strings.Trim(str, "[]")
@@ -181,6 +182,8 @@ func (i *Inventory) Update(str string) {
 
 		if items[0] != "" {
 			i.objects = items
+		} else if items[0] == "" {
+			i.objects = obj
 		}
 	} else if strings.HasPrefix(str, "look=") {
 		str = strings.TrimPrefix(str, "look=")

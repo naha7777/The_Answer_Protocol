@@ -27,6 +27,7 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 		data.playerInfo.Update(*data)
 		data.cb.Update(player.room.exits)
 		data.conn.Send("LOOK")
+		data.conn.Send("INVENTORY")
 
 	case msg.Rest == "bye":
 		data.a.Quit()
@@ -94,6 +95,7 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 			data.battleUI.EndFight()
 			data.playerInfo.Update(*data)
 			data.w.SetContent(data.gameContent)
+			data.conn.Send("INVENTORY")
 			data.conn.Send("LOOK")
 		}
 	case strings.HasPrefix(msg.Rest, "attack="):
