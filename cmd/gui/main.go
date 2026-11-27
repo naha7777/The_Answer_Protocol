@@ -102,6 +102,7 @@ func main() {
 		playerinfo.Update(data)
 		data.cb.Update(player.room.exits)
 		w.SetContent(gameContent)
+		conn.Send("STATUS")
 		conn.Send("INVENTORY")
 		conn.Send("LOOK")
 	})
@@ -202,7 +203,7 @@ func main() {
 						raw := strings.TrimPrefix(msg.Rest, "attack=")
 						if npcID, _, ok := strings.Cut(raw, "=dead"); ok {
 							npcID = strings.Trim(npcID, `"`)
-							Popup(w, IDToName(npcID)+" is dead!")
+							Popup(w, IDToName(npcID) + " is dead!")
 							battleUI.EndFight()
 							battleUI.SetButtonsEnabled(false)
 							playerinfo.Update(data)
@@ -255,7 +256,8 @@ func main() {
 
 				case "EVT":
 					m := strings.Split(msg.Raw, " ")
-					if len(m) == 2 && m[1] == "DEATH" {
+					if len(m) == 3 && msg.R == "EVT PLAYER DEATH" {
+						fmt.Println(msg.Rest)
 						Popup(data.w, "You are DEAD !!!")
 						battleUI.EndFight()
 						battleUI.SetButtonsEnabled(false)
@@ -322,9 +324,9 @@ func main() {
 									})
 								})
 							case "ATTACK":
-								Popup(data.w, "NPC attacks you")
+								PopupWithDuration(data.w, "NPC attacks you", 1)
 							case "REGENERATION":
-								Popup(data.w, "NPC is regenerated")
+								PopupWithDuration(data.w, "NPC is regenerated", 1)
 							}
 						case "BEER":
 							// -5hp pour le player juste pendant le combat ?
