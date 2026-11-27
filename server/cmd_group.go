@@ -132,6 +132,10 @@ func (d *Dispatcher) handleGroupInvite(client *Client, args []string) {
 		client.Send("ERR 401 NOT_IN_GROUP")
 		return
 	}
+	if client.name != client.group.leader {
+		client.Send("ERR 022 NOT_LEADER")
+		return
+	}
 	username := strings.Join(args, " ")
 	if _, exists := d.clients[username]; !exists {
 		client.Send("ERR 003 CANT_FIND_USER")

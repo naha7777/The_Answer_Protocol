@@ -142,7 +142,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | `CHAT ROOM <msg>` | `OK` (sender) | `ERR 006 NO_CHAT_SPECIFIED`, `ERR 008 MISSING_MESSAGE`, `ERR 018 SPAM` | `EVT ROOM CHAT <username> <message>` to others in room |
 | `CHAT GROUP <msg>` | `OK` (sender) | `ERR 401 NOT_IN_GROUP`, `ERR 006 NO_CHAT_SPECIFIED`, `ERR 008 MISSING_MESSAGE`, `ERR 018 SPAM` | `EVT GROUP CHAT <username> <message>` to group members |
 | `GROUP CREATE <id>` | `OK group_created=<id>` | `ERR 402 ALREADY_IN_GROUP` | none |
-| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 003 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP` | `EVT GROUP INVITE <leadername>` to the invited user |
+| `GROUP INVITE <user>` | `OK group_invited=<username>` | `ERR 003 CANT_FIND_USER`, `ERR 402 ALREADY_IN_GROUP`, `ERR 022 NOT_LEADER` | `EVT GROUP INVITE <leadername>` to the invited user |
 | `GROUP JOIN <leader>` | `OK group_joined=<id>` | `ERR 402 ALREADY_IN_GROUP`, `ERR 003 CANT_FIND_LEADER`, `ERR 004 THIS_USER_IS_NOT_A_LEADER`, `ERR 005 REQUIRE_INVITATION` | `EVT GROUP JOIN <username>` to members |
 | `GROUP LEAVE` | `OK GROUP LEAVE <group_id>` | `ERR 401 NOT_IN_GROUP` | `EVT group_leave=<username>` to remaining members |
 | `INFO_GROUP` | `OK group_infos={"group": {"Id":"<group_ID>", "Leader":"group_Leader", "Members":"[<username> <username> <username>]", "Invited":"[<username>]"}` | `ERR 401 NOT_IN_GROUP` | none |
@@ -192,6 +192,7 @@ The CLI puts the terminal in raw mode (`golang.org/x/term`) to handle the histor
 | 019 | SERVER_FULL | **custom (not in RFC)** |
 | 020 | INVALID_INPUT | **custom (not in RFC)** |
 | 021 | NAME_TOO_LONG | **custom (not in RFC)** |
+| 022 | NOT_LEADER | **custom (not in RFC)** |
 | 500 | INTERNAL | **custom (not in RFC)** |
 
 ### Events
