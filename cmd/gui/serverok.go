@@ -6,6 +6,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"strconv"
 	"strings"
 	"the_answer_protocol/client"
 	"time"
@@ -148,5 +150,13 @@ func ServerResponseOK(msg client.Message, player *Player, data *Data) {
 		item := strings.TrimPrefix(msg.Rest, "gave=")
 		data.g.inventory.remove(item)
 		data.conn.Send("LOOK")
+
+	case strings.HasPrefix(msg.Rest, "players="):
+		var err error
+		data.nb_players, err = strconv.Atoi(strings.TrimPrefix(msg.Rest, "players="))
+		if err != nil {
+			fmt.Println("Failed to get number of players online")
+		}
+		fmt.Println(data.nb_players)
 	}
 }
